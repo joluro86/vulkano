@@ -1,13 +1,19 @@
 {% extends "index.html" %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto mt-4 bg-white p-6 rounded shadow">
+<div class="max-w-5xl mx-auto mt-2 bg-white p-6 rounded shadow">
   <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold text-gray-800">Lista de Empresas</h2>
     <a href="{% url 'crear_empresa' %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-700 transition">
       Nueva Empresa
     </a>
   </div>
+
+  <!-- Formulario de búsqueda -->
+  <form method="get" class="mb-4">
+    <input type="text" name="q" placeholder="Buscar por nombre, NIT o dirección" value="{{ request.GET.q }}" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]" />
+  </form>
+
   {% if object_list %}
   <table class="min-w-full divide-y divide-gray-200">
     <thead class="bg-[var(--primary-color)]">
