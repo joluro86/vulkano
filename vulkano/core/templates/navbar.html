@@ -1,60 +1,102 @@
-<aside class="fixed top-16 left-0 w-64 bg-white h-[calc(100vh-4rem)] overflow-y-auto border-r shadow-sm hidden sm:block">
-  <nav class="p-6">
-    <ul class="space-y-4">
-      <li>
-        <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-          <i class="ph ph-dashboard"></i>
-          Dashboard
-          </a>
-        </li>
+<!-- Menú lateral -->
+<aside class="mt-16 w-64 bg-white h-[calc(100vh-4rem)] overflow-y-auto border-r shadow-sm hidden sm:block">
+    <nav class="p-4 text-sm space-y-4">
+      <ul class="space-y-4">
         <li>
           <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-shopping-bag"></i>
-            Productos
+            <i class="ph ph-dashboard"></i>
+            Dashboard
           </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-file-text"></i>
-            Contratos
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-calendar"></i>
-            Reservas
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-users"></i>
-            Clientes
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-arrow-clockwise"></i>
-            Devoluciones
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-toolbox"></i>
-            Mantenimiento
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-chart-bar"></i>
-            Reportes
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-            <i class="ph ph-gear-six"></i>
-            Administración
-          </a>
-        </li>
+        </li> 
       </ul>
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-package"></i> Gestión de productos
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Catálogo</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Categorías</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Atributos personalizados</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Inventario</a></li>
+        </ul>
+      </details>
+
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-file-text"></i> Contratos y alquileres
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Alquileres activos</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Historial</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Nuevo alquiler</a></li>
+        </ul>
+      </details>
+
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-calendar"></i> Reservas y cotizaciones
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Solicitudes</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Cotizaciones</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Calendario</a></li>
+        </ul>
+      </details>
+
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-users"></i> Clientes y usuarios
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Clientes</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Empleados</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Roles y permisos</a></li>
+        </ul>
+      </details>
+
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-arrow-u-down-left"></i> Devoluciones
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Pendientes</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Historial</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Registrar devolución</a></li>
+        </ul>
+      </details>
+
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-toolbox"></i> Mantenimiento
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Novedades</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Agenda</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Estado de productos</a></li>
+        </ul>
+      </details>
+
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-chart-bar"></i> Reportes
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Por cliente o producto</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Utilización</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Ingresos</a></li>
+        </ul>
+      </details>
+
+      <details class="group">
+        <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
+          <i class="ph ph-gear-six"></i> Administración
+        </summary>
+        <ul class="mt-2 ml-5 space-y-1">
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Empresas</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Convenios y promociones</a></li>
+          <li><a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Parámetros del sistema</a></li>
+        </ul>
+      </details>
+
     </nav>
   </aside>
