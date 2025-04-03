@@ -32,7 +32,7 @@
         <td class="px-6 py-4 whitespace-nowrap">{{ empresa.nit }}</td>
         <td class="px-6 py-4 whitespace-nowrap">{{ empresa.direccion }}</td>
         <td class="px-6 py-4 whitespace-nowrap">{{ empresa.telefono }}</td>
-        <td class="px-6 py-4 whitespace-nowrap"><a href="{% url 'crear_empresa' %}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</a></td>
+        <td class="px-6 py-4 whitespace-nowrap"><a href="{% url 'editar_empresa' empresa.id %}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</a></td>
       </tr>
       {% endfor %}
     </tbody>
