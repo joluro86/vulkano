@@ -1,6 +1,6 @@
 # views.py
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, ListView, UpdateView
 from django.db.models import Q
 from .models import Empresa
 from empresa.forms.empresa_forms import EmpresaForm
@@ -20,6 +20,7 @@ class EmpresaCreateView(CreateView):
 class EmpresaListView(ListView):
     model = Empresa
     template_name = "empresa_list.html"
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -31,5 +32,11 @@ class EmpresaListView(ListView):
                 Q(direccion__icontains=query)  # Puedes agregar más filtros si es necesario
             )
         return queryset
+
+class EmpresaUpdateView(UpdateView):
+    model = Empresa
+    fields = ["nombre", "nit", "direccion", "telefono"]
+    template_name = "editar_empresa.html"
+    success_url = reverse_lazy("empresa_list")
 
 
