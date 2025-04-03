@@ -21,6 +21,7 @@ class EmpresaCreateView(CreateView):
 class EmpresaListView(ListView):
     model = Empresa
     template_name = "empresa_list.html"
+    ordering = ['nombre'] 
     paginate_by = 10
 
     def get_queryset(self):
