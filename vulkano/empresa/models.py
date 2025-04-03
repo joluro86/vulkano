@@ -15,3 +15,19 @@ class Empresa(models.Model):
 
     def __str__(self):
         return self.nombre
+
+class Sucursal(models.Model):
+    ESTADOS = [
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo"),
+    ]
+
+    empresa = models.ForeignKey(Empresa, related_name='sucursales', on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=100)
+    ciudad = models.CharField(max_length=100)
+    direccion = models.CharField(max_length=255)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
+
+    def __str__(self):
+        return f"{self.nombre} - {self.empresa.nombre}"
