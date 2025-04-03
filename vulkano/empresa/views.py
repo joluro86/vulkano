@@ -31,6 +31,9 @@ class EmpresaListView(ListView):
             queryset = queryset.filter(
                 Q(nombre__icontains=query) |
                 Q(nit__icontains=query) |
+                Q(ciudad__icontains=query) |
+                Q(departamento__icontains=query) |
+                Q(estado__icontains=query) |
                 Q(direccion__icontains=query)  # Puedes agregar más filtros si es necesario
             )
         return queryset
