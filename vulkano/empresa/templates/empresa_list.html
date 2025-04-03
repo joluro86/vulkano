@@ -15,53 +15,46 @@
   </form>
 
   {% if object_list %}
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200 text-sm">
-      <thead class="bg-[var(--primary-color)]">
-        <tr>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">Nombre</th>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">NIT</th>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">Dirección</th>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">Ciudad</th>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">Departamento</th>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">Teléfono</th>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">Estado</th>
-          <th class="px-3 py-2 text-left font-medium text-white uppercase">Acción</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        {% for empresa in object_list %}
-        <tr>
-          <td class="px-3 py-1.5 whitespace-nowrap">{{ empresa.nombre }}</td>
-          <td class="px-3 py-1.5 whitespace-nowrap">{{ empresa.nit }}</td>
-          <td class="px-3 py-1.5 whitespace-nowrap">{{ empresa.direccion }}</td>
-          <td class="px-3 py-1.5 whitespace-nowrap">{{ empresa.ciudad }}</td>
-          <td class="px-3 py-1.5 whitespace-nowrap">{{ empresa.departamento }}</td>
-          <td class="px-3 py-1.5 whitespace-nowrap">{{ empresa.telefono }}</td>
-          <td class="px-3 py-1.5 whitespace-nowrap">{{ empresa.get_estado_display }}</td>
-          <td class="px-3 py-1.5 whitespace-nowrap">
-            <a href="{% url 'editar_empresa' empresa.id %}" class="text-blue-600 hover:underline">Editar</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for empresa in object_list %}
+    <div class="border rounded shadow-sm p-4 hover:shadow-lg transition">
+      <div class="mb-2 flex justify-between items-center">
+        <h3 class="font-bold text-gray-700">{{ empresa.nombre }}</h3>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full 
+          {% if empresa.estado == 'activo' %}
+            bg-green-100 text-green-700
+          {% else %}
+            bg-red-100 text-red-700
+          {% endif %}
+        ">
+          {{ empresa.get_estado_display }}
+        </span>
+      </div>
+      <p class="text-sm text-gray-500"><strong>NIT:</strong> {{ empresa.nit }}</p>
+      <p class="text-sm text-gray-500"><strong>Dirección:</strong> {{ empresa.direccion }}, {{ empresa.ciudad }}, {{ empresa.departamento }}</p>
+      <p class="text-sm text-gray-500"><strong>Teléfono:</strong> {{ empresa.telefono }}</p>
+      <div class="mt-3">
+        <a href="{% url 'editar_empresa' empresa.id %}" class="text-sm font-medium text-[var(--primary-color)] hover:underline">Editar</a>
+      </div>
+    </div>
+    {% endfor %}
   </div>
   {% else %}
-  <p class="text-gray-600">No hay empresas registradas.</p>
+    <p class="text-gray-600">No hay empresas registradas.</p>
   {% endif %}
 
+  <!-- Paginación -->
   <div class="mt-4 flex justify-end text-xs">
     {% if page_obj.has_previous %}
-    <a href="?page=1" class="px-3 py-1 bg-gray-300 rounded">primero</a>
-    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-300 rounded">anterior</a>
+      <a href="?page=1" class="px-3 py-1 bg-gray-300 rounded">primero</a>
+      <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-300 rounded">anterior</a>
     {% endif %}
 
     <span class="mx-2">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
 
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-gray-300 rounded">siguiente</a>
-    <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1 bg-gray-300 rounded">último</a>
+      <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-gray-300 rounded">siguiente</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1 bg-gray-300 rounded">último</a>
     {% endif %}
   </div>
 </div>
