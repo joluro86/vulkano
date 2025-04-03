@@ -36,12 +36,30 @@ class EmpresaListView(ListView):
                 Q(direccion__icontains=query)  # Puedes agregar más filtros si es necesario
             )
         return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_list"] = reverse_lazy('empresa_list')
+        context["breadcrumb_items"] = [
+            ("Empresas", None),
+        ]
+        return context
 
 class EmpresaUpdateView(UpdateView):
     model = Empresa
     form_class = EmpresaEditForm
     template_name = 'editar_empresa.html'
     success_url = reverse_lazy('empresa_list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sucursal_list"] = reverse_lazy('sucursal_list')
+        context["breadcrumb_items"] = [
+            ("Empresas", reverse_lazy("empresa_list")),
+            ("Editar", None)
+        ]
+        return context
+
 
 
 class SucursalCreateView(CreateView):
@@ -49,6 +67,15 @@ class SucursalCreateView(CreateView):
     form_class = SucursalForm
     template_name = 'crear_sucursal.html'
     success_url = reverse_lazy('sucursal_list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sucursal_list"] = reverse_lazy('sucursal_list')
+        context["breadcrumb_items"] = [
+            ("Sucursales", reverse_lazy("sucursal_list")),
+            ("Crear", None)
+        ]
+        return context
     
 
 class SucursalListView(ListView):
@@ -61,9 +88,26 @@ class SucursalListView(ListView):
     def get_queryset(self):
         # Opcional: Prefetch para optimizar consultas de empresa asociada
         return super().get_queryset().select_related('empresa')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sucursal_list"] = reverse_lazy('sucursal_list')
+        context["breadcrumb_items"] = [
+            ("Sucursales", None),
+        ]
+        return context
 
 class SucursalUpdateView(UpdateView):
     model = Sucursal
     form_class = SucursalEditForm
     template_name = 'editar_sucursal.html'
     success_url = reverse_lazy('sucursal_list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sucursal_list"] = reverse_lazy('sucursal_list')
+        context["breadcrumb_items"] = [
+            ("Sucursales", reverse_lazy("sucursal_list")),
+            ("Editar", None)
+        ]
+        return context

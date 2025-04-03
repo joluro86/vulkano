@@ -1,0 +1,18 @@
+<nav class="text-sm text-gray-500 mb-4 flex items-center gap-1">
+    {% if home %}
+      <a href="{{ home }}" class="hover:text-[var(--primary-color)] flex items-center gap-1">
+        <i class="ph ph-house-simple"></i> Inicio
+      </a>
+      <span class="mx-1">›</span>
+    {% endif %}
+  
+    {% for label, url in breadcrumbs %}
+      {% if url %}
+        <a href="{{ url }}" class="hover:text-[var(--primary-color)]">{{ label }}</a>
+        <span class="mx-1">›</span>
+      {% else %}
+        <span class="text-gray-700 font-semibold">{{ label }}</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  

@@ -1,73 +1,73 @@
-{% extends "index.html" %}
-
+{% extends 'index.html' %}
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto mt-4 bg-white p-6 rounded shadow">
-  <h2 class="text-2xl font-bold text-gray-800 mb-4">Crear Sucursal</h2>
-  <form method="post" class="grid grid-cols-2 gap-4">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
+  <div class="max-w-2xl mx-auto mt-4 bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Crear Sucursal</h2>
+    <form method="post" class="grid grid-cols-2 gap-4">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
 
-    <div>
-      <label for="empresa" class="block text-sm font-medium text-gray-700">Empresa</label>
-      {{ form.empresa }}
-      {% if form.empresa.errors %}
-        <p class="text-sm text-red-600">{{ form.empresa.errors|striptags }}</p>
-      {% endif %}
-    </div>
+      <div>
+        <label for="empresa" class="block text-sm font-medium text-gray-700">Empresa</label>
+        {{ form.empresa }}
+        {% if form.empresa.errors %}
+          <p class="text-sm text-red-600">{{ form.empresa.errors|striptags }}</p>
+        {% endif %}
+      </div>
 
-    <div>
-      <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-      {{ form.nombre }}
-      {% if form.nombre.errors %}
-        <p class="text-sm text-red-600">{{ form.nombre.errors|striptags }}</p>
-      {% endif %}
-    </div>
+      <div>
+        <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+        {{ form.nombre }}
+        {% if form.nombre.errors %}
+          <p class="text-sm text-red-600">{{ form.nombre.errors|striptags }}</p>
+        {% endif %}
+      </div>
 
-    <div>
-      <label for="ciudad" class="block text-sm font-medium text-gray-700">Ciudad</label>
-      {{ form.ciudad }}
-      {% if form.ciudad.errors %}
-        <p class="text-sm text-red-600">{{ form.ciudad.errors|striptags }}</p>
-      {% endif %}
-    </div>
+      <div>
+        <label for="ciudad" class="block text-sm font-medium text-gray-700">Ciudad</label>
+        {{ form.ciudad }}
+        {% if form.ciudad.errors %}
+          <p class="text-sm text-red-600">{{ form.ciudad.errors|striptags }}</p>
+        {% endif %}
+      </div>
 
-    <div>
-      <label for="departamento" class="block text-sm font-medium text-gray-700">Departamento</label>
-      {{ form.departamento }}
-      {% if form.departamento.errors %}
-        <p class="text-sm text-red-600">{{ form.departamento.errors|striptags }}</p>
-      {% endif %}
-    </div>
+      <div>
+        <label for="departamento" class="block text-sm font-medium text-gray-700">Departamento</label>
+        {{ form.departamento }}
+        {% if form.departamento.errors %}
+          <p class="text-sm text-red-600">{{ form.departamento.errors|striptags }}</p>
+        {% endif %}
+      </div>
 
-    <div>
-      <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
-      {{ form.direccion }}
-      {% if form.direccion.errors %}
-        <p class="text-sm text-red-600">{{ form.direccion.errors|striptags }}</p>
-      {% endif %}
-    </div>
+      <div>
+        <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+        {{ form.direccion }}
+        {% if form.direccion.errors %}
+          <p class="text-sm text-red-600">{{ form.direccion.errors|striptags }}</p>
+        {% endif %}
+      </div>
 
-    <div>
-      <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
-      {{ form.telefono }}
-      {% if form.telefono.errors %}
-        <p class="text-sm text-red-600">{{ form.telefono.errors|striptags }}</p>
-      {% endif %}
-    </div>
+      <div>
+        <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+        {{ form.telefono }}
+        {% if form.telefono.errors %}
+          <p class="text-sm text-red-600">{{ form.telefono.errors|striptags }}</p>
+        {% endif %}
+      </div>
 
-    <div class="col-span-2">
-      <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
-      {{ form.estado }}
-      {% if form.estado.errors %}
-        <p class="text-sm text-red-600">{{ form.estado.errors|striptags }}</p>
-      {% endif %}
-    </div>
+      <div class="col-span-2">
+        <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
+        {{ form.estado }}
+        {% if form.estado.errors %}
+          <p class="text-sm text-red-600">{{ form.estado.errors|striptags }}</p>
+        {% endif %}
+      </div>
 
-    <div class="col-span-2">
-      <button type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">
-        Guardar
-      </button>
-    </div>
-  </form>
-</div>
+      <div class="col-span-2">
+        <button type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">Guardar</button>
+      </div>
+    </form>
+  </div>
 {% endblock %}
