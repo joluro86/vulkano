@@ -2,9 +2,10 @@
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView
 from django.db.models import Q
-from .models import Empresa
+from empresa.models import Empresa
 from empresa.forms.empresa_forms import EmpresaForm
 from empresa.logic.empresa_logic import create_empresa
+from empresa.forms.empresa_forms import EmpresaEditForm
 
 class EmpresaCreateView(CreateView):
     model = Empresa
@@ -35,8 +36,8 @@ class EmpresaListView(ListView):
 
 class EmpresaUpdateView(UpdateView):
     model = Empresa
-    fields = ["nombre", "nit", "direccion", "telefono"]
-    template_name = "editar_empresa.html"
-    success_url = reverse_lazy("empresa_list")
+    form_class = EmpresaEditForm
+    template_name = 'editar_empresa.html'
+    success_url = reverse_lazy('empresa_list')
 
 
