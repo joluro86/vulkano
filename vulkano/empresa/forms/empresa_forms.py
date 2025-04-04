@@ -4,7 +4,10 @@ from empresa.models import Empresa, Sucursal
 class EmpresaForm(forms.ModelForm):
     class Meta:
         model = Empresa
-        fields = ['nombre', 'nit', 'direccion', 'telefono']
+        fields = [
+            'nombre', 'nit', 'direccion', 'telefono',
+            'ciudad', 'departamento', 'estado'
+        ]
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -21,6 +24,17 @@ class EmpresaForm(forms.ModelForm):
             'telefono': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Teléfono'
+            }),
+            'ciudad': forms.TextInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'placeholder': 'Ciudad'
+            }),
+            'departamento': forms.TextInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'placeholder': 'Departamento'
+            }),
+            'estado': forms.Select(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
             }),
         }
 
