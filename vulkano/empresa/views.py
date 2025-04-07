@@ -89,7 +89,7 @@ class SucursalesPorEmpresaView(BreadcrumbMixin, ListView):
     model = Sucursal
     template_name = 'lista_sucursales_por_empresa.html'
     context_object_name = 'sucursales'
-    breadcrumb_items = [("Empresas", reverse_lazy("sucursal_list")),
+    breadcrumb_items = [("Empresas", reverse_lazy("empresa_list")),
                         ("Sucursales", None)]
 
     def get_queryset(self):
