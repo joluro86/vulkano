@@ -82,8 +82,10 @@ class SucursalUpdateView(BreadcrumbMixin, UpdateView):
     form_class = SucursalEditForm
     template_name = 'editar_sucursal.html'
     success_url = reverse_lazy('sucursal_list')
-    breadcrumb_items = [("Sucursales", reverse_lazy("sucursal_list")),
-            ("Editar", None)]
+    breadcrumb_items = [
+        ("Empresas", reverse_lazy("empresa_list")),
+        ("Sucursales", reverse_lazy("sucursal_list")),
+        ("Editar", None)]
 
 class SucursalesPorEmpresaView(BreadcrumbMixin, ListView):
     model = Sucursal
