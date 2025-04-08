@@ -1,5 +1,5 @@
 from django.db import models
-from empresa.models import Empresa
+from empresa.models import Empresa, Sucursal
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100, null=False)
@@ -54,7 +54,7 @@ class Producto(models.Model):
     stock = models.PositiveIntegerField(default=1)
     imagen = models.ImageField(upload_to="productos/", null=True, blank=True)
     activo = models.BooleanField(default=True)
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='productos', default=1)    
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='productos', default=1)    
 
     def __str__(self):
         return f"{self.nombre} ({self.codigo_interno})"
