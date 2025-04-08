@@ -42,11 +42,9 @@ class Producto(models.Model):
 
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
-    codigo_interno = models.CharField(max_length=50)
+    codigo_interno = models.CharField(max_length=50, unique=True)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="disponible")
     ubicacion_actual = models.CharField(max_length=100)
-    precio_alquiler_dia = models.DecimalField(max_digits=10, decimal_places=2)
-    precio_alquiler_semana = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     fecha_ingreso = models.DateField()
     marca = models.CharField(max_length=100, blank=True, null=True)
     modelo = models.CharField(max_length=100, blank=True, null=True)
@@ -54,7 +52,19 @@ class Producto(models.Model):
     stock = models.PositiveIntegerField(default=1)
     imagen = models.ImageField(upload_to="productos/", null=True, blank=True)
     activo = models.BooleanField(default=True)
-    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='productos', default=1)    
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='productos', default=1)
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='productos', default=1)
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name = 'Producto'
+        verbose_name_plural = 'Productos'
+        
+        constraints = [
+            models.UniqueConstraint(fields=['empresa', 'codigo_interno'], name='unique_codigo_por_empresa')
+        ]
 
     def __str__(self):
         return f"{self.nombre} ({self.codigo_interno})"
