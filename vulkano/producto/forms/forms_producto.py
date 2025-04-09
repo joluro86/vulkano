@@ -4,36 +4,28 @@ from producto.models import Producto
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = [
-            'nombre', 'descripcion', 'codigo_interno', 'estado',
-            'ubicacion_actual', 'fecha_ingreso', 'marca', 'modelo',
-            'serial', 'stock', 'imagen', 'empresa', 'sucursal',
-            'categoria', 'proveedor'
-        ]
+        exclude = ['created_at', 'updated_at', 'creado_por', 'modificado_por']
         widgets = {
             'nombre': forms.TextInput(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Nombre del producto'
             }),
+              'estado': forms.Select(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded bg-white'
+            }),
             'descripcion': forms.Textarea(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded resize-y focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'class': 'w-full p-2 border border-gray-300 rounded resize-y focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Descripción del producto',
                 'rows': 3
             }),
             'codigo_interno': forms.TextInput(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'class': 'w-full p-2 border border-gray-300 rounded',
                 'placeholder': 'Código interno'
             }),
-            'estado': forms.Select(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]'
-            }),
+           
             'ubicacion_actual': forms.TextInput(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'class': 'w-full p-2 border border-gray-300 rounded',
                 'placeholder': 'Ubicación actual'
-            }),
-            'fecha_ingreso': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]'
             }),
             'marca': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded',
@@ -66,4 +58,5 @@ class ProductoForm(forms.ModelForm):
             'proveedor': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white'
             }),
+           
         }

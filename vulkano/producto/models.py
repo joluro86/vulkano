@@ -34,26 +34,27 @@ class Proveedor(models.Model):
 
 class Producto(models.Model):
     ESTADOS = [
-        ("disponible", "Disponible"),
-        ("alquilado", "Alquilado"),
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo"),
     ]
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
     codigo_interno = models.CharField(max_length=50)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="disponible")
     ubicacion_actual = models.CharField(max_length=100)
-    fecha_ingreso = models.DateField()
     marca = models.CharField(max_length=100, blank=True, null=True)
     modelo = models.CharField(max_length=100, blank=True, null=True)
     serial = models.CharField(max_length=100, blank=True, null=True)
     stock = models.PositiveIntegerField(default=1)
     imagen = models.ImageField(upload_to="media/productos/", null=True, blank=True)
-    activo = models.BooleanField(default=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='productos', default=1)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='productos', default=1)
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
     proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    creado_por = models.CharField(max_length=100, blank=True, null=True)
+    modificado_por = models.CharField(max_length=100, blank=True, null=True)
     class Meta:
         ordering = ['nombre']
         verbose_name = 'Producto'

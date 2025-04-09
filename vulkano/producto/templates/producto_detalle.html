@@ -18,16 +18,18 @@
   <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
     <p><strong>Nombre:</strong> {{ producto.nombre }}</p>
     <p><strong>Código interno:</strong> {{ producto.codigo_interno }}</p>
+
     <p><strong>Estado:</strong>
       <span class="font-semibold px-2 py-0.5 rounded-full
-        {% if producto.estado == 'disponible' %} bg-green-100 text-green-700
-        {% elif producto.estado == 'alquilado' %} bg-yellow-100 text-yellow-700
-        {% elif producto.estado == 'mantenimiento' %} bg-orange-100 text-orange-700
-        {% else %} bg-red-100 text-red-700
+        {% if producto.estado == 'activo' %}
+          bg-green-100 text-green-700
+        {% else %}
+          bg-red-100 text-red-700
         {% endif %}">
         {{ producto.get_estado_display }}
       </span>
     </p>
+
     <p><strong>Ubicación:</strong> {{ producto.ubicacion_actual }}</p>
     <p><strong>Sucursal:</strong> {{ producto.sucursal.nombre }}</p>
     <p><strong>Categoría:</strong> {{ producto.categoria.nombre }}</p>
@@ -36,9 +38,14 @@
     <p><strong>Modelo:</strong> {{ producto.modelo }}</p>
     <p><strong>Serial:</strong> {{ producto.serial }}</p>
     <p><strong>Stock:</strong> {{ producto.stock }}</p>
-    <p><strong>Fecha de ingreso:</strong> {{ producto.fecha_ingreso }}</p>
-  </div>
 
+    <p><strong>Empresa:</strong> {{ producto.empresa.nombre }}</p>
+    <p><strong>Creado por:</strong> {{ producto.creado_por }}</p>
+    <p><strong>Modificado por:</strong> {{ producto.modificado_por }}</p>
+    <p><strong>Fecha de creación:</strong> {{ producto.created_at|date:"d M Y H:i" }}</p>
+    <p><strong>Última modificación:</strong> {{ producto.updated_at|date:"d M Y H:i" }}</p>
+  </div>
+  
   <div class="mt-6">
     <a href="{% url 'editar_producto' producto.id %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-700 transition">
       Editar producto

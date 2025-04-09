@@ -1,3 +1,4 @@
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
@@ -5,6 +6,10 @@ from .models import Producto
 from producto.forms.forms_producto import ProductoForm
 from core.views import BreadcrumbMixin
 from django.db.models import Q
+
+def eliminar_producto(request, id):
+    Producto.objects.get(id=id).delete()
+    return redirect('producto_list')
 
 class ProductoCreateView(BreadcrumbMixin, CreateView):
     model = Producto

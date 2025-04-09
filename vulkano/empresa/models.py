@@ -30,4 +30,4 @@ class Sucursal(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
 
     def __str__(self):
-        return f"{self.nombre} - {self.empresa.nombre}"
+        return f"{self.nombre}"
