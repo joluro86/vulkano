@@ -36,13 +36,10 @@ class Producto(models.Model):
     ESTADOS = [
         ("disponible", "Disponible"),
         ("alquilado", "Alquilado"),
-        ("mantenimiento", "En mantenimiento"),
-        ("inactivo", "Inactivo"),
     ]
-
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
-    codigo_interno = models.CharField(max_length=50, unique=True)
+    codigo_interno = models.CharField(max_length=50)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="disponible")
     ubicacion_actual = models.CharField(max_length=100)
     fecha_ingreso = models.DateField()
