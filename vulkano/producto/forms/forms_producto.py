@@ -39,10 +39,6 @@ class ProductoForm(forms.ModelForm):
                 'class': 'w-full p-2 border border-gray-300 rounded',
                 'placeholder': 'Serial'
             }),
-            'stock': forms.NumberInput(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded',
-                'min': 0
-            }),
             'imagen': forms.ClearableFileInput(attrs={
                 'class': 'w-full border border-gray-300 p-2 rounded bg-white'
             }),
