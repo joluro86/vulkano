@@ -97,5 +97,10 @@ class SucursalesPorEmpresaView(BreadcrumbMixin, ListView):
     def get_queryset(self):
         self.empresa = get_object_or_404(Empresa, pk=self.kwargs['empresa_id'])
         return Sucursal.objects.filter(empresa=self.empresa)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['empresa'] = self.empresa
+        return context
 
     
