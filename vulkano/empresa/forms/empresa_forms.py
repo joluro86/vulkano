@@ -80,7 +80,7 @@ class EmpresaEditForm(forms.ModelForm):
 class SucursalForm(forms.ModelForm):
     class Meta:
         model = Sucursal
-        fields = ['empresa', 'nombre', 'ciudad', 'direccion', 'telefono', 'estado']
+        fields = ['empresa', 'nombre', 'ciudad', 'direccion', 'departamento', 'telefono', 'estado']
         widgets = {
             'empresa': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -96,6 +96,10 @@ class SucursalForm(forms.ModelForm):
             'direccion': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Dirección'
+            }),
+             'departamento': forms.TextInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'placeholder': 'Departamento'
             }),
             'telefono': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -109,7 +113,7 @@ class SucursalForm(forms.ModelForm):
 class SucursalEditForm(forms.ModelForm):
     class Meta:
         model = Sucursal
-        fields = ['empresa', 'nombre', 'ciudad', 'direccion', 'telefono', 'estado']
+        fields = ['empresa', 'nombre', 'ciudad', 'direccion', 'departamento', 'telefono', 'estado']
         widgets = {
             'empresa': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -125,6 +129,10 @@ class SucursalEditForm(forms.ModelForm):
             'direccion': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Dirección'
+            }),
+             'departamento': forms.TextInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
+                'placeholder': 'Departamento'
             }),
             'telefono': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',

@@ -26,6 +26,7 @@ class Sucursal(models.Model):
     nombre = models.CharField(max_length=100)
     ciudad = models.CharField(max_length=100)
     direccion = models.CharField(max_length=255)
+    departamento = models.CharField(max_length=100, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
 
