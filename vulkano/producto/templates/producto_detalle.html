@@ -1,0 +1,48 @@
+{% extends 'index.html' %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-800">Detalle del Producto</h2>
+    <a href="{% url 'producto_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver al listado</a>
+  </div>
+
+  {% if producto.imagen %}
+    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-full h-64 object-cover rounded mb-4">
+  {% endif %}
+
+  <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
+    <p><strong>Nombre:</strong> {{ producto.nombre }}</p>
+    <p><strong>Código interno:</strong> {{ producto.codigo_interno }}</p>
+    <p><strong>Estado:</strong>
+      <span class="font-semibold px-2 py-0.5 rounded-full
+        {% if producto.estado == 'disponible' %} bg-green-100 text-green-700
+        {% elif producto.estado == 'alquilado' %} bg-yellow-100 text-yellow-700
+        {% elif producto.estado == 'mantenimiento' %} bg-orange-100 text-orange-700
+        {% else %} bg-red-100 text-red-700
+        {% endif %}">
+        {{ producto.get_estado_display }}
+      </span>
+    </p>
+    <p><strong>Ubicación:</strong> {{ producto.ubicacion_actual }}</p>
+    <p><strong>Sucursal:</strong> {{ producto.sucursal.nombre }}</p>
+    <p><strong>Categoría:</strong> {{ producto.categoria.nombre }}</p>
+    <p><strong>Proveedor:</strong> {{ producto.proveedor.nombre }}</p>
+    <p><strong>Marca:</strong> {{ producto.marca }}</p>
+    <p><strong>Modelo:</strong> {{ producto.modelo }}</p>
+    <p><strong>Serial:</strong> {{ producto.serial }}</p>
+    <p><strong>Stock:</strong> {{ producto.stock }}</p>
+    <p><strong>Fecha de ingreso:</strong> {{ producto.fecha_ingreso }}</p>
+  </div>
+
+  <div class="mt-6">
+    <a href="{% url 'editar_producto' producto.id %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+      Editar producto
+    </a>
+  </div>
+</div>
+{% endblock %}
