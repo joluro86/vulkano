@@ -50,7 +50,7 @@ class Producto(models.Model):
     modelo = models.CharField(max_length=100, blank=True, null=True)
     serial = models.CharField(max_length=100, blank=True, null=True)
     stock = models.PositiveIntegerField(default=1)
-    imagen = models.ImageField(upload_to="productos/", null=True, blank=True)
+    imagen = models.ImageField(upload_to="media/productos/", null=True, blank=True)
     activo = models.BooleanField(default=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='productos', default=1)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='productos', default=1)
