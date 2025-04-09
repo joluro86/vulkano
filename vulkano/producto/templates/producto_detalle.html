@@ -37,15 +37,14 @@
     <p><strong>Marca:</strong> {{ producto.marca }}</p>
     <p><strong>Modelo:</strong> {{ producto.modelo }}</p>
     <p><strong>Serial:</strong> {{ producto.serial }}</p>
-    <p><strong>Stock:</strong> {{ producto.stock }}</p>
 
     <p><strong>Empresa:</strong> {{ producto.empresa.nombre }}</p>
     <p><strong>Creado por:</strong> {{ producto.creado_por }}</p>
-    <p><strong>Modificado por:</strong> {{ producto.modificado_por }}</p>
     <p><strong>Fecha de creación:</strong> {{ producto.created_at|date:"d M Y H:i" }}</p>
     <p><strong>Última modificación:</strong> {{ producto.updated_at|date:"d M Y H:i" }}</p>
+    <p><strong>Modificado por:</strong> {{ producto.modificado_por }}</p>
   </div>
-  
+
   <div class="mt-6">
     <a href="{% url 'editar_producto' producto.id %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-700 transition">
       Editar producto
