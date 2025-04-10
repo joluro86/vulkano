@@ -35,7 +35,26 @@ class EmpresaListView(BreadcrumbMixin, ListView):
                 Q(estado__icontains=query) |
                 Q(direccion__icontains=query)  # Puedes agregar más filtros si es necesario
             )
+
+        estado = self.request.GET.get("estado")
+        departamento = self.request.GET.get("departamento")
+        ciudad = self.request.GET.get("ciudad")
+
+        if estado:
+            queryset = queryset.filter(estado=estado)
+        if departamento:
+            queryset = queryset.filter(departamento__icontains=departamento)
+        if ciudad:
+            queryset = queryset.filter(ciudad__icontains=ciudad)
+
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["estados"] = Empresa.ESTADOS
+        context["ciudades"] = Empresa.objects.values_list("ciudad", flat=True).distinct().order_by("ciudad")
+        context["departamentos"] = Empresa.objects.values_list("departamento", flat=True).distinct().order_by("departamento")
+        return context
 
 class EmpresaUpdateView(BreadcrumbMixin, UpdateView):
     model = Empresa
@@ -75,7 +94,28 @@ class SucursalListView(BreadcrumbMixin, ListView):
 
     def get_queryset(self):
         # Opcional: Prefetch para optimizar consultas de empresa asociada
-        return super().get_queryset().select_related('empresa')
+        #return super().get_queryset().select_related('empresa')
+
+        queryset = super().get_queryset()
+        estado = self.request.GET.get("estado")
+        departamento = self.request.GET.get("departamento")
+        ciudad = self.request.GET.get("ciudad")
+
+        if estado:
+            queryset = queryset.filter(estado=estado)
+        if departamento:
+            queryset = queryset.filter(departamento__icontains=departamento)
+        if ciudad:
+            queryset = queryset.filter(ciudad__icontains=ciudad)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["estados"] = Sucursal.ESTADOS
+        context["ciudades"] = Sucursal.objects.values_list("ciudad", flat=True).distinct().order_by("ciudad")
+        context["departamentos"] = Sucursal.objects.values_list("departamento", flat=True).distinct().order_by("departamento")
+        return context
        
 class SucursalUpdateView(BreadcrumbMixin, UpdateView):
     model = Sucursal
