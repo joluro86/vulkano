@@ -2,7 +2,10 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
-from .models import Producto
+
+from empresa.models import Sucursal
+
+from .models import Categoria, Producto
 from producto.forms.forms_producto import ProductoForm
 from core.views import BreadcrumbMixin
 from django.db.models import Q
@@ -49,7 +52,27 @@ class ProductoListView(BreadcrumbMixin, ListView):
                 Q(codigo_interno__icontains=q) |
                 Q(ubicacion_actual__icontains=q)
             )
+
+        estado = self.request.GET.get("estado")
+        sucursal = self.request.GET.get("sucursal")
+        categoria = self.request.GET.get("categoria")
+
+        if estado:
+            queryset = queryset.filter(estado=estado)
+        if sucursal:
+            queryset = queryset.filter(sucursal_id=sucursal)
+        if categoria:
+            queryset = queryset.filter(categoria_id=categoria)
+
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["estados"] = Producto.ESTADOS
+        context["sucursales"] = Sucursal.objects.all()
+        context["categorias"] = Categoria.objects.all()
+
+        return context
 
 
 class ProductoUpdateView(BreadcrumbMixin, UpdateView):
