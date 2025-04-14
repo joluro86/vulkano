@@ -8,6 +8,35 @@
 <div class="max-w-5xl mx-auto mt-6 bg-white p-6 rounded shadow">
   <div class="flex justify-between items-center mb-4">
     <h2 class="text-xl font-bold text-gray-800">Lista de Sucursales</h2>
+    <form id="filtersForm">
+      <!-- Select Estado -->
+      <select name="estado" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
+        <option value="">Estado</option>
+        {% for value, label in estados %}
+        <option value="{{ value }}" {% if request.GET.estado == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Select Departamento -->
+      <select name="departamento" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
+        <option value="">Departamento</option>
+        {% for dep in departamentos %}
+        {% if dep %}
+        <option value="{{ dep }}" {% if request.GET.departamento == dep %}selected{% endif %}>{{ dep }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+
+      <!-- Select Ciudad -->
+      <select name="ciudad" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
+        <option value="">Ciudad</option>
+        {% for ciudad in ciudades %}
+        {% if ciudad %}
+        <option value="{{ ciudad }}" {% if request.GET.ciudad == ciudad %}selected{% endif %}>{{ ciudad }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </form>
     <a href="{% url 'crear_sucursal' %}" class="bg-[var(--primary-color)] text-white px-3 py-1.5 text-sm rounded hover:bg-blue-700 transition">
       Nueva Sucursal
     </a>

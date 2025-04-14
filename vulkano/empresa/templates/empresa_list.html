@@ -7,8 +7,50 @@
   <div class="max-w-5xl mx-auto mt-6 bg-white p-6 rounded shadow">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold text-gray-800">Lista de Empresas</h2>
-      <a href="{% url 'crear_empresa' %}" class="bg-[var(--primary-color)] text-white px-3 py-1.5 text-sm rounded hover:bg-blue-700 transition">Nueva Empresa</a>
+
+      <div class="flex gap-2 items-center">
+        <form id="filtersForm">
+          <!-- Select Estado -->
+          <select name="estado" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
+            <option value="">Estado</option>
+            {% for value, label in estados %}
+            <option value="{{ value }}" {% if request.GET.estado == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+  
+          <!-- Select Departamento -->
+          <select name="departamento" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
+            <option value="">Departamento</option>
+            {% for dep in departamentos %}
+            {% if dep %}
+            <option value="{{ dep }}" {% if request.GET.departamento == dep %}selected{% endif %}>{{ dep }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+  
+          <!-- Select Ciudad -->
+          <select name="ciudad" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
+            <option value="">Ciudad</option>
+            {% for ciudad in ciudades %}
+            {% if ciudad %}
+            <option value="{{ ciudad }}" {% if request.GET.ciudad == ciudad %}selected{% endif %}>{{ ciudad }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </form>
+    
+        <a href="{% url 'exportar_empresas' %}?estado={{ request.GET.estado }}&departamento={{ request.GET.departamento }}&ciudad={{ request.GET.ciudad }}&q={{ request.GET.q }}" class="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700 transition">
+          Exportar Empresas CSV
+        </a>
+    
+        <a href="{% url 'crear_empresa' %}" class="bg-[var(--primary-color)] text-white px-3 py-1.5 text-sm rounded hover:bg-blue-700 transition">
+          Nueva Empresa
+        </a>
+      </div>
+
     </div>
+
+  
 
     <!-- Formulario de búsqueda -->
     <form method="get" class="mb-3">
@@ -47,9 +89,13 @@
             <div class="mt-1">
               <a href="{% url 'editar_empresa' empresa.id %}" class="text-sm font-medium text-[var(--primary-color)] hover:underline"><i class="ph ph-pencil-simple mr-1"></i>Editar</a>
             </div>
-            <div class="">
-              <a href="{% url 'sucursales_por_empresa' empresa.id %}" class=" text-sm font-medium text-[var(--primary-color)] hover:underline">
+
+            <div class="flex flex-col gap-1 mt-2">
+              <a href="{% url 'sucursales_por_empresa' empresa.id %}" class="text-sm font-medium text-[var(--primary-color)] hover:underline">
                 <i class="ph ph-buildings mr-1 mt-0 p-0"></i>Ver sucursales
+              </a>
+              <a href="{% url 'exportar_sucursales' %}?empresa={{ empresa.id }}" class="text-sm font-medium text-[var(--primary-color)] hover:underline">
+                <i class="ph ph-file-arrow-down mr-1 mt-0 p-0"></i>Exportar sucursales CSV
               </a>
             </div>
             
