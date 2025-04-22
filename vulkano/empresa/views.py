@@ -13,7 +13,9 @@ import csv
 from django.http import HttpResponse
 from .models import Sucursal 
 from .models import Empresa
-
+import csv
+import io
+import openpyxl 
 class EmpresaCreateView(BreadcrumbMixin, CreateView):
     model = Empresa
     form_class = EmpresaForm
@@ -175,49 +177,80 @@ def exportar_sucursales_csv(request):
 
     return response   
 
-def exportar_empresas_csv(request):
-    empresas = Empresa.objects.all()
 
-    # Aplicar filtros si se usaron en el template
+def exportar_empresas(request):
+    tipo = request.GET.get('tipo', 'csv')  # por defecto CSV
+    filtros = {}
     estado = request.GET.get('estado')
     departamento = request.GET.get('departamento')
     ciudad = request.GET.get('ciudad')
     q = request.GET.get('q')
 
     if estado:
-        empresas = empresas.filter(estado=estado)
+        filtros['estado'] = estado
     if departamento:
-        empresas = empresas.filter(departamento=departamento)
+        filtros['departamento'] = departamento
     if ciudad:
-        empresas = empresas.filter(ciudad=ciudad)
+        filtros['ciudad'] = ciudad
+
+    empresas = Empresa.objects.filter(**filtros)
+
     if q:
         empresas = empresas.filter(
-            nombre__icontains=q
-        ) | empresas.filter(nit__icontains=q) | empresas.filter(
-            direccion__icontains=q
-        ) | empresas.filter(
-            ciudad__icontains=q
-        ) | empresas.filter(
-            estado__icontains=q
+            Q(nombre__icontains=q) |
+            Q(nit__icontains=q) |
+            Q(direccion__icontains=q) |
+            Q(ciudad__icontains=q) |
+            Q(estado__icontains=q)
         )
 
-    # Generar respuesta CSV
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="empresas.csv"'
+    columnas = ['Nombre', 'NIT', 'Ciudad', 'Dirección', 'Departamento', 'Teléfono', 'Estado']
 
-    writer = csv.writer(response)
-    writer.writerow(['Nombre', 'NIT', 'Ciudad', 'Dirección', 'Departamento', 'Teléfono', 'Estado'])
+    if tipo == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="empresas.csv"'
+        response.write('\ufeff')  # BOM para Excel
+        writer = csv.writer(response)
+        writer.writerow(columnas)
+        for e in empresas:
+            writer.writerow([
+                e.nombre, e.nit, e.ciudad, e.direccion,
+                e.departamento, e.telefono,
+                e.get_estado_display() if hasattr(e, 'get_estado_display') else e.estado
+            ])
+        return response
 
-    for e in empresas:
-        writer.writerow([
-            e.nombre,
-            e.nit,
-            e.ciudad,
-            e.direccion,
-            e.departamento,
-            e.telefono,
-            e.get_estado_display(),  # Si usas choices
-        ])
+    elif tipo == 'txt':
+        response = HttpResponse(content_type='text/plain; charset=utf-8')
+        response['Content-Disposition'] = 'attachment; filename="empresas.txt"'
+        response.write('\ufeff')
+        response.write('\t'.join(columnas) + '\n')
+        for e in empresas:
+            fila = [
+                e.nombre, e.nit, e.ciudad, e.direccion,
+                e.departamento, e.telefono,
+                e.get_estado_display() if hasattr(e, 'get_estado_display') else e.estado
+            ]
+            response.write('\t'.join(map(str, fila)) + '\n')
+        return response
 
-    return response
-    
+    elif tipo == 'excel':
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Empresas'
+        ws.append(columnas)
+        for e in empresas:
+            ws.append([
+                e.nombre, e.nit, e.ciudad, e.direccion,
+                e.departamento, e.telefono,
+                e.get_estado_display() if hasattr(e, 'get_estado_display') else e.estado
+            ])
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="empresas.xlsx"'
+        return response
+
+    else:
+        return HttpResponse("Tipo de exportación no válido.", status=400)

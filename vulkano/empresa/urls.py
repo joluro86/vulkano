@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from empresa.views import  SucursalesPorEmpresaView, EmpresaCreateView, EmpresaListView, EmpresaUpdateView, SucursalUpdateView, SucursalCreateView, SucursalListView, exportar_sucursales_csv, exportar_empresas_csv
+from empresa.views import  SucursalesPorEmpresaView, EmpresaCreateView, EmpresaListView, EmpresaUpdateView, SucursalUpdateView, SucursalCreateView, SucursalListView, exportar_sucursales_csv, exportar_empresas
 
 urlpatterns = [
     path('crear-empresa/', EmpresaCreateView.as_view(), name='crear_empresa'),
@@ -12,5 +12,5 @@ urlpatterns = [
     path('sucursales/crear/', SucursalCreateView.as_view(), name='crear_sucursal'),
     path('sucursales/<int:pk>/editar/', SucursalUpdateView.as_view(), name='editar_sucursal'),
     path('exportar_sucursales/', exportar_sucursales_csv, name='exportar_sucursales'),
-    path('exportar_empresas/', exportar_empresas_csv, name='exportar_empresas'),
+    path('exportar_empresas/', exportar_empresas, name='exportar_empresas'),
 ]

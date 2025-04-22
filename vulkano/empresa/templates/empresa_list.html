@@ -5,11 +5,11 @@
 {% endblock %}
 {% block content %}
   <div class="max-w-5xl mx-auto mt-6 bg-white p-6 rounded shadow">
-    <div class="flex justify-between items-center mb-4">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-4">
       <h2 class="text-xl font-bold text-gray-800">Lista de Empresas</h2>
-
-      <div class="flex gap-2 items-center">
-        <form id="filtersForm">
+    
+      <div class="flex flex-col sm:flex-row gap-2 items-center">
+        <form id="filtersForm" class="flex flex-wrap gap-2">
           <!-- Select Estado -->
           <select name="estado" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
             <option value="">Estado</option>
@@ -17,7 +17,7 @@
             <option value="{{ value }}" {% if request.GET.estado == value %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
           </select>
-  
+    
           <!-- Select Departamento -->
           <select name="departamento" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
             <option value="">Departamento</option>
@@ -27,7 +27,7 @@
             {% endif %}
             {% endfor %}
           </select>
-  
+    
           <!-- Select Ciudad -->
           <select name="ciudad" onchange="document.getElementById('filtersForm').submit()" class="text-sm p-1.5 border border-gray-300 rounded">
             <option value="">Ciudad</option>
@@ -39,16 +39,24 @@
           </select>
         </form>
     
-        <a href="{% url 'exportar_empresas' %}?estado={{ request.GET.estado }}&departamento={{ request.GET.departamento }}&ciudad={{ request.GET.ciudad }}&q={{ request.GET.q }}" class="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700 transition">
-          Exportar Empresas CSV
-        </a>
+        <div class="flex gap-2 items-center">
+          <select id="tipo-exportacion" class="px-3 py-1.5 text-sm border rounded">
+            <option value="csv">CSV</option>
+            <option value="excel">Excel</option>
+            <option value="txt">TXT</option>
+          </select>
     
-        <a href="{% url 'crear_empresa' %}" class="bg-[var(--primary-color)] text-white px-3 py-1.5 text-sm rounded hover:bg-blue-700 transition">
-          Nueva Empresa
-        </a>
+          <button onclick="exportarEmpresas()" class="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700 transition">
+            Exportar
+          </button>
+    
+          <a href="{% url 'crear_empresa' %}" class="bg-[var(--primary-color)] text-white px-3 py-1.5 text-sm rounded hover:bg-blue-700 transition">
+            Nueva Empresa
+          </a>
+        </div>
       </div>
-
     </div>
+    
 
   
 
@@ -121,4 +129,16 @@
       {% endif %}
     </div>
   </div>
+  <script>
+    function exportarEmpresas() {
+      const tipo = document.getElementById('tipo-exportacion').value;
+  
+      // Armamos la URL con los filtros actuales + tipo
+      const params = new URLSearchParams(window.location.search);
+      params.set('tipo', tipo);
+  
+      const url = `{% url 'exportar_empresas' %}?` + params.toString();
+      window.location.href = url;
+    }
+  </script>
 {% endblock %}
