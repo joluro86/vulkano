@@ -41,12 +41,13 @@
     
         <div class="flex gap-2 items-center">
           <select id="tipo-exportacion" class="px-3 py-1.5 text-sm border rounded">
+            <option value="" disabled selected>Formato</option>
             <option value="csv">CSV</option>
             <option value="excel">Excel</option>
             <option value="txt">TXT</option>
           </select>
-    
-          <button onclick="exportarEmpresas()" class="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700 transition">
+        
+          <button onclick="confirmarExportacion()" class="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700 transition">
             Exportar
           </button>
     
@@ -56,9 +57,6 @@
         </div>
       </div>
     </div>
-    
-
-  
 
     <!-- Formulario de búsqueda -->
     <form method="get" class="mb-3">
@@ -102,11 +100,7 @@
               <a href="{% url 'sucursales_por_empresa' empresa.id %}" class="text-sm font-medium text-[var(--primary-color)] hover:underline">
                 <i class="ph ph-buildings mr-1 mt-0 p-0"></i>Ver sucursales
               </a>
-              <a href="{% url 'exportar_sucursales' %}?empresa={{ empresa.id }}" class="text-sm font-medium text-[var(--primary-color)] hover:underline">
-                <i class="ph ph-file-arrow-down mr-1 mt-0 p-0"></i>Exportar sucursales CSV
-              </a>
-            </div>
-            
+            </div>            
           </div>
         {% endfor %}
       </div>
@@ -130,15 +124,29 @@
     </div>
   </div>
   <script>
-    function exportarEmpresas() {
+    function confirmarExportacion() {
       const tipo = document.getElementById('tipo-exportacion').value;
   
-      // Armamos la URL con los filtros actuales + tipo
-      const params = new URLSearchParams(window.location.search);
-      params.set('tipo', tipo);
+      if (!tipo) {
+        alert("Por favor selecciona un formato para exportar.");
+        return;
+      }
   
-      const url = `{% url 'exportar_empresas' %}?` + params.toString();
-      window.location.href = url;
+      const formatos = {
+        csv: "CSV",
+        excel: "Excel",
+        txt: "TXT"
+      };
+  
+      const confirmar = confirm(`¿Deseas exportar las empresas en formato ${formatos[tipo]}?`);
+  
+      if (confirmar) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('tipo', tipo);
+  
+        const url = `{% url 'exportar_empresas' %}?` + params.toString();
+        window.location.href = url;
+      }
     }
   </script>
 {% endblock %}
