@@ -52,7 +52,9 @@
         <a href="{% url 'detalle_producto' producto.id %}" class="text-sm text-[var(--primary-color)] hover:underline">
           <i class="ph ph-eye mr-1"></i>Ver detalle
         </a> <br> 
-        <a href="{% url 'eliminar_producto' producto.id %}" class="text-sm text-[var(--primary-color)] hover:underline">
+        <a href="{% url 'eliminar_producto' producto.id %}"
+          class="text-sm text-[var(--primary-color)] hover:underline"
+          onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?');">
           <i class="ph ph-delete mr-1"></i>Eliminar
         </a>
       </div>
