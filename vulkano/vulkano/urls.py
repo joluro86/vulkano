@@ -20,12 +20,15 @@ from core.views import index
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index, name="index" ),
     
     path('empresa/', include('empresa.urls')),
-    path('productos/', include('producto.urls'))
+    path('productos/', include('producto.urls')),
+    
+    path('api/', include('authent.urls')),
 ]
 
 if settings.DEBUG:
