@@ -105,6 +105,19 @@ class SucursalListView(BreadcrumbMixin, ListView):
         #return super().get_queryset().select_related('empresa')
 
         queryset = super().get_queryset()
+
+        query = self.request.GET.get("q")
+        if query:
+            queryset = queryset.filter(
+                Q(nombre__icontains=query) |
+                Q(empresa__nombre__icontains=query) |
+                Q(ciudad__icontains=query) |
+                Q(departamento__icontains=query) |
+                Q(telefono__icontains=query) |
+                Q(estado__icontains=query) |
+                Q(direccion__icontains=query)  # Puedes agregar más filtros si es necesario
+            )
+
         estado = self.request.GET.get("estado")
         departamento = self.request.GET.get("departamento")
         ciudad = self.request.GET.get("ciudad")
