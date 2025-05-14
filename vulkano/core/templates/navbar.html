@@ -8,7 +8,7 @@
       </a>
     </li>
   </ul>
-  <details class="group">
+  <details id="menu-productos" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-package"></i> Gestión de productos
     </summary>
@@ -31,7 +31,7 @@
     </ul>
   </details>
 
-  <details class="group">
+  <details id="menu-alquileres" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-file-text"></i> Contratos y alquileres
     </summary>
@@ -48,7 +48,7 @@
     </ul>
   </details>
 
-  <details class="group">
+  <details id="menu-cotizaciones" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-calendar"></i> Reservas y cotizaciones
     </summary>
@@ -65,7 +65,7 @@
     </ul>
   </details>
 
-  <details class="group">
+  <details id="menu-clientes" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-users"></i> Clientes y usuarios
     </summary>
@@ -82,7 +82,7 @@
     </ul>
   </details>
 
-  <details class="group">
+  <details id="menu-devoluciones" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-arrow-u-down-left"></i> Devoluciones
     </summary>
@@ -99,7 +99,7 @@
     </ul>
   </details>
 
-  <details class="group">
+  <details id="menu-mantenimiento" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-toolbox"></i> Mantenimiento
     </summary>
@@ -116,7 +116,7 @@
     </ul>
   </details>
 
-  <details class="group">
+  <details id="menu-reportes" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-chart-bar"></i> Reportes
     </summary>
@@ -133,7 +133,7 @@
     </ul>
   </details>
 
-  <details class="group">
+  <details id="menu-admin" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-gear-six"></i> Administración
     </summary>
@@ -151,13 +151,12 @@
         <a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Parámetros del sistema</a>
       </li>
       <li>
-        <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
-          <i class="ph ph-users"></i>
-          Usuarios
+        <a href="{% url 'usuario_list' %}" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">
+          </i> Usuarios
         </a>
       </li>
-      
     </ul>
   </details>
+  
   
 </nav>

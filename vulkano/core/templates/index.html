@@ -42,5 +42,28 @@
         {% endblock %}
       </main>
     </div>
-  </body>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Selecciona todos los <details> que quieres controlar
+        const menus = document.querySelectorAll("details.menu-toggle");
+    
+        menus.forEach((menu) => {
+          const id = menu.id;
+    
+          // Aplica el estado almacenado
+          const savedState = localStorage.getItem(`menuState-${id}`);
+          if (savedState === "open") {
+            menu.setAttribute("open", "true");
+          } else {
+            menu.removeAttribute("open");
+          }
+    
+          // Escucha cambios de apertura/cierre y guarda
+          menu.addEventListener("toggle", function () {
+            localStorage.setItem(`menuState-${id}`, menu.open ? "open" : "closed");
+          });
+        });
+      });
+    </script>
+  </body>  
 </html>
