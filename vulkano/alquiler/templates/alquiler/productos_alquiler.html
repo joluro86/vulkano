@@ -1,0 +1,132 @@
+{% extends 'index.html' %}
+
+{% block breadcrumb %}
+  {# Incluye el breadcrumb. Asume que breadcrumb_items está en el contexto #}
+  {# y que 'home' es la URL de inicio. Ajusta si es necesario. #}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-bold text-gray-800 mb-4">Seleccionar Productos para Alquiler</h2>
+
+  {# Formulario para enviar la selección #}
+  {# La acción por defecto es la misma URL, por eso no se especifica #}
+  <form method="post">
+    {% csrf_token %}
+
+    {# Campos de fecha generales para el alquiler #}
+    <div class="mb-6 p-4 border rounded bg-gray-50">
+      <h3 class="text-lg font-semibold text-gray-700 mb-3">Periodo de Alquiler</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha de Inicio:</label>
+          {# Mantener el valor si ya se envió en el POST #}
+          <input type="date" name="fecha_inicio" id="fecha_inicio" class="w-full text-sm p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]" value="{{ request.POST.fecha_inicio }}">
+        </div>
+        <div>
+          <label for="fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">Fecha de Fin:</label>
+           {# Mantener el valor si ya se envió en el POST #}
+          <input type="date" name="fecha_fin" id="fecha_fin" class="w-full text-sm p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]" value="{{ request.POST.fecha_fin }}">
+        </div>
+      </div>
+      {# Mostrar errores de fecha si existen #}
+      {% if date_errors %}
+          <p class="text-red-600 text-sm mt-2">{{ date_errors }}</p>
+      {% endif %}
+    </div>
+
+
+    {% if productos %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for producto in productos %}
+          {# Contenedor para cada producto #}
+          <div class="border rounded shadow-sm p-4 hover:shadow-lg transition flex flex-col">
+            <div class="flex items-start mb-3">
+              {# Checkbox para seleccionar el producto #}
+              {# Añadir 'checked' si el producto fue seleccionado en el POST anterior #}
+              <input type="checkbox" name="productos_seleccionados" value="{{ producto.id }}" id="producto_{{ producto.id }}" class="mr-3 mt-1 form-checkbox h-4 w-4 text-[var(--primary-color)] rounded focus:ring-[var(--primary-color)]"
+                     {% if producto.id|stringformat:"s" in productos_seleccionados_ids %}checked{% endif %}>
+              <label for="producto_{{ producto.id }}" class="flex-grow cursor-pointer">
+                <h3 class="font-bold text-gray-700 text-lg">{{ producto.nombre }}</h3>
+              </label>
+            </div>
+
+            {% if producto.imagen %}
+              {# Imagen del producto #}
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-full h-40 object-cover rounded mb-3">
+            {% endif %}
+
+            {# Descripción del producto #}
+            <p class="text-sm text-gray-600 mb-3 flex-grow">{{ producto.descripcion|truncatechars:150 }}</p>
+
+            {# Información adicional del producto #}
+            <div class="mt-auto text-sm text-gray-500"> {# mt-auto empuja esto al final #}
+                <p><strong>Código:</strong> {{ producto.codigo_interno }}</p>
+                <p><strong>Ubicación:</strong> {{ producto.ubicacion_actual }}</p>
+                {# Puedes añadir más detalles si lo deseas #}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {# Sección de previsualización del costo (inicialmente oculta, se muestra con el POST) #}
+      {% if costo_total is not None %}
+        <div class="mt-8 p-6 border rounded shadow-md bg-blue-50 text-blue-800">
+          <h3 class="text-xl font-bold mb-3">Resumen del Alquiler</h3>
+          <p class="text-lg mb-2"><strong>Fecha de Inicio:</strong> {{ fecha_inicio_str }}</p>
+          <p class="text-lg mb-2"><strong>Fecha de Fin:</strong> {{ fecha_fin_str }}</p>
+          <p class="text-lg mb-2"><strong>Duración:</strong> {{ duracion_dias }} días</p>
+          <p class="text-lg mb-4"><strong>Productos Seleccionados:</strong> {{ productos_seleccionados_count }}</p>
+          <div class="border-t border-blue-200 pt-4">
+            <p class="text-2xl font-bold">Costo Total Estimado: ${{ costo_total|floatformat:2 }}</p>
+          </div>
+          {# Botón para confirmar alquiler (futuro) - Ya no está comentado #}
+          {# Cuando implementes la lógica de guardado, este botón podría enviar otro formulario #}
+          {# o usar JavaScript para enviar los datos. Por ahora, es solo un placeholder visual. #}
+          <div class="mt-4 text-right">
+            <button type="button" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition text-sm font-medium">
+              Confirmar Alquiler
+            </button>
+          </div>
+        </div>
+      {% endif %}
+
+
+      {# Botón para obtener la previsualización del costo #}
+      <div class="mt-6 text-right">
+        <button type="submit" class="bg-[var(--primary-color)] text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium">
+          Obtener Previsualización del Costo
+        </button>
+      </div>
+
+    {% else %}
+      <p class="text-gray-600">No hay productos disponibles para alquiler en este momento.</p>
+    {% endif %}
+
+    {# Paginación - Añadimos la paginación aquí #}
+    {# Similar a como lo tienes en producto_list.html #}
+    {% if page_obj.has_other_pages %} {# Verifica si hay más de una página #}
+      <div class="mt-4 flex justify-center text-xs"> {# Centramos la paginación #}
+        {% if page_obj.has_previous %}
+          {# Incluye los parámetros de la solicitud GET (q, fechas, etc.) en los enlaces de paginación #}
+          {# Esto es importante para mantener los filtros/selecciones al cambiar de página #}
+          <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.POST.fecha_inicio %}&fecha_inicio={{ request.POST.fecha_inicio }}{% endif %}{% if request.POST.fecha_fin %}&fecha_fin={{ request.POST.fecha_fin }}{% endif %}" class="px-3 py-1 bg-gray-300 rounded-l hover:bg-gray-400 transition">primero</a>
+          <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.POST.fecha_inicio %}&fecha_inicio={{ request.POST.fecha_inicio }}{% endif %}{% if request.POST.fecha_fin %}&fecha_fin={{ request.POST.fecha_fin }}{% endif %}" class="px-3 py-1 bg-gray-300 border-l border-gray-400 hover:bg-gray-400 transition">anterior</a>
+        {% endif %}
+
+        <span class="mx-2 px-3 py-1 bg-gray-200 rounded">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.POST.fecha_inicio %}&fecha_inicio={{ request.POST.fecha_inicio }}{% endif %}{% if request.POST.fecha_fin %}&fecha_fin={{ request.POST.fecha_fin }}{% endif %}" class="px-3 py-1 bg-gray-300 border-r border-gray-400 hover:bg-gray-400 transition">siguiente</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.POST.fecha_inicio %}&fecha_inicio={{ request.POST.fecha_inicio }}{% endif %}{% if request.POST.fecha_fin %}&fecha_fin={{ request.POST.fecha_fin }}{% endif %}" class="px-3 py-1 bg-gray-300 rounded-r hover:bg-gray-400 transition">último</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+
+  </form>
+
+</div>
+{% endblock %}
+

@@ -25,7 +25,8 @@ urlpatterns = [
     path('', index, name="index" ),
     
     path('empresa/', include('empresa.urls')),
-    path('productos/', include('producto.urls'))
+    path('productos/', include('producto.urls')),
+    path('alquiler/', include('alquiler.urls'))
 ]
 
 if settings.DEBUG:
