@@ -1,0 +1,19 @@
+{% extends 'base_landing.html' %}
+{% load static %}
+
+{% block title %}Sesión finalizada - Vulkano{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-24 bg-white p-6 rounded shadow text-center">
+  <h2 class="text-xl font-bold text-gray-800 mb-2">Sesión cerrada</h2>
+  <p class="text-sm text-gray-600 mb-6">Has cerrado sesión correctamente.</p>
+
+  <a href="{% url 'login' %}" class="bg-[var(--primary-color)] text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+    Iniciar sesión nuevamente
+  </a>
+
+  <a href="{% url 'landing' %}" class="ml-4 text-sm text-[var(--primary-color)] hover:underline">
+    Ir a la página principal
+  </a>
+</div>
+{% endblock %}

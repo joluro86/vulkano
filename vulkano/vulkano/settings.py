@@ -40,10 +40,10 @@ INSTALLED_APPS = [
     'core',
     'producto',
     'empresa',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'authent',
+    'autenticacion',
 ]
+
+LOGIN_REDIRECT_URL = '/'
 
 REST_FRAMEWORK = {
     # ← Eliminamos SessionAuthentication y BasicAuthentication
