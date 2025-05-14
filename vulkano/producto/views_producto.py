@@ -1,17 +1,19 @@
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from .models import Producto
 from producto.forms.forms_producto import ProductoForm
 from core.views import BreadcrumbMixin
 from django.db.models import Q
 
+@login_required
 def eliminar_producto(request, id):
     Producto.objects.get(id=id).delete()
     return redirect('producto_list')
 
-class ProductoCreateView(BreadcrumbMixin, CreateView):
+class ProductoCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     model = Producto
     form_class = ProductoForm
     template_name = 'producto_crear.html'
@@ -29,7 +31,7 @@ class ProductoCreateView(BreadcrumbMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProductoListView(BreadcrumbMixin, ListView):
+class ProductoListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     model = Producto
     template_name = 'producto_list.html'
     context_object_name = 'productos'
@@ -52,7 +54,7 @@ class ProductoListView(BreadcrumbMixin, ListView):
         return queryset
 
 
-class ProductoUpdateView(BreadcrumbMixin, UpdateView):
+class ProductoUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     model = Producto
     form_class = ProductoForm
     template_name = 'producto_crear.html'
@@ -73,7 +75,7 @@ class ProductoUpdateView(BreadcrumbMixin, UpdateView):
         context['boton_texto'] = "Actualizar Producto"
         return context
 
-class ProductoDetailView(BreadcrumbMixin, DetailView):
+class ProductoDetailView(LoginRequiredMixin, BreadcrumbMixin, DetailView):
     model = Producto
     template_name = 'producto_detalle.html'
     context_object_name = 'producto'

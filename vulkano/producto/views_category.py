@@ -3,9 +3,9 @@ from django.views.generic import ListView, CreateView, UpdateView
 from .models import Categoria
 from producto.forms.forms_category import CategoriaForm
 from core.views import BreadcrumbMixin    
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-
-class CategoriaListView(BreadcrumbMixin, ListView):
+class CategoriaListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     model = Categoria
     template_name = 'categoria_list.html'
     context_object_name = 'categorias'
@@ -16,7 +16,7 @@ class CategoriaListView(BreadcrumbMixin, ListView):
         ("Categorías", None)
     ]
 
-class CategoriaCreateView(BreadcrumbMixin, CreateView):
+class CategoriaCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     model = Categoria
     form_class = CategoriaForm
     template_name = 'categoria_crear.html'
@@ -35,7 +35,7 @@ class CategoriaCreateView(BreadcrumbMixin, CreateView):
         })
         return context
 
-class CategoriaUpdateView(BreadcrumbMixin, UpdateView):
+class CategoriaUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     model = Categoria
     form_class = CategoriaForm
     template_name = 'categoria_crear.html'

@@ -6,50 +6,73 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
-  <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-4">
-    <h2 class="text-xl font-bold text-gray-800">{{ titulo }}</h2>
-    <a href="{% url 'crear_usuario' %}" class="bg-[var(--primary-color)] text-white px-4 py-2 text-sm rounded hover:bg-blue-700 transition">
-      Crear usuario
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold text-gray-800">Lista de Usuarios</h2>
+    <a href="{% url 'crear_usuario' %}" class="bg-[var(--primary-color)] text-white px-3 py-1.5 text-sm rounded hover:bg-blue-700 transition">
+      Nuevo Usuario
     </a>
   </div>
 
-  {% if object_list %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {% for usuario in object_list %}
-        <div class="border rounded shadow-sm p-4 hover:shadow-lg transition">
-          <div class="flex items-center gap-3 mb-2">
-            {% if usuario.foto_perfil %}
-              <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover">
-            {% else %}
-              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
-                <i class="ph ph-user"></i>
-              </div>
-            {% endif %}
-            <div>
-              <h3 class="font-semibold text-gray-800">{{ usuario.get_full_name|default:usuario.username }}</h3>
-              <p class="text-xs text-gray-500">{{ usuario.email }}</p>
-            </div>
+  <!-- Buscador -->
+  <form method="get" class="mb-4">
+    <input type="text" name="q" placeholder="Buscar por usuario, nombre, correo o empresa"
+      value="{{ query }}" class="w-full text-sm p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]" />
+  </form>
+
+  {% if usuarios %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for user in usuarios %}
+    <div class="border rounded shadow-sm p-4 hover:shadow-lg transition">
+      <div class="flex items-center gap-3 mb-2">
+        {% if user.foto_perfil %}
+          <img src="{{ user.foto_perfil.url }}" alt="{{ user.get_full_name }}" class="w-12 h-12 rounded-full object-cover">
+        {% else %}
+          <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-xl">
+            {{ user.first_name|first }}{{ user.last_name|first }}
           </div>
-
-          <p class="text-sm text-gray-500"><strong>Empresa:</strong> {{ usuario.empresa }}</p>
-          <p class="text-sm text-gray-500"><strong>Sucursal:</strong> {{ usuario.sucursal }}</p>
-
-          <span class="text-xs font-semibold mt-1 inline-block px-2 py-0.5 rounded-full 
-            {% if usuario.estado == 'activo' %} bg-green-100 text-green-700 
-            {% else %} bg-red-100 text-red-700 {% endif %}">
-            {{ usuario.get_estado_display }}
-          </span>
-
-          <div class="mt-3">
-            <a href="{% url 'editar_usuario' usuario.id %}" class="text-sm text-[var(--primary-color)] hover:underline">
-              <i class="ph ph-pencil-simple"></i> Editar
-            </a>
-          </div>
+        {% endif %}
+        <div>
+          <p class="font-semibold text-gray-800">{{ user.get_full_name }}</p>
+          <p class="text-sm text-gray-500">@{{ user.username }}</p>
+          <p class="text-sm text-gray-600">{{ user.email }}</p>
         </div>
-      {% endfor %}
+      </div>
+      <p class="text-sm text-gray-500"><strong>Empresa:</strong> {{ user.empresa }}</p>
+      <p class="text-sm text-gray-500"><strong>Sucursal:</strong> {{ user.sucursal }}</p>
+      <p class="text-sm text-gray-500">
+        <strong>Estado:</strong>
+        {% if user.estado == 'activo' %}
+          <span class="text-green-600 font-semibold">Activo</span>
+        {% else %}
+          <span class="text-red-600 font-semibold">Inactivo</span>
+        {% endif %}
+      </p>
+
+      <div class="mt-3">
+        <a href="{% url 'editar_usuario' user.id %}" class="text-sm font-medium text-[var(--primary-color)] hover:underline">
+          <i class="ph ph-pencil-simple mr-1"></i>Editar
+        </a>
+      </div>
     </div>
+    {% endfor %}
+  </div>
   {% else %}
-    <p class="text-sm text-gray-600">No hay usuarios registrados.</p>
+    <p class="text-gray-600">No se encontraron usuarios.</p>
   {% endif %}
+
+  <!-- Paginación -->
+  <div class="mt-4 flex justify-end text-xs">
+    {% if page_obj.has_previous %}
+      <a href="?page=1{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1 bg-gray-300 rounded">primero</a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1 bg-gray-300 rounded">anterior</a>
+    {% endif %}
+
+    <span class="mx-2">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1 bg-gray-300 rounded">siguiente</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1 bg-gray-300 rounded">último</a>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

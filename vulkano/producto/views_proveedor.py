@@ -3,8 +3,9 @@ from django.views.generic import ListView, CreateView, UpdateView
 from .models import Proveedor
 from producto.forms.forms_proveedor import ProveedorForm
 from core.views import BreadcrumbMixin   
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-class ProveedorListView(BreadcrumbMixin, ListView):
+class ProveedorListView(LoginRequiredMixin,BreadcrumbMixin, ListView):
     model = Proveedor
     template_name = 'proveedor_list.html'
     context_object_name = 'proveedores'
@@ -16,7 +17,7 @@ class ProveedorListView(BreadcrumbMixin, ListView):
     ]
     
     
-class ProveedorUpdateView(BreadcrumbMixin, UpdateView):
+class ProveedorUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     model = Proveedor
     form_class = ProveedorForm
     template_name = 'proveedor_crear.html'
@@ -34,7 +35,7 @@ class ProveedorUpdateView(BreadcrumbMixin, UpdateView):
         })
         return context
 
-class ProveedorCreateView(BreadcrumbMixin, CreateView):
+class ProveedorCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     model = Proveedor
     form_class = ProveedorForm
     template_name = 'proveedor_crear.html'

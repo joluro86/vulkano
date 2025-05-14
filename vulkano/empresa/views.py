@@ -6,17 +6,14 @@ from empresa.models import Empresa, Sucursal
 from empresa.forms.empresa_forms import EmpresaEditForm, SucursalForm, EmpresaForm, SucursalEditForm
 from core.views import BreadcrumbMixin    
 from django.shortcuts import get_object_or_404
-from django.views.generic import ListView
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-import csv
 from django.http import HttpResponse
-from .models import Sucursal 
-from .models import Empresa
 import csv
 import io
 import openpyxl 
-class EmpresaCreateView(BreadcrumbMixin, CreateView):
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
+class EmpresaCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     model = Empresa
     form_class = EmpresaForm
     template_name = 'crear_empresa.html'
@@ -24,7 +21,7 @@ class EmpresaCreateView(BreadcrumbMixin, CreateView):
     breadcrumb_items = [ ("Empresas", reverse_lazy("empresa_list")),
             ("Crear", None)]  
 
-class EmpresaListView(BreadcrumbMixin, ListView):
+class EmpresaListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     model = Empresa
     template_name = "empresa_list.html"
     ordering = ['nombre'] 
@@ -64,7 +61,7 @@ class EmpresaListView(BreadcrumbMixin, ListView):
         context["departamentos"] = Empresa.objects.values_list("departamento", flat=True).distinct().order_by("departamento")
         return context
 
-class EmpresaUpdateView(BreadcrumbMixin, UpdateView):
+class EmpresaUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     model = Empresa
     form_class = EmpresaEditForm
     template_name = 'editar_empresa.html'
@@ -72,7 +69,7 @@ class EmpresaUpdateView(BreadcrumbMixin, UpdateView):
     breadcrumb_items = [  ("Empresas", reverse_lazy("empresa_list")),
             ("Editar", None) ]   
 
-class SucursalCreateView(BreadcrumbMixin, CreateView):
+class SucursalCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     model = Sucursal
     form_class = SucursalForm
     template_name = 'crear_sucursal.html'
@@ -91,7 +88,7 @@ class SucursalCreateView(BreadcrumbMixin, CreateView):
         return initial
 
 
-class SucursalListView(BreadcrumbMixin, ListView):
+class SucursalListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     model = Sucursal
     template_name = 'sucursal_list.html'
     context_object_name = 'sucursales'
@@ -138,7 +135,7 @@ class SucursalListView(BreadcrumbMixin, ListView):
         context["departamentos"] = Sucursal.objects.values_list("departamento", flat=True).distinct().order_by("departamento")
         return context
        
-class SucursalUpdateView(BreadcrumbMixin, UpdateView):
+class SucursalUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     model = Sucursal
     form_class = SucursalEditForm
     template_name = 'editar_sucursal.html'
@@ -148,7 +145,7 @@ class SucursalUpdateView(BreadcrumbMixin, UpdateView):
         ("Sucursales", reverse_lazy("sucursal_list")),
         ("Editar", None)]
 
-class SucursalesPorEmpresaView(BreadcrumbMixin, ListView):
+class SucursalesPorEmpresaView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     model = Sucursal
     template_name = 'lista_sucursales_por_empresa.html'
     context_object_name = 'sucursales'
@@ -163,7 +160,8 @@ class SucursalesPorEmpresaView(BreadcrumbMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['empresa'] = self.empresa
         return context
-
+    
+@login_required
 def exportar_sucursales_csv(request):
     empresa_id = request.GET.get('empresa')
     if not empresa_id:
@@ -190,7 +188,7 @@ def exportar_sucursales_csv(request):
 
     return response   
 
-
+@login_required
 def exportar_empresas(request):
     tipo = request.GET.get('tipo', 'csv')  # por defecto CSV
     filtros = {}

@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'autenticacion',
 ]
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'home'
+LOGIN_URL = '/login/'
 
 REST_FRAMEWORK = {
     # ← Eliminamos SessionAuthentication y BasicAuthentication

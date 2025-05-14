@@ -55,12 +55,12 @@ class UsuarioCreateForm(UserCreationForm):
 class UsuarioUpdateForm(forms.ModelForm):
     class Meta:
         model = Usuario
-        fields = [
-            'first_name', 'last_name', 'email',
-            'telefono', 'empresa', 'sucursal',
-            'estado', 'foto_perfil'
-        ]
+        fields = ['username', 'first_name', 'last_name', 'email', 'telefono', 'empresa', 'sucursal', 'estado', 'foto_perfil']
         widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded bg-gray-100',
+                'readonly': 'readonly'  # 🔒 evita edición
+            }),
             'first_name': forms.TextInput(attrs={'class': 'w-full p-2 border border-gray-300 rounded'}),
             'last_name': forms.TextInput(attrs={'class': 'w-full p-2 border border-gray-300 rounded'}),
             'email': forms.EmailInput(attrs={'class': 'w-full p-2 border border-gray-300 rounded'}),
@@ -70,3 +70,6 @@ class UsuarioUpdateForm(forms.ModelForm):
             'estado': forms.Select(attrs={'class': 'w-full p-2 border border-gray-300 rounded bg-white'}),
             'foto_perfil': forms.ClearableFileInput(attrs={'class': 'w-full border border-gray-300 p-2 rounded bg-white'}),
         }
+        
+    def clean_username(self):
+        return self.instance.username

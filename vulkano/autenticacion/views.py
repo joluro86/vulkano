@@ -1,17 +1,23 @@
 from django.contrib.auth.views import LoginView
 from .forms import LoginForm, UsuarioCreateForm, UsuarioUpdateForm
 from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from autenticacion.models import Usuario
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = LoginForm
 
+login_required
 def landing_view(request):
     if request.user.is_authenticated:
         return redirect('home')
     return render(request, 'landing.html')
 
-from django.shortcuts import render, redirect
+@login_required
 def crear_usuario(request):
     if request.method == 'POST':
         form = UsuarioCreateForm(request.POST, request.FILES)
@@ -28,6 +34,7 @@ def crear_usuario(request):
         'breadcrumb_items': [('Usuarios', '/usuarios/'), ('Crear', '')],
     })
 
+@login_required
 def editar_usuario(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
 
@@ -45,19 +52,30 @@ def editar_usuario(request, pk):
         'boton_texto': 'Actualizar Usuario',
         'breadcrumb_items': [('Usuarios', '/usuarios/'), ('Editar', '')],
     })
-from django.shortcuts import render
-from .models import Usuario
 
+
+@login_required
 def usuario_list(request):
+    query = request.GET.get('q', '')
     usuarios = Usuario.objects.all()
 
-    # Filtros (opcional)
-    estado = request.GET.get('estado')
-    if estado:
-        usuarios = usuarios.filter(estado=estado)
+    if query:
+        usuarios = usuarios.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(empresa__nombre__icontains=query) |
+            Q(email__icontains=query)
+        )
 
-    return render(request, 'usuario_list.html', {
-        'object_list': usuarios,
-        'breadcrumb_items': [('Usuarios', '/usuarios/')],
-        'titulo': 'Lista de Usuarios',
-    })
+    paginator = Paginator(usuarios, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'usuarios': page_obj.object_list,
+        'page_obj': page_obj,
+        'query': query,
+        'breadcrumb_items': [('Usuarios', None)],
+    }
+    return render(request, 'usuario_list.html', context)
