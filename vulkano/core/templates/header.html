@@ -2,13 +2,22 @@
   <h1 class="text-white flex items-center gap-3 leading-tight">
     <i class="ph ph-crane text-2xl"></i>
     <div class="leading-tight">
-      {% if request.user.is_authenticated %}
-        <span class="text-xl sm:text-2xl font-bold block">Equipos La Obra</span>
-        <span class="text-xs text-gray-200 block">Vulkano Soft</span>
-      {% else %}
-        <span class="text-xl text-gray-200 block">Gestión inteligente de Equipos</span>
-      {% endif %}
-    </div>
+  {% if request.user.is_authenticated %}
+    {% if request.user.empresa %}
+      <span class="text-xl sm:text-2xl font-bold block">
+        {{ request.user.empresa.nombre }}
+      </span>
+    {% endif %}
+    {% if request.user.sucursal %}
+      <span class="text-xs text-gray-200 block">
+        {{ request.user.sucursal.nombre }}
+      </span>
+    {% endif %}
+  {% else %}
+    <span class="text-xl text-gray-200 block">Gestión inteligente de Equipos</span>
+  {% endif %}
+</div>
+
   </h1>
 
   {% if request.user.is_authenticated %}
