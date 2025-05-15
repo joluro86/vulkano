@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'producto',
     'empresa',
     'autenticacion',
+    'alquiler',
 ]
 
 LOGIN_REDIRECT_URL = 'home'

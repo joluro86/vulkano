@@ -36,6 +36,23 @@
         {% block breadcrumb %}
           {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
         {% endblock %}
+        {% if messages %}
+          <div class="max-w-4xl mx-8 my-4">
+            {% for message in messages %}
+              <div class="py-4 px-2 rounded text-white 
+                  {% if message.tags == 'error' %}
+                    bg-red-600
+                  {% elif message.tags == 'success' %}
+                    bg-green-600
+                  {% else %}
+                    bg-gray-600
+                  {% endif %}">
+                  {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
         {% block content %}
           <h2 class="text-3xl font-semibold text-gray-800 mb-4">Bienvenido al Panel Corporativo</h2>
           <p class="text-gray-600">Selecciona una opción del menú para comenzar o consulta los informes recientes.</p>
@@ -43,27 +60,27 @@
       </main>
     </div>
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener('DOMContentLoaded', function () {
         // Selecciona todos los <details> que quieres controlar
-        const menus = document.querySelectorAll("details.menu-toggle");
-    
+        const menus = document.querySelectorAll('details.menu-toggle')
+      
         menus.forEach((menu) => {
-          const id = menu.id;
-    
+          const id = menu.id
+      
           // Aplica el estado almacenado
-          const savedState = localStorage.getItem(`menuState-${id}`);
-          if (savedState === "open") {
-            menu.setAttribute("open", "true");
+          const savedState = localStorage.getItem(`menuState-${id}`)
+          if (savedState === 'open') {
+            menu.setAttribute('open', 'true')
           } else {
-            menu.removeAttribute("open");
+            menu.removeAttribute('open')
           }
-    
+      
           // Escucha cambios de apertura/cierre y guarda
-          menu.addEventListener("toggle", function () {
-            localStorage.setItem(`menuState-${id}`, menu.open ? "open" : "closed");
-          });
-        });
-      });
+          menu.addEventListener('toggle', function () {
+            localStorage.setItem(`menuState-${id}`, menu.open ? 'open' : 'closed')
+          })
+        })
+      })
     </script>
-  </body>  
+  </body>
 </html>

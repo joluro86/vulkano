@@ -28,6 +28,9 @@ urlpatterns = [
     
     path('productos/', include('producto.urls')),
     path('', include('autenticacion.urls')),
+    
+    path('alquiler/', include('alquiler.urls')),
+    
     ]
 
 if settings.DEBUG:
