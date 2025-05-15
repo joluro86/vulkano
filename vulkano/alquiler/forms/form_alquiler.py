@@ -7,9 +7,6 @@ class AlquilerCrearForm(forms.ModelForm):
         model = Alquiler
         fields = []  # No se muestra ningún campo
 
-from django import forms
-from alquiler.models import Alquiler
-
 class AlquilerEditarForm(forms.ModelForm):
     class Meta:
         model = Alquiler
@@ -42,27 +39,26 @@ class AlquilerEditarForm(forms.ModelForm):
             if self.instance and getattr(self.instance, field):
                 self.fields[field].initial = getattr(self.instance, field).strftime('%Y-%m-%d')
 
-
 class AlquilerItemForm(forms.ModelForm):
     class Meta:
         model = AlquilerItem
-        fields = ['producto', 'dias_a_cobrar', 'precio_dia']
+        fields = ['dias_a_cobrar', 'precio_dia']
         widgets = {
-            'producto': forms.Select(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded bg-white'
-            }),
             'dias_a_cobrar': forms.NumberInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded',
-                'placeholder': 'Días a cobrar'
+                'min': 1
             }),
             'precio_dia': forms.NumberInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded',
-                'placeholder': 'Precio por día'
+                'min': 0,
+                'step': 1
             }),
         }
 
-    def __init__(self, *args, **kwargs):
-        sucursal = kwargs.pop('sucursal', None)
+    def __init__(self, *args, sucursal=None, **kwargs):
         super().__init__(*args, **kwargs)
-        if sucursal:
+        # Si en otro contexto reutilizas este form con el campo 'producto',
+        # puedes usar esto para no romperlo:
+        if 'producto' in self.fields and sucursal:
+            from producto.models import Producto
             self.fields['producto'].queryset = Producto.objects.filter(sucursal=sucursal)
