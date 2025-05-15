@@ -92,3 +92,14 @@ def eliminar_item_alquiler(request, pk):
 
     item.delete()
     return redirect('editar_alquiler', pk=item.alquiler.id)
+
+
+@login_required
+def alquiler_list(request):
+    alquileres = Alquiler.objects.filter(usuario__sucursal=request.user.sucursal).order_by('-created_at')
+
+    context = {
+        'alquileres': alquileres,
+        'breadcrumb_items': [('Alquileres', 'Listado')]
+    }
+    return render(request, 'alquiler_list.html', context)

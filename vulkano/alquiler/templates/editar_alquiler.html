@@ -12,7 +12,7 @@
     </div>
 
     <!-- Sección para agregar productos al alquiler -->
-    <div class="border-t border-gray-200 pt-4 mt-6">
+    <div class="border-t border-gray-200 pt-2 mt-2">
       <h3 class="text-xl font-semibold text-gray-800 mb-2">Agregar producto al alquiler</h3>
       <form method="post" action="{% url 'editar_alquiler' alquiler.id %}" class="grid grid-cols-3 gap-4 items-end">
         {% csrf_token %}
@@ -20,7 +20,7 @@
 
         <div class="col-span-3">
           <label class="block text-sm font-medium text-gray-700">Buscar producto</label>
-          <input type="text" id="buscar-producto" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." />
+          <input type="text" id="buscar-producto" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." autofocus/>
           <ul id="resultados-productos" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
           <input type="hidden" name="producto" id="producto-id" />
         </div>
