@@ -5,6 +5,7 @@ from alquiler.models import Alquiler, AlquilerItem
 from django.contrib import messages
 from django.http import JsonResponse
 from producto.models import Producto
+from django.db.models import Sum
 
 @login_required
 def crear_alquiler(request):
@@ -42,14 +43,13 @@ def editar_alquiler(request, pk):
             return redirect('editar_alquiler', pk=alquiler.pk)
 
         if item_form.is_valid():
-            dias = item_form.cleaned_data['dias_a_cobrar']
-            precio = item_form.cleaned_data['precio_dia']
+            dias = item_form.cleaned_data.get('dias_a_cobrar')
+            precio = item_form.cleaned_data.get('precio_dia')
 
-            # Si ya existe el producto en el alquiler, se actualiza
             item_existente = alquiler.items.filter(producto=producto).first()
             if item_existente:
-                item_existente.dias_a_cobrar = dias
-                item_existente.precio_dia = precio
+                item_existente.dias_a_cobrar = dias or item_existente.dias_a_cobrar
+                item_existente.precio_dia = precio or item_existente.precio_dia
                 item_existente.save()
             else:
                 item = item_form.save(commit=False)
@@ -59,12 +59,13 @@ def editar_alquiler(request, pk):
 
             alquiler.refresh_from_db()
             form = AlquilerEditarForm(instance=alquiler)
-
+    total = alquiler.items.aggregate(total=Sum('valor_item'))['total'] or 0
     context = {
         'alquiler': alquiler,
         'form': form,
         'item_form': item_form,
-        'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')]
+        'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
+        'total': total
     }
     return render(request, 'editar_alquiler.html', context)
 

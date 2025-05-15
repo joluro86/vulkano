@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from producto.models import Producto  # Ajusta esto según la ubicación real de tu modelo Producto
+from producto.models import Producto
 
 class Alquiler(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -8,7 +8,6 @@ class Alquiler(models.Model):
     fecha_fin = models.DateField(null=True, blank=True)
     observaciones = models.TextField(blank=True)
 
-    # Trazabilidad
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
@@ -22,19 +21,27 @@ class Alquiler(models.Model):
 
     def __str__(self):
         return f"Alquiler #{self.id} - {self.usuario}"
-    
-    
+
+
 class AlquilerItem(models.Model):
     alquiler = models.ForeignKey('Alquiler', on_delete=models.CASCADE, related_name='items')
     producto = models.ForeignKey('producto.Producto', on_delete=models.CASCADE)
-    dias_a_cobrar = models.PositiveIntegerField(default=1)
+    dias_a_cobrar = models.PositiveIntegerField(null=True, blank=True)
     precio_dia = models.DecimalField(max_digits=10, decimal_places=2, default=2000)
-    valor_item = models.DecimalField(max_digits=12, decimal_places=2, default=0)  # Se calcula antes de guardar
+    valor_item = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):
+        # Calcular días automáticamente si no se digitó
+        if not self.dias_a_cobrar and self.alquiler.fecha_inicio and self.alquiler.fecha_fin:
+            self.dias_a_cobrar = (self.alquiler.fecha_fin - self.alquiler.fecha_inicio).days + 1
+
+        # En caso de que aún esté vacío (sin fechas), por defecto
+        if not self.dias_a_cobrar:
+            self.dias_a_cobrar = 1
+
+        # Calcular el valor total del ítem
         self.valor_item = self.dias_a_cobrar * self.precio_dia
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.producto} ({self.dias_a_cobrar} días a {self.precio_dia} c/u)"
-
