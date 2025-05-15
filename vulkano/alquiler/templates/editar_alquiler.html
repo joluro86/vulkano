@@ -12,29 +12,33 @@
     </div>
 
     <!-- Sección encabezado compacto -->
-    <form method="post" class="mb-4">
+    <form method="post" class="mb-2">
       {% csrf_token %}
-      <div class="flex flex-wrap gap-4 items-end">
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-sm font-medium text-gray-700">Fecha de inicio</label>
+      <div class="flex flex-wrap gap-2 items-end text-sm">
+        <div class="flex-1 min-w-[180px]">
+          <label class="block font-medium text-gray-700">Inicio</label>
           {{ form.fecha_inicio }}
         </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-sm font-medium text-gray-700">Fecha de fin</label>
+        <div class="flex-1 min-w-[180px]">
+          <label class="block font-medium text-gray-700">Fin</label>
           {{ form.fecha_fin }}
         </div>
-        <div class="flex-1 min-w-[200px]">
-          <button type="submit" class="w-full bg-[var(--primary-color)] text-white py-2 px-4 rounded hover:bg-blue-700 transition">Guardar cambios</button>
+        <div class="flex-1 min-w-[180px] hidden sm:block">
+          <button type="submit" class="mt-[1.75rem] w-full bg-[var(--primary-color)] text-white py-1.5 px-3 text-sm rounded hover:bg-blue-700 transition">Guardar</button>
         </div>
-      </div>
-
-      <div class="mt-2">
-        <button type="button" id="toggle-observacion" class="text-sm text-[var(--primary-color)] hover:underline">📝 Agregar observación</button>
+        <div class="flex-1 min-w-[180px] mt-[1.75rem]">
+          <button type="button" id="toggle-observacion" class="w-full text-[var(--primary-color)] hover:underline text-sm">📝 Observación</button>
+        </div>
       </div>
 
       <div id="observacion-campo" class="mt-2 hidden">
         <label class="block text-sm font-medium text-gray-700">Observaciones</label>
         {{ form.observaciones }}
+      </div>
+
+      <!-- Botón de guardar para pantallas pequeñas -->
+      <div class="sm:hidden mt-2">
+        <button type="submit" class="w-full bg-[var(--primary-color)] text-white py-1.5 px-3 rounded hover:bg-blue-700 transition">Guardar</button>
       </div>
     </form>
 
