@@ -1,43 +1,47 @@
 from django import forms
 from alquiler.models import Alquiler, AlquilerItem
 from producto.models import Producto
-
+from django import forms
+from cliente.models import Cliente
 class AlquilerCrearForm(forms.ModelForm):
     class Meta:
         model = Alquiler
         fields = []  # No se muestra ningún campo
-
 class AlquilerEditarForm(forms.ModelForm):
     class Meta:
         model = Alquiler
-        fields = ['fecha_inicio', 'fecha_fin', 'observaciones']
+        fields = ['cliente', 'fecha_inicio', 'fecha_fin', 'observaciones']
         widgets = {
-            'fecha_inicio': forms.DateInput(
-                attrs={
-                    'type': 'date',
-                    'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]'
-                },
-                format='%Y-%m-%d'  # 👈 Esto es lo importante
-            ),
-            'fecha_fin': forms.DateInput(
-                attrs={
-                    'type': 'date',
-                    'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]'
-                },
-                format='%Y-%m-%d'  # 👈 Esto también
-            ),
+            'cliente': forms.Select(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded bg-white'
+            }),
+            'fecha_inicio': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]'
+            }, format='%Y-%m-%d'),  # 👈 Asegura el formato
+            'fecha_fin': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]'
+            }, format='%Y-%m-%d'),  # 👈 Asegura el formato
             'observaciones': forms.Textarea(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded resize-y focus:ring-2 focus:ring-[var(--primary-color)]',
-                'rows': 3
+                'rows': 2,
+                'placeholder': 'Observaciones del alquiler...'
             }),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, sucursal=None, **kwargs):
         super().__init__(*args, **kwargs)
-        # Asegura que el valor inicial se pase en el formato adecuado
-        for field in ['fecha_inicio', 'fecha_fin']:
-            if self.instance and getattr(self.instance, field):
-                self.fields[field].initial = getattr(self.instance, field).strftime('%Y-%m-%d')
+        if sucursal:
+            self.fields['cliente'].queryset = Cliente.objects.filter(
+                empresa=sucursal.empresa,
+                estado=True
+            ).order_by('nombre')
+
+        # 👇 Este bloque asegura que las fechas aparezcan correctamente en el form
+        for campo in ['fecha_inicio', 'fecha_fin']:
+            if self.instance and getattr(self.instance, campo):
+                self.fields[campo].initial = getattr(self.instance, campo).strftime('%Y-%m-%d')
 
 from django import forms
 from alquiler.models import AlquilerItem

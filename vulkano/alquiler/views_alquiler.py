@@ -6,11 +6,16 @@ from django.contrib import messages
 from django.http import JsonResponse
 from producto.models import Producto
 from django.db.models import Sum
+from cliente.views import obtener_o_crear_cliente_generico
+from cliente.models import Cliente
 
 @login_required
 def crear_alquiler(request):
+    cliente_generico = obtener_o_crear_cliente_generico(request.user.empresa)
+
     alquiler = Alquiler.objects.create(
         usuario=request.user,
+        cliente=cliente_generico,
         created_by=request.user,
         updated_by=request.user
     )
@@ -21,7 +26,7 @@ def editar_alquiler(request, pk):
     alquiler = get_object_or_404(Alquiler, pk=pk, usuario__sucursal=request.user.sucursal)
 
     # Formularios iniciales
-    form = AlquilerEditarForm(request.POST or None, instance=alquiler)
+    form = AlquilerEditarForm(request.POST or None, instance=alquiler, sucursal=request.user.sucursal)
     item_form = AlquilerItemForm(request.POST or None, sucursal=request.user.sucursal)
 
     # Guardar fechas/observaciones
@@ -103,3 +108,12 @@ def alquiler_list(request):
         'breadcrumb_items': [('Alquileres', 'Listado')]
     }
     return render(request, 'alquiler_list.html', context)
+
+@login_required
+def buscar_clientes(request):
+    query = request.GET.get('q', '')
+    resultados = []
+    if len(query) >= 3:
+        clientes = Cliente.objects.filter(nombre__icontains=query, empresa=request.user.empresa)
+        resultados = [{'id': c.id, 'nombre': f"{c.nombre} {c.apellidos}"} for c in clientes]
+    return JsonResponse(resultados, safe=False)

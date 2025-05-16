@@ -1,5 +1,6 @@
 {% extends 'index.html' %}
 {% load humanize %}
+
 {% block breadcrumb %}
   {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
 {% endblock %}
@@ -20,7 +21,7 @@
 
         <div class="col-span-3">
           <label class="block text-sm font-medium text-gray-700">Buscar producto</label>
-          <input type="text" id="buscar-producto" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." autofocus/>
+          <input type="text" id="buscar-producto" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." autofocus />
           <ul id="resultados-productos" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
           <input type="hidden" name="producto" id="producto-id" />
         </div>
@@ -77,40 +78,44 @@
       </table>
     </div>
 
-    <!-- Encabezado: fecha y observación al final -->
+    <!-- Formulario de datos generales -->
     <form method="post" class="mt-6">
       {% csrf_token %}
       <h3 class="text-base font-semibold text-gray-800 mb-2">Datos generales del alquiler</h3>
-      <div class="flex flex-wrap gap-2 items-end text-sm">
-        <div class="flex-1 min-w-[180px]">
-          <label class="block font-medium text-gray-700">Inicio</label>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Buscar cliente -->
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-gray-700">Buscar cliente</label>
+          <input type="text" id="buscar-cliente" value="{{ form.instance.cliente.nombre }} {{ form.instance.cliente.apellidos }}" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." />
+          <ul id="resultados-clientes" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
+          <input type="hidden" name="cliente" id="cliente-id" value="{{ form.instance.cliente.id|default:'' }}" />
+        </div>
+
+        <!-- Observaciones debajo del cliente -->
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-gray-700">Observaciones</label>
+          {{ form.observaciones }}
+        </div>
+
+        <!-- Fechas a la izquierda -->
+        <div class="md:col-span-1">
+          <label class="block font-medium text-sm text-gray-700">Inicio</label>
           {{ form.fecha_inicio }}
         </div>
-        <div class="flex-1 min-w-[180px]">
-          <label class="block font-medium text-gray-700">Fin</label>
+        <div class="md:col-span-1">
+          <label class="block font-medium text-sm text-gray-700">Fin</label>
           {{ form.fecha_fin }}
         </div>
-        <div class="flex-1 min-w-[180px] mt-[1.75rem] hidden sm:block">
-          <button type="submit" class="w-full bg-[var(--primary-color)] text-white py-1.5 px-3 text-sm rounded hover:bg-blue-700 transition">Guardar</button>
-        </div>
-        <div class="flex-1 min-w-[180px] mt-[1.75rem]">
-          <button type="button" id="toggle-observacion" class="w-full text-[var(--primary-color)] hover:underline text-sm">📝 Observación</button>
-        </div>
       </div>
 
-      <div id="observacion-campo" class="mt-2 hidden">
-        <label class="block text-sm font-medium text-gray-700">Observaciones</label>
-        {{ form.observaciones }}
-      </div>
-
-      <!-- Botón de guardar para pantallas pequeñas -->
-      <div class="sm:hidden mt-2">
-        <button type="submit" class="w-full bg-[var(--primary-color)] text-white py-1.5 px-3 rounded hover:bg-blue-700 transition">Guardar</button>
+      <!-- Botón -->
+      <div class="mt-4">
+        <button type="submit" class="w-full bg-[var(--primary-color)] text-white py-1.5 px-3 text-sm rounded hover:bg-blue-700 transition">Guardar</button>
       </div>
     </form>
   </div>
 
-  <!-- Script para mostrar/ocultar observación -->
   <script>
     const btnObs = document.getElementById('toggle-observacion')
     const campoObs = document.getElementById('observacion-campo')
@@ -118,8 +123,10 @@
       campoObs.classList.toggle('hidden')
     })
   </script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      // PRODUCTOS
       const input = document.getElementById('buscar-producto')
       const lista = document.getElementById('resultados-productos')
       const hiddenInput = document.getElementById('producto-id')
@@ -146,6 +153,36 @@
             })
         } else {
           lista.classList.add('hidden')
+        }
+      })
+    
+      // CLIENTES
+      const inputCliente = document.getElementById('buscar-cliente')
+      const listaClientes = document.getElementById('resultados-clientes')
+      const hiddenCliente = document.getElementById('cliente-id')
+    
+      inputCliente.addEventListener('input', function () {
+        const query = inputCliente.value.trim()
+        if (query.length >= 3) {
+          fetch(`/alquiler/clientes-buscar/?q=${query}`)
+            .then((res) => res.json())
+            .then((data) => {
+              listaClientes.innerHTML = ''
+              data.forEach((cliente) => {
+                const li = document.createElement('li')
+                li.textContent = cliente.nombre
+                li.classList = 'px-4 py-2 hover:bg-gray-100 cursor-pointer'
+                li.addEventListener('click', () => {
+                  inputCliente.value = cliente.nombre
+                  hiddenCliente.value = cliente.id
+                  listaClientes.classList.add('hidden')
+                })
+                listaClientes.appendChild(li)
+              })
+              listaClientes.classList.remove('hidden')
+            })
+        } else {
+          listaClientes.classList.add('hidden')
         }
       })
     })

@@ -55,3 +55,22 @@ def cliente_delete(request, pk):
         'cliente': cliente,
         'breadcrumb_items': [('Clientes', f'Eliminar: {cliente.nombre}')],
     })
+
+
+from cliente.models import Cliente
+
+def obtener_o_crear_cliente_generico(empresa):
+    cliente, creado = Cliente.objects.get_or_create(
+        documento="0000",  # clave única para evitar duplicados
+        empresa=empresa,
+        defaults={
+            "nombre": "Cliente Genérico",
+            "apellidos": "",
+            "tipo_documento": "NI",
+            "telefono": "",
+            "correo": "generico@demo.com",
+            "direccion": "Sin especificar",
+            "estado": True
+        }
+    )
+    return cliente

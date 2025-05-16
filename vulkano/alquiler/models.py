@@ -1,9 +1,9 @@
 from django.db import models
 from django.conf import settings
-from producto.models import Producto
-
+from cliente.models import Cliente
 class Alquiler(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='alquileres', null=True, blank=True)
     fecha_inicio = models.DateField(null=True, blank=True)
     fecha_fin = models.DateField(null=True, blank=True)
     observaciones = models.TextField(blank=True)
