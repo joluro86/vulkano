@@ -33,6 +33,8 @@ urlpatterns = [
     
     path('', include('persona.urls')),
     
+    path('', include('cliente.urls')),
+    
     ]
 
 if settings.DEBUG:
