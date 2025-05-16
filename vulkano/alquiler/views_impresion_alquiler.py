@@ -4,15 +4,18 @@ from xhtml2pdf import pisa
 from alquiler.models import Alquiler
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.db.models import Sum
 
 @login_required
 def imprimir_alquiler(request, pk):
     alquiler = get_object_or_404(Alquiler, pk=pk, usuario__sucursal=request.user.sucursal)
+    total = alquiler.items.aggregate(total=Sum('valor_item'))['total'] or 0
     template = get_template('alquiler_pdf.html')
 
     context = {
         'alquiler': alquiler,
         'empresa': request.user.empresa,
+         'total': total,
     }
 
     html = template.render(context)
