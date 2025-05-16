@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'autenticacion',
     'alquiler',
     'django.contrib.humanize',
+    'persona',
 ]
 
 LOGIN_REDIRECT_URL = 'home'

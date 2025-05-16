@@ -31,6 +31,8 @@ urlpatterns = [
     
     path('alquiler/', include('alquiler.urls')),
     
+    path('', include('persona.urls')),
+    
     ]
 
 if settings.DEBUG:
