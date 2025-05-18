@@ -34,6 +34,8 @@ urlpatterns = [
     path('', include('persona.urls')),
     
     path('', include('cliente.urls')),
+
+    path('reservas/', include('reservas.urls')),
     
     ]
 

@@ -1,0 +1,54 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="p-6 max-w-lg mx-auto bg-white rounded shadow">
+  <h1 class="text-2xl font-semibold mb-6 text-gray-800">Nueva Solicitud de Reserva</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="mb-4">
+      <label for="id_cliente" class="block mb-1 font-semibold text-gray-700">Cliente</label>
+      {{ form.cliente }}
+      {% if form.cliente.errors %}
+        <p class="text-red-600 text-sm">{{ form.cliente.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="id_producto" class="block mb-1 font-semibold text-gray-700">Producto</label>
+      {{ form.producto }}
+      {% if form.producto.errors %}
+        <p class="text-red-600 text-sm">{{ form.producto.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="id_fecha_inicio" class="block mb-1 font-semibold text-gray-700">Fecha Inicio</label>
+      {{ form.fecha_inicio }}
+      {% if form.fecha_inicio.errors %}
+        <p class="text-red-600 text-sm">{{ form.fecha_inicio.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="id_fecha_fin" class="block mb-1 font-semibold text-gray-700">Fecha Fin</label>
+      {{ form.fecha_fin }}
+      {% if form.fecha_fin.errors %}
+        <p class="text-red-600 text-sm">{{ form.fecha_fin.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-6">
+      <label for="id_estado" class="block mb-1 font-semibold text-gray-700">Estado</label>
+      {{ form.estado }}
+      {% if form.estado.errors %}
+        <p class="text-red-600 text-sm">{{ form.estado.errors }}</p>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      Guardar Solicitud
+    </button>
+  </form>
+</div>
+{% endblock %}
