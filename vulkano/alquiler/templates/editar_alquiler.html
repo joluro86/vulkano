@@ -139,6 +139,7 @@
       <div class="flex justify-between items-center mb-2">
         <span class="text-sm text-gray-600">Puedes aplicar un descuento general o por producto.</span>
         <a href="{% url 'descuento_list' %}" class="bg-blue-800 hover:bg-blue-900 text-white text-sm px-3 py-1 rounded">Gestionar descuentos</a>
+        <a href="{% url 'limpiar_descuentos' alquiler.id %}" class="bg-blue-800 hover:bg-blue-900 text-white text-sm px-3 py-1 rounded">Quitar descuentos</a>
       </div>
 
       {% if descuentos %}

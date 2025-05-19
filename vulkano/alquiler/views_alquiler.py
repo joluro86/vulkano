@@ -71,15 +71,14 @@ def editar_alquiler(request, pk):
             
             form = AlquilerEditarForm(instance=alquiler, sucursal=request.user.sucursal)
 
-    # Recalcular totales
-    total_sin_descuento = alquiler.total_sin_descuento
-    total_con_descuento = alquiler.total_con_descuento
+   
 
     # Calcular subtotal, descuento, IVA total
     subtotal = Decimal(0)
     descuento_total = Decimal(0)
     iva_total = Decimal(0)
-
+    total_con_descuento = 0
+    
     for item in alquiler.items.select_related('producto'):
         base = item.dias_a_cobrar * item.precio_dia
         descuento = base * (item.descuento_porcentaje / Decimal('100'))
@@ -87,8 +86,8 @@ def editar_alquiler(request, pk):
         descuento_total += descuento
         iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
         iva_total += iva
-        
-        print(item)
+        total_con_descuento += subtotal
+        print(total_con_descuento)
     descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
     
     context = {
@@ -169,3 +168,19 @@ def aplicar_descuento_alquiler(request, pk):
 
     messages.success(request, f"Se aplicó el descuento «{descuento.nombre}» correctamente.")
     return redirect('editar_alquiler', pk=pk)
+
+@login_required
+def limpiar_descuento(request, pk):
+    alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
+
+    alquiler.descuento_general = 0
+    alquiler.save()
+
+    # En ambos casos se aplican a cada ítem
+    for item in alquiler.items.all():
+        item.descuento_porcentaje = 0
+        item.save()
+
+    messages.success(request, f"Se eliminaron correctamentos los descuentos.")
+    return redirect('editar_alquiler', pk=pk)
+    

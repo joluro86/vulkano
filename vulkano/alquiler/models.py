@@ -80,16 +80,14 @@ class AlquilerItem(models.Model):
 
     @property
     def subtotal_sin_iva(self):
-        base_con_iva = Decimal(self.dias_a_cobrar) * Decimal(self.precio_dia) * Decimal(self.cantidad) if self.cantidad else Decimal(self.dias_a_cobrar) * Decimal(self.precio_dia) * 1
+        base_con_iva = Decimal(self.dias_a_cobrar) * Decimal(self.precio_dia) * Decimal(self.cantidad)
         if self.valor_iva > 0:
             return (base_con_iva -self.valor_iva)
         return base_con_iva
     
     @property
     def valor_descuento(self):
-        print(self.descuento_porcentaje)
         base = self.cantidad * self.dias_a_cobrar * self.precio_dia
-        print(base)
         return base * (self.descuento_porcentaje / Decimal('100'))
 
 
