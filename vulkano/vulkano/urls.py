@@ -35,6 +35,8 @@ urlpatterns = [
     
     path('', include('cliente.urls')),
     
+    path('', include('descuento.urls')),
+    
     ]
 
 if settings.DEBUG:
