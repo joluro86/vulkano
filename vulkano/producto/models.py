@@ -43,6 +43,7 @@ class Producto(models.Model):
     descripcion = models.TextField()
     codigo_interno = models.CharField(max_length=50)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
+    iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="Porcentaje de IVA aplicado al producto")
     ubicacion_actual = models.CharField(max_length=100)
     marca = models.CharField(max_length=100, blank=True, null=True)
     modelo = models.CharField(max_length=100, blank=True, null=True)

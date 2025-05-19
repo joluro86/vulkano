@@ -9,12 +9,13 @@
   <div class="max-w-5xl mx-auto mt-6 bg-white p-4 rounded shadow">
     <div class="flex justify-between items-center mb-2">
       <h2 class="text-xl font-bold text-gray-800">Alquiler #{{ alquiler.id }}</h2>
-      <a href="{% url 'imprimir_alquiler' alquiler.id %}" target="_blank" class="text-sm bg-[var(--primary-color)] text-white px-3 py-1 rounded hover:bg-blue-800">🖨️ Imprimir</a>
-
-      <a href="{% url 'alquiler_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver al listado</a>
+      <div class="flex gap-2">
+        <a href="{% url 'imprimir_alquiler' alquiler.id %}" target="_blank" class="text-sm bg-[var(--primary-color)] text-white px-3 py-1 rounded hover:bg-blue-800">🖨️ Imprimir</a>
+        <a href="{% url 'alquiler_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver</a>
+      </div>
     </div>
 
-    <!-- Sección para agregar productos al alquiler -->
+    <!-- Sección: Agregar producto -->
     <div class="border-t border-gray-200 pt-2 mt-2">
       <h3 class="text-xl font-semibold text-gray-800 mb-2">Agregar producto al alquiler</h3>
       <form method="post" action="{% url 'editar_alquiler' alquiler.id %}" class="grid grid-cols-3 gap-4 items-end">
@@ -29,14 +30,12 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700">Días a cobrar (opcional)</label>
+          <label class="block text-sm font-medium text-gray-700">Días a cobrar</label>
           {{ item_form.dias_a_cobrar }}
-          <small class="text-xs text-gray-500">Si se deja vacío, se calculará según la fecha del alquiler.</small>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Precio por día (opcional)</label>
+          <label class="block text-sm font-medium text-gray-700">Precio por día</label>
           {{ item_form.precio_dia }}
-          <small class="text-xs text-gray-500">Se tomará del producto si se deja en blanco.</small>
         </div>
         <div class="col-span-3">
           <button type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">Agregar producto</button>
@@ -44,19 +43,21 @@
       </form>
     </div>
 
-    <!-- Tabla de productos añadidos -->
+    <!-- Tabla productos -->
     <div class="mt-6">
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-xl font-semibold text-gray-800">Productos del alquiler</h3>
-        <span class="text-lg font-semibold text-gray-700">Total del alquiler: ${{ total|floatformat:0|intcomma }}</span>
+        <span class="text-lg font-semibold text-gray-700">Total con descuento: ${{ alquiler.total_con_descuento|floatformat:0|intcomma }}</span>
       </div>
-      <table class="min-w-full bg-white border border-gray-300 rounded">
+      <table class="min-w-full bg-white border border-gray-300 rounded text-sm">
         <thead class="bg-gray-100">
           <tr>
             <th class="text-left p-2">Producto</th>
             <th class="text-left p-2">Días</th>
             <th class="text-left p-2">Precio/día</th>
-            <th class="text-left p-2">Valor total</th>
+            <th class="text-left p-2">Subtotal</th>
+            <th class="text-left p-2">IVA</th>
+            <th class="text-left p-2">Total</th>
             <th class="text-left p-2">Acciones</th>
           </tr>
         </thead>
@@ -65,28 +66,30 @@
             <tr class="border-t">
               <td class="p-2">{{ item.producto }}</td>
               <td class="p-2">{{ item.dias_a_cobrar }}</td>
-              <td class="p-2">${{ item.precio_dia|floatformat:0 }}</td>
+              <td class="p-2">${{ item.precio_dia|floatformat:0|intcomma  }}</td>
+              <td class="p-2">${{ item.subtotal_sin_iva |floatformat:1|intcomma }}</td>
+              <td class="p-2">${{ item.valor_iva|floatformat:1|intcomma }}</td>
               <td class="p-2 font-semibold">${{ item.valor_item|floatformat:0|intcomma }}</td>
-              <td class="p-2 text-start">
-                <a href="{% url 'eliminar_item_alquiler' item.id %}" class="inline-flex items-center justify-center text-red-600 hover:text-red-800" title="Eliminar"><i class="ph ph-trash-simple text-xl"></i></a>
+
+              <td class="p-2">
+                <a href="{% url 'eliminar_item_alquiler' item.id %}" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="ph ph-trash-simple text-xl"></i></a>
               </td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="5" class="p-2 text-center text-gray-500">Aún no se han agregado productos.</td>
+              <td colspan="7" class="p-2 text-center text-gray-500">No hay productos agregados.</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
 
-    <!-- Formulario de datos generales -->
+    <!-- Formulario: datos generales -->
     <form method="post" class="mt-6">
       {% csrf_token %}
       <h3 class="text-base font-semibold text-gray-800 mb-2">Datos generales del alquiler</h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Buscar cliente -->
         <div class="col-span-2">
           <label class="block text-sm font-medium text-gray-700">Buscar cliente</label>
           <input type="text" id="buscar-cliente" value="{{ form.instance.cliente.nombre }} {{ form.instance.cliente.apellidos }}" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." />
@@ -94,45 +97,38 @@
           <input type="hidden" name="cliente" id="cliente-id" value="{{ form.instance.cliente.id|default:'' }}" />
         </div>
 
-        <!-- Observaciones debajo del cliente -->
         <div class="col-span-2">
           <label class="block text-sm font-medium text-gray-700">Observaciones</label>
           {{ form.observaciones }}
         </div>
 
-        <!-- Fechas a la izquierda -->
-        <div class="md:col-span-1">
+        <div>
           <label class="block font-medium text-sm text-gray-700">Inicio</label>
           {{ form.fecha_inicio }}
         </div>
-        <div class="md:col-span-1">
+        <div>
           <label class="block font-medium text-sm text-gray-700">Fin</label>
           {{ form.fecha_fin }}
         </div>
+        <div>
+          <label class="block font-medium text-sm text-gray-700">Descuento general (%)</label>
+          {{ form.descuento_general }}
+        </div>
       </div>
 
-      <!-- Botón -->
       <div class="mt-4">
         <button type="submit" class="w-full bg-[var(--primary-color)] text-white py-1.5 px-3 text-sm rounded hover:bg-blue-700 transition">Guardar</button>
       </div>
     </form>
   </div>
 
-  <script>
-    const btnObs = document.getElementById('toggle-observacion')
-    const campoObs = document.getElementById('observacion-campo')
-    btnObs.addEventListener('click', () => {
-      campoObs.classList.toggle('hidden')
-    })
-  </script>
-
+  <!-- Scripts -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // PRODUCTOS
+      // Productos
       const input = document.getElementById('buscar-producto')
       const lista = document.getElementById('resultados-productos')
       const hiddenInput = document.getElementById('producto-id')
-    
       input.addEventListener('input', function () {
         const query = input.value.trim()
         if (query.length >= 3) {
@@ -158,11 +154,10 @@
         }
       })
     
-      // CLIENTES
+      // Clientes
       const inputCliente = document.getElementById('buscar-cliente')
       const listaClientes = document.getElementById('resultados-clientes')
       const hiddenCliente = document.getElementById('cliente-id')
-    
       inputCliente.addEventListener('input', function () {
         const query = inputCliente.value.trim()
         if (query.length >= 3) {

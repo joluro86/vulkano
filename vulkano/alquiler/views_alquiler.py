@@ -21,24 +21,25 @@ def crear_alquiler(request):
     )
     return redirect('editar_alquiler', pk=alquiler.pk)
 
+from decimal import Decimal
+from django.db.models import F
+
 @login_required
 def editar_alquiler(request, pk):
     alquiler = get_object_or_404(Alquiler, pk=pk, usuario__sucursal=request.user.sucursal)
 
-    # Formularios iniciales
     form = AlquilerEditarForm(request.POST or None, instance=alquiler, sucursal=request.user.sucursal)
     item_form = AlquilerItemForm(request.POST or None, sucursal=request.user.sucursal)
-
-    # Guardar fechas/observaciones
+    
     if request.method == 'POST' and not request.POST.get('producto'):
         if form.is_valid():
             alquiler = form.save(commit=False)
             alquiler.updated_by = request.user
             alquiler.save()
+            print(form)
             messages.success(request, "Datos del alquiler actualizados.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
-    # Agregar producto
     elif request.method == 'POST' and request.POST.get('producto'):
         producto_id = request.POST.get('producto')
         try:
@@ -63,16 +64,40 @@ def editar_alquiler(request, pk):
                 item.save()
 
             alquiler.refresh_from_db()
-            form = AlquilerEditarForm(instance=alquiler)
-    total = alquiler.items.aggregate(total=Sum('valor_item'))['total'] or 0
+            
+            form = AlquilerEditarForm(instance=alquiler, sucursal=request.user.sucursal)
+
+    # Recalcular totales
+    total_sin_descuento = alquiler.total_sin_descuento
+    total_con_descuento = alquiler.total_con_descuento
+
+    # Calcular subtotal, descuento, IVA total
+    subtotal = Decimal(0)
+    descuento_total = Decimal(0)
+    iva_total = Decimal(0)
+
+    for item in alquiler.items.select_related('producto'):
+        base = item.dias_a_cobrar * item.precio_dia
+        descuento = base * (item.descuento_porcentaje / Decimal('100'))
+        subtotal += base
+        descuento_total += descuento
+        iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
+        iva_total += iva
+        
+        print(item)
+
     context = {
         'alquiler': alquiler,
         'form': form,
         'item_form': item_form,
+        'total': total_con_descuento,
+        'subtotal': subtotal,
+        'descuento_total': descuento_total,
+        'iva_total': iva_total,
         'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
-        'total': total
     }
     return render(request, 'editar_alquiler.html', context)
+
 
 @login_required
 def buscar_productos(request):
