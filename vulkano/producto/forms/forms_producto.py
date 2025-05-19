@@ -1,6 +1,7 @@
 from django import forms
 from producto.models import Producto
 
+
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
@@ -10,7 +11,7 @@ class ProductoForm(forms.ModelForm):
                 'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Nombre del producto'
             }),
-              'estado': forms.Select(attrs={
+            'estado': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white'
             }),
             'descripcion': forms.Textarea(attrs={
@@ -22,7 +23,7 @@ class ProductoForm(forms.ModelForm):
                 'class': 'w-full p-2 border border-gray-300 rounded',
                 'placeholder': 'Código interno'
             }),
-           
+
             'ubicacion_actual': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded',
                 'placeholder': 'Ubicación actual'
@@ -54,5 +55,12 @@ class ProductoForm(forms.ModelForm):
             'proveedor': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white'
             }),
-           
+            'iva_porcentaje': forms.NumberInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded',
+                'min': 0,
+                'step': 1,
+                'placeholder': 'Ej. 19 para 19%',
+            })
+
+
         }
