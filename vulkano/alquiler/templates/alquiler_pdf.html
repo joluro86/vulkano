@@ -1,123 +1,131 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Alquiler #{{ alquiler.id }}</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      font-size: 12px;
-      margin: 20px;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Alquiler #{{ alquiler.id }}</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        font-size: 12px;
+        margin: 20px;
+      }
+      
+      .encabezado,
+      .cliente,
+      .detalle {
+        line-height: 1.4;
+        margin-bottom: 10px;
+      }
+      
+      .encabezado strong {
+        font-size: 14px;
+      }
+      
+      .tabla-productos {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+        margin-top: 10px;
+      }
+      
+      .tabla-productos th,
+      .tabla-productos td {
+        border: 1px solid #ccc;
+        padding: 4px 6px;
+        text-align: left;
+      }
+      
+      .tabla-productos th {
+        background-color: #eee;
+      }
+      
+      .totales {
+        margin-top: 10px;
+        font-size: 12px;
+        text-align: right;
+      }
+      
+      .firma {
+        margin-top: 25px;
+        text-align: center;
+        font-size: 11px;
+      }
+      
+      .firma span {
+        display: inline-block;
+        margin-top: 30px;
+        border-top: 1px solid #000;
+        padding-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="encabezado">
+      <strong>{{ empresa.nombre }}</strong><br />
+      {{ empresa.direccion }}<br />
+      NIT: {{ empresa.nit }}
+    </div>
 
-    .encabezado, .cliente, .detalle {
-      line-height: 1.4;
-      margin-bottom: 10px;
-    }
+    <div class="encabezado">
+      <strong>Alquiler #{{ alquiler.id }}</strong><br />
+      Fecha de emisión: {{ alquiler.created_at|date:'d/m/Y' }}
+    </div>
 
-    .encabezado strong {
-      font-size: 14px;
-    }
+    <div class="cliente">
+      <strong>Cliente:</strong> {{ alquiler.cliente.nombre_completo }}<br />
+      Documento: {{ alquiler.cliente.documento }}<br />
+      Teléfono: {{ alquiler.cliente.telefono }}<br />
+      Correo: {{ alquiler.cliente.correo }}
+    </div>
 
-    .tabla-productos {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-      margin-top: 10px;
-    }
+    <div class="detalle">
+      <strong>Inicio:</strong> {{ alquiler.fecha_inicio|date:'d/m/Y' }}<br />
+      <strong>Fin:</strong> {{ alquiler.fecha_fin|date:'d/m/Y' }}<br />
+      <strong>Observaciones:</strong> {{ alquiler.observaciones }}
+    </div>
 
-    .tabla-productos th,
-    .tabla-productos td {
-      border: 1px solid #ccc;
-      padding: 4px 6px;
-      text-align: left;
-    }
+    <table class="tabla-productos">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Días</th>
+          <th>Precio/día</th>
+          <th>Subtotal</th>
+          <th>IVA</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in alquiler.items.all %}
+          <tr>
+            <td>{{ item.producto }}</td>
 
-    .tabla-productos th {
-      background-color: #eee;
-    }
+            {% if item.cantidad %}
+              <td>{{ item.cantidad }}</td>
+            {% else %}
+              <td>1</td>
+            {% endif %}
 
-    .totales {
-      margin-top: 10px;
-      font-size: 12px;
-      text-align: right;
-    }
+            <td>{{ item.dias_a_cobrar }}</td>
+            <td>${{ item.precio_dia|floatformat:0 }}</td>
+            <td>${{ item.subtotal_sin_iva|floatformat:0 }}</td>
+            <td>${{ item.valor_iva|floatformat:0 }}</td>
+            <td>${{ item.valor_item|floatformat:0 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-    .firma {
-      margin-top: 25px;
-      text-align: center;
-      font-size: 11px;
-    }
+    <div class="totales">
+      Subtotal sin IVA: ${{ subtotal|floatformat:0 }}<br />
+      IVA total: ${{ iva_total|floatformat:0 }}<br />
+      Descuento aplicado: {{ alquiler.descuento_general }}%<br />
+      <strong>Total con descuento: ${{ total|floatformat:0 }}</strong>
+    </div>
 
-    .firma span {
-      display: inline-block;
-      margin-top: 30px;
-      border-top: 1px solid #000;
-      padding-top: 2px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="encabezado">
-    <strong>{{ empresa.nombre }}</strong><br>
-    {{ empresa.direccion }}<br>
-    NIT: {{ empresa.nit }}
-  </div>
-
-  <div class="encabezado">
-    <strong>Alquiler #{{ alquiler.id }}</strong><br>
-    Fecha de emisión: {{ alquiler.created_at|date:"d/m/Y" }}
-  </div>
-
-  <div class="cliente">
-    <strong>Cliente:</strong> {{ alquiler.cliente.nombre_completo }}<br>
-    Documento: {{ alquiler.cliente.documento }}<br>
-    Teléfono: {{ alquiler.cliente.telefono }}<br>
-    Correo: {{ alquiler.cliente.correo }}
-  </div>
-
-  <div class="detalle">
-    <strong>Inicio:</strong> {{ alquiler.fecha_inicio|date:"d/m/Y" }}<br>
-    <strong>Fin:</strong> {{ alquiler.fecha_fin|date:"d/m/Y" }}<br>
-    <strong>Observaciones:</strong> {{ alquiler.observaciones }}
-  </div>
-
-  <table class="tabla-productos">
-    <thead>
-      <tr>
-        <th>Producto</th>
-        <th>Días</th>
-        <th>Precio/día</th>
-        <th>Subtotal</th>
-        <th>IVA</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in alquiler.items.all %}
-      <tr>
-        <td>{{ item.producto }}</td>
-        <td>{{ item.dias_a_cobrar }}</td>
-        <td>${{ item.precio_dia|floatformat:0 }}</td>
-        <td>${{ item.subtotal_sin_iva|floatformat:0 }}</td>
-        <td>${{ item.valor_iva|floatformat:0 }}</td>
-        <td>${{ item.valor_item|floatformat:0 }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <div class="totales">
-    Subtotal sin IVA: ${{ subtotal|floatformat:0 }}<br>
-    IVA total: ${{ iva_total|floatformat:0 }}<br>
-    Descuento aplicado: {{ alquiler.descuento_general }}%<br>
-    <strong>Total con descuento: ${{ total|floatformat:0 }}</strong>
-  </div>
-
-  <div class="firma">
-    <span>Firma responsable</span>
-  </div>
-
-</body>
+    <div class="firma">
+      <span>Firma responsable</span>
+    </div>
+  </body>
 </html>
