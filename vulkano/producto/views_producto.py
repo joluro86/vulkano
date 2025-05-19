@@ -25,10 +25,14 @@ class ProductoCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     ]
 
     def form_valid(self, form):
+        usuario = self.request.user.get_full_name() or self.request.user.username
+
         if not form.instance.pk:
-            form.instance.creado_por = "null"
-        form.instance.modificado_por = "null"
+            form.instance.creado_por = usuario
+
+        form.instance.modificado_por = usuario
         return super().form_valid(form)
+
 
 
 class ProductoListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
@@ -66,7 +70,7 @@ class ProductoUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     ]
 
     def form_valid(self, form):
-        form.instance.modificado_por = "null"
+        form.instance.modificado_por = self.request.user.get_full_name() or self.request.user.username
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
