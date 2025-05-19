@@ -4,18 +4,30 @@ from xhtml2pdf import pisa
 from alquiler.models import Alquiler
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum
+from decimal import Decimal
 
 @login_required
 def imprimir_alquiler(request, pk):
     alquiler = get_object_or_404(Alquiler, pk=pk, usuario__sucursal=request.user.sucursal)
-    total = alquiler.items.aggregate(total=Sum('valor_item'))['total'] or 0
+
+    # Cálculo manual para desglose
+    subtotal = Decimal(0)
+    iva_total = Decimal(0)
+
+    for item in alquiler.items.select_related('producto'):
+        subtotal += item.subtotal_sin_iva
+        iva_total += item.valor_iva
+
+    total = alquiler.total_con_descuento  # Ya considera descuento general
+
     template = get_template('alquiler_pdf.html')
 
     context = {
         'alquiler': alquiler,
         'empresa': request.user.empresa,
-         'total': total,
+        'subtotal': subtotal,
+        'iva_total': iva_total,
+        'total': total,
     }
 
     html = template.render(context)

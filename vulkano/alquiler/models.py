@@ -80,8 +80,6 @@ class AlquilerItem(models.Model):
     @property
     def subtotal_sin_iva(self):
         base_con_iva = self.dias_a_cobrar * self.precio_dia
-        print(base_con_iva)
-        print(self.valor_iva)
         if self.valor_iva > 0:
             return (base_con_iva -self.valor_iva)
         return base_con_iva

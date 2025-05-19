@@ -37,10 +37,10 @@
       background-color: #eee;
     }
 
-    .total {
-      margin-top: 5px;
+    .totales {
+      margin-top: 10px;
+      font-size: 12px;
       text-align: right;
-      font-weight: bold;
     }
 
     .firma {
@@ -89,7 +89,9 @@
         <th>Producto</th>
         <th>Días</th>
         <th>Precio/día</th>
-        <th>Valor total</th>
+        <th>Subtotal</th>
+        <th>IVA</th>
+        <th>Total</th>
       </tr>
     </thead>
     <tbody>
@@ -98,14 +100,19 @@
         <td>{{ item.producto }}</td>
         <td>{{ item.dias_a_cobrar }}</td>
         <td>${{ item.precio_dia|floatformat:0 }}</td>
+        <td>${{ item.subtotal_sin_iva|floatformat:0 }}</td>
+        <td>${{ item.valor_iva|floatformat:0 }}</td>
         <td>${{ item.valor_item|floatformat:0 }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <div class="total">
-    Total: ${{ total|floatformat:0 }}
+  <div class="totales">
+    Subtotal sin IVA: ${{ subtotal|floatformat:0 }}<br>
+    IVA total: ${{ iva_total|floatformat:0 }}<br>
+    Descuento aplicado: {{ alquiler.descuento_general }}%<br>
+    <strong>Total con descuento: ${{ total|floatformat:0 }}</strong>
   </div>
 
   <div class="firma">
