@@ -51,11 +51,13 @@ def editar_alquiler(request, pk):
         if item_form.is_valid():
             dias = item_form.cleaned_data.get('dias_a_cobrar')
             precio = item_form.cleaned_data.get('precio_dia')
+            cantidad = item_form.cleaned_data.get('cantidad')
 
             item_existente = alquiler.items.filter(producto=producto).first()
             if item_existente:
                 item_existente.dias_a_cobrar = dias or item_existente.dias_a_cobrar
                 item_existente.precio_dia = precio or item_existente.precio_dia
+                item_existente.cantidad = cantidad or item_existente.cantidad
                 item_existente.save()
             else:
                 item = item_form.save(commit=False)

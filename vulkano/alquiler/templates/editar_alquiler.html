@@ -37,6 +37,10 @@
           <label class="block text-sm font-medium text-gray-700">Precio por día</label>
           {{ item_form.precio_dia }}
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Cantidad</label>
+          {{ item_form.cantidad }}
+        </div>
         <div class="col-span-3">
           <button type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">Agregar producto</button>
         </div>
@@ -53,6 +57,7 @@
         <thead class="bg-gray-100">
           <tr>
             <th class="text-left p-2">Producto</th>
+            <th class="text-left p-2">Cantidad</th>
             <th class="text-left p-2">Días</th>
             <th class="text-left p-2">Precio/día</th>
             <th class="text-left p-2">Subtotal</th>
@@ -65,9 +70,15 @@
           {% for item in alquiler.items.all %}
             <tr class="border-t">
               <td class="p-2">{{ item.producto }}</td>
+
+              {% if item.cantidad %}
+                <td class="p-2">{{ item.cantidad }}</td>
+              {% else %}
+                <td class="p-2">1</td>
+              {% endif %}
               <td class="p-2">{{ item.dias_a_cobrar }}</td>
-              <td class="p-2">${{ item.precio_dia|floatformat:0|intcomma  }}</td>
-              <td class="p-2">${{ item.subtotal_sin_iva |floatformat:1|intcomma }}</td>
+              <td class="p-2">${{ item.precio_dia|floatformat:0|intcomma }}</td>
+              <td class="p-2">${{ item.subtotal_sin_iva|floatformat:1|intcomma }}</td>
               <td class="p-2">${{ item.valor_iva|floatformat:1|intcomma }}</td>
               <td class="p-2 font-semibold">${{ item.valor_item|floatformat:0|intcomma }}</td>
 

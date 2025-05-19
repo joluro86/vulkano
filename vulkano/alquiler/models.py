@@ -42,6 +42,7 @@ class Alquiler(models.Model):
 class AlquilerItem(models.Model):
     alquiler = models.ForeignKey('Alquiler', on_delete=models.CASCADE, related_name='items')
     producto = models.ForeignKey('producto.Producto', on_delete=models.CASCADE)
+    cantidad= models.PositiveIntegerField(null=True, blank=True)
     dias_a_cobrar = models.PositiveIntegerField(null=True, blank=True)
     precio_dia = models.DecimalField(max_digits=10, decimal_places=2, default=2000)
     valor_iva = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -59,7 +60,7 @@ class AlquilerItem(models.Model):
             self.dias_a_cobrar = 1
 
         # En este nuevo modelo el precio_dia ya incluye IVA
-        base_con_iva = self.dias_a_cobrar * self.precio_dia
+        base_con_iva = Decimal(self.dias_a_cobrar) * Decimal(self.precio_dia) * Decimal(self.cantidad) if self.cantidad else Decimal(self.dias_a_cobrar) * Decimal(self.precio_dia) * 1
         descuento = base_con_iva * (Decimal(self.descuento_porcentaje) / Decimal('100'))
         total = base_con_iva - descuento
 
@@ -79,7 +80,7 @@ class AlquilerItem(models.Model):
 
     @property
     def subtotal_sin_iva(self):
-        base_con_iva = self.dias_a_cobrar * self.precio_dia
+        base_con_iva = Decimal(self.dias_a_cobrar) * Decimal(self.precio_dia) * Decimal(self.cantidad) if self.cantidad else Decimal(self.dias_a_cobrar) * Decimal(self.precio_dia) * 1
         if self.valor_iva > 0:
             return (base_con_iva -self.valor_iva)
         return base_con_iva
