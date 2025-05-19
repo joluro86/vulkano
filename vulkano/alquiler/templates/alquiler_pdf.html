@@ -100,13 +100,11 @@
         {% for item in alquiler.items.all %}
           <tr>
             <td>{{ item.producto }}</td>
-
             {% if item.cantidad %}
               <td>{{ item.cantidad }}</td>
             {% else %}
               <td>1</td>
             {% endif %}
-
             <td>{{ item.dias_a_cobrar }}</td>
             <td>${{ item.precio_dia|floatformat:0 }}</td>
             <td>${{ item.subtotal_sin_iva|floatformat:0 }}</td>
@@ -116,7 +114,6 @@
         {% endfor %}
       </tbody>
     </table>
-
     <div class="totales">
       Subtotal sin IVA: ${{ subtotal|floatformat:0 }}<br />
       IVA total: ${{ iva_total|floatformat:0 }}<br />

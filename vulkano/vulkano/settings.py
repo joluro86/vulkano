@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'persona',
     'cliente',
+    'descuento',
 ]
 
 LOGIN_REDIRECT_URL = 'home'
