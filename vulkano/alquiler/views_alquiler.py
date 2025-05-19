@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from alquiler.forms.form_alquiler import AlquilerEditarForm, AlquilerItemForm
 from alquiler.models import Alquiler, AlquilerItem
 from django.contrib import messages
@@ -8,6 +9,7 @@ from producto.models import Producto
 from django.db.models import Sum
 from cliente.views import obtener_o_crear_cliente_generico
 from cliente.models import Cliente
+from descuento.models import Descuento
 
 @login_required
 def crear_alquiler(request):
@@ -87,9 +89,11 @@ def editar_alquiler(request, pk):
         iva_total += iva
         
         print(item)
-
+    descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
+    
     context = {
         'alquiler': alquiler,
+        'descuentos': descuentos,
         'form': form,
         'item_form': item_form,
         'total': total_con_descuento,
@@ -144,3 +148,24 @@ def buscar_clientes(request):
         clientes = Cliente.objects.filter(nombre__icontains=query, empresa=request.user.empresa)
         resultados = [{'id': c.id, 'nombre': f"{c.nombre} {c.apellidos}"} for c in clientes]
     return JsonResponse(resultados, safe=False)
+
+
+@login_required
+@require_POST
+def aplicar_descuento_alquiler(request, pk):
+    alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
+    descuento_id = request.POST.get('descuento_id')
+    descuento = get_object_or_404(Descuento, pk=descuento_id, empresa=request.user.empresa, activo=True)
+
+    if descuento.tipo in ['general', 'por_producto']:
+        if descuento.tipo == 'general':
+            alquiler.descuento_general = descuento.porcentaje
+            alquiler.save()
+
+        # En ambos casos se aplican a cada ítem
+        for item in alquiler.items.all():
+            item.descuento_porcentaje = descuento.porcentaje
+            item.save()
+
+    messages.success(request, f"Se aplicó el descuento «{descuento.nombre}» correctamente.")
+    return redirect('editar_alquiler', pk=pk)

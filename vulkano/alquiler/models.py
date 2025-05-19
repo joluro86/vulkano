@@ -42,7 +42,7 @@ class Alquiler(models.Model):
 class AlquilerItem(models.Model):
     alquiler = models.ForeignKey('Alquiler', on_delete=models.CASCADE, related_name='items')
     producto = models.ForeignKey('producto.Producto', on_delete=models.CASCADE)
-    cantidad= models.PositiveIntegerField(null=True, blank=True)
+    cantidad= models.PositiveIntegerField(null=True, blank=True, default=1)
     dias_a_cobrar = models.PositiveIntegerField(null=True, blank=True)
     precio_dia = models.DecimalField(max_digits=10, decimal_places=2, default=2000)
     valor_iva = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -84,4 +84,12 @@ class AlquilerItem(models.Model):
         if self.valor_iva > 0:
             return (base_con_iva -self.valor_iva)
         return base_con_iva
+    
+    @property
+    def valor_descuento(self):
+        print(self.descuento_porcentaje)
+        base = self.cantidad * self.dias_a_cobrar * self.precio_dia
+        print(base)
+        return base * (self.descuento_porcentaje / Decimal('100'))
+
 

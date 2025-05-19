@@ -5,56 +5,65 @@
     <title>Alquiler #{{ alquiler.id }}</title>
     <style>
       body {
-        font-family: sans-serif;
+        font-family: 'Segoe UI', sans-serif;
         font-size: 12px;
         margin: 20px;
+        color: #333;
       }
-      
-      .encabezado,
-      .cliente,
-      .detalle {
-        line-height: 1.4;
-        margin-bottom: 10px;
+
+      .encabezado, .cliente, .detalle {
+        line-height: 1.5;
+        margin-bottom: 12px;
       }
-      
+
       .encabezado strong {
-        font-size: 14px;
+        font-size: 15px;
+        color: #0f4c81;
       }
-      
+
       .tabla-productos {
         width: 100%;
         border-collapse: collapse;
         font-size: 11px;
-        margin-top: 10px;
+        margin-top: 15px;
       }
-      
+
       .tabla-productos th,
       .tabla-productos td {
-        border: 1px solid #ccc;
-        padding: 4px 6px;
+        border: 1px solid #bbb;
+        padding: 6px 8px;
         text-align: left;
       }
-      
+
       .tabla-productos th {
-        background-color: #eee;
+        background-color: #0f4c81;
+        color: white;
       }
-      
+
       .totales {
-        margin-top: 10px;
-        font-size: 12px;
+        margin-top: 15px;
+        font-size: 13px;
         text-align: right;
+        border-top: 1px solid #ccc;
+        padding-top: 8px;
       }
-      
+
+      .totales strong {
+        color: #0f4c81;
+        font-size: 14px;
+      }
+
       .firma {
-        margin-top: 25px;
+        margin-top: 35px;
         text-align: center;
         font-size: 11px;
+        color: #555;
       }
-      
+
       .firma span {
         display: inline-block;
         margin-top: 30px;
-        border-top: 1px solid #000;
+        border-top: 1px solid #444;
         padding-top: 2px;
       }
     </style>
@@ -88,9 +97,10 @@
       <thead>
         <tr>
           <th>Producto</th>
-          <th>Cantidad</th>
+          <th>Cant.</th>
           <th>Días</th>
           <th>Precio/día</th>
+          <th>Descuento</th>
           <th>Subtotal</th>
           <th>IVA</th>
           <th>Total</th>
@@ -98,22 +108,20 @@
       </thead>
       <tbody>
         {% for item in alquiler.items.all %}
-          <tr>
-            <td>{{ item.producto }}</td>
-            {% if item.cantidad %}
-              <td>{{ item.cantidad }}</td>
-            {% else %}
-              <td>1</td>
-            {% endif %}
-            <td>{{ item.dias_a_cobrar }}</td>
-            <td>${{ item.precio_dia|floatformat:0 }}</td>
-            <td>${{ item.subtotal_sin_iva|floatformat:0 }}</td>
-            <td>${{ item.valor_iva|floatformat:0 }}</td>
-            <td>${{ item.valor_item|floatformat:0 }}</td>
-          </tr>
+        <tr>
+          <td>{{ item.producto }}</td>
+          <td>{{ item.cantidad|default:1 }}</td>
+          <td>{{ item.dias_a_cobrar }}</td>
+          <td>${{ item.precio_dia|floatformat:0 }}</td>
+          <td>{{ item.descuento_porcentaje }}%</td>
+          <td>${{ item.subtotal_sin_iva|floatformat:0 }}</td>
+          <td>${{ item.valor_iva|floatformat:0 }}</td>
+          <td><strong>${{ item.valor_item|floatformat:0 }}</strong></td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
+
     <div class="totales">
       Subtotal sin IVA: ${{ subtotal|floatformat:0 }}<br />
       IVA total: ${{ iva_total|floatformat:0 }}<br />
