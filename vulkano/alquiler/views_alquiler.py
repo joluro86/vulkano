@@ -80,14 +80,16 @@ def editar_alquiler(request, pk):
     total_con_descuento = 0
     
     for item in alquiler.items.select_related('producto'):
-        base = item.dias_a_cobrar * item.precio_dia
+        base = item.dias_a_cobrar * item.precio_dia * item.cantidad
         descuento = base * (item.descuento_porcentaje / Decimal('100'))
         subtotal += base
         descuento_total += descuento
         iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
         iva_total += iva
-        total_con_descuento += subtotal
-        print(total_con_descuento)
+        total_con_descuento += (base-descuento)
+        print("base")
+        print(base)
+        print(subtotal-descuento)
     descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
     
     context = {
