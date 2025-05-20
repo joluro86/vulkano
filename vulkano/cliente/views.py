@@ -6,7 +6,7 @@ from cliente.forms import ClienteForm
 
 @login_required
 def cliente_list(request):
-    clientes = Cliente.objects.all().order_by('nombre')
+    clientes = Cliente.objects.filter(empresa=request.user.empresa).order_by('nombre')
     return render(request, 'cliente_list.html', {
         'clientes': clientes,
         'breadcrumb_items': [('Clientes', 'Listado')],
@@ -66,7 +66,7 @@ from cliente.models import Cliente
 
 def obtener_o_crear_cliente_generico(empresa):
     cliente, creado = Cliente.objects.get_or_create(
-        documento="0000",  # clave única para evitar duplicados
+        documento="0000",
         empresa=empresa,
         defaults={
             "nombre": "Cliente Genérico",
