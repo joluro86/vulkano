@@ -38,7 +38,6 @@ def editar_alquiler(request, pk):
             alquiler = form.save(commit=False)
             alquiler.updated_by = request.user
             alquiler.save()
-            print(form)
             messages.success(request, "Datos del alquiler actualizados.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
@@ -87,9 +86,7 @@ def editar_alquiler(request, pk):
         iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
         iva_total += iva
         total_con_descuento += (base-descuento)
-        print("base")
-        print(base)
-        print(subtotal-descuento)
+
     descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
     
     context = {
