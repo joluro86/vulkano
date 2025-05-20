@@ -126,7 +126,7 @@
       Subtotal sin IVA: ${{ subtotal|floatformat:0 }}<br />
       IVA total: ${{ iva_total|floatformat:0 }}<br />
       Descuento aplicado: {{ alquiler.descuento_general }}%<br />
-      <strong>Total con descuento: ${{ total|floatformat:0 }}</strong>
+      <strong>Total con descuento: ${{ alquiler.total|floatformat:0 }}</strong>
     </div>
 
     <div class="firma">

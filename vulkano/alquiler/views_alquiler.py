@@ -86,7 +86,10 @@ def editar_alquiler(request, pk):
         iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
         iva_total += iva
         total_con_descuento += (base-descuento)
-
+    
+    print(total_con_descuento)
+    alquiler.total=total_con_descuento
+    alquiler.save()
     descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
     
     context = {

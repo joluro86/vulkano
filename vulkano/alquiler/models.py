@@ -9,6 +9,10 @@ class Alquiler(models.Model):
     fecha_inicio = models.DateField(null=True, blank=True)
     fecha_fin = models.DateField(null=True, blank=True)
     observaciones = models.TextField(blank=True)
+    total= models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0,
+        help_text="Total cobro del alquiler"
+    )
 
     descuento_general = models.DecimalField(
         max_digits=5, decimal_places=2, default=0.0,
@@ -50,7 +54,7 @@ class AlquilerItem(models.Model):
         max_digits=5, decimal_places=2, default=0.0,
         help_text="Descuento individual en % (ej. 10 para 10%)"
     )
-    valor_item = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valor_item = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):
         if not self.dias_a_cobrar and self.alquiler.fecha_inicio and self.alquiler.fecha_fin:

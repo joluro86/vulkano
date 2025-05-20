@@ -15,6 +15,7 @@ def imprimir_alquiler(request, pk):
     iva_total = Decimal(0)
 
     for item in alquiler.items.select_related('producto'):
+        print(item)
         subtotal += item.subtotal_sin_iva
         iva_total += item.valor_iva
 
