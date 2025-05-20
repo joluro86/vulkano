@@ -12,9 +12,12 @@ class CategoriaListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     ordering = ['nombre']
     paginate_by = 10
     breadcrumb_items = [
-        ("Productos", reverse_lazy("categoria_list")),
+        ("Productos", reverse_lazy("producto_list")),
         ("Categorías", None)
     ]
+    
+    def get_queryset(self):
+        return Categoria.objects.filter(empresa=self.request.user.empresa)
 
 class CategoriaCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     model = Categoria
@@ -22,7 +25,7 @@ class CategoriaCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
     template_name = 'categoria_crear.html'
     success_url = reverse_lazy('categoria_list')
     breadcrumb_items = [
-        ("Productos", reverse_lazy("categoria_list")),
+        ("Productos", reverse_lazy("producto_list")),
         ("Categorías", reverse_lazy("categoria_list")),
         ("Crear", None)
     ]
@@ -41,7 +44,7 @@ class CategoriaUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     template_name = 'categoria_crear.html'
     success_url = reverse_lazy('categoria_list')
     breadcrumb_items = [
-        ("Productos", reverse_lazy("categoria_list")),
+        ("Productos", reverse_lazy("producto_list")),
         ("Categorías", reverse_lazy("categoria_list")),
         ("Editar", None)
     ]

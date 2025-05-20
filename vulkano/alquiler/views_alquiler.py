@@ -45,9 +45,9 @@ def editar_alquiler(request, pk):
     elif request.method == 'POST' and request.POST.get('producto'):
         producto_id = request.POST.get('producto')
         try:
-            producto = Producto.objects.get(id=producto_id, sucursal=request.user.sucursal)
+            producto = Producto.objects.get(id=producto_id, empresa=request.user.empresa)
         except Producto.DoesNotExist:
-            messages.error(request, "Producto no válido.")
+            messages.error(request, "Producto no registrado.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
         if item_form.is_valid():
@@ -109,7 +109,7 @@ def buscar_productos(request):
     query = request.GET.get('q', '')
     resultados = []
     if len(query) >= 3:
-        productos = Producto.objects.filter(nombre__icontains=query)[:10]
+        productos = Producto.objects.filter(empresa=request.user.empresa, nombre__icontains=query)[:10]
         resultados = [{'id': p.id, 'nombre': p.nombre} for p in productos]
     return JsonResponse(resultados, safe=False)
 

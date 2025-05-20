@@ -12,9 +12,12 @@ class ProveedorListView(LoginRequiredMixin,BreadcrumbMixin, ListView):
     ordering = ['nombre']
     paginate_by = 10
     breadcrumb_items = [
-        ("Productos", reverse_lazy("categoria_list")),
+        ("Productos", reverse_lazy("producto_list")),
         ("Proveedores", None)
     ]
+    
+    def get_queryset(self):
+        return Proveedor.objects.filter(empresa=self.request.user.empresa)
     
     
 class ProveedorUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):

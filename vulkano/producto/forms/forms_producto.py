@@ -5,7 +5,7 @@ from producto.models import Producto
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        exclude = ['created_at', 'updated_at', 'creado_por', 'modificado_por']
+        exclude = ['created_at', 'updated_at', 'creado_por', 'modificado_por', 'empresa', 'sucursal']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -43,12 +43,6 @@ class ProductoForm(forms.ModelForm):
             'imagen': forms.ClearableFileInput(attrs={
                 'class': 'w-full border border-gray-300 p-2 rounded bg-white'
             }),
-            'empresa': forms.Select(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded bg-white'
-            }),
-            'sucursal': forms.Select(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded bg-white'
-            }),
             'categoria': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white'
             }),
@@ -64,3 +58,11 @@ class ProductoForm(forms.ModelForm):
 
 
         }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        if user and hasattr(user, 'empresa'):
+            self.fields['categoria'].queryset = user.empresa.categorias.all()
+            self.fields['proveedor'].queryset = user.empresa.proveedores.all()

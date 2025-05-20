@@ -12,21 +12,26 @@ def cliente_list(request):
         'breadcrumb_items': [('Clientes', 'Listado')],
     })
 
+
 @login_required
 def cliente_create(request):
     form = ClienteForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        cliente = form.save(commit=False)
-        cliente.empresa = request.user.empresa
-        cliente.save()
-        messages.success(request, "Cliente creado exitosamente.")
-        return redirect('cliente_list')
+        if Cliente.objects.filter(empresa=request.user.empresa, estado=True).exists():
+            messages.error(request, "Ya existe un cliente activo para esta empresa.")
+        else:
+            cliente = form.save(commit=False)
+            cliente.empresa = request.user.empresa
+            cliente.save()
+            messages.success(request, "Cliente creado exitosamente.")
+            return redirect('cliente_list')
     return render(request, 'cliente_form.html', {
         'form': form,
         'titulo': 'Crear cliente',
         'boton_texto': 'Guardar cliente',
         'breadcrumb_items': [('Clientes', 'Crear')],
     })
+
 
 
 @login_required

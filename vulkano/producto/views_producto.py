@@ -29,9 +29,16 @@ class ProductoCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
 
         if not form.instance.pk:
             form.instance.creado_por = usuario
+            form.instance.empresa = self.request.user.empresa
+            form.instance.sucursal = self.request.user.sucursal
 
         form.instance.modificado_por = usuario
         return super().form_valid(form)
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
 
@@ -47,8 +54,9 @@ class ProductoListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     ]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = Producto.objects.por_empresa(self.request.user.empresa)
         q = self.request.GET.get('q')
+        
         if q:
             queryset = queryset.filter(
                 Q(nombre__icontains=q) |
@@ -78,6 +86,11 @@ class ProductoUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
         context['titulo'] = "Editar Producto"
         context['boton_texto'] = "Actualizar Producto"
         return context
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 class ProductoDetailView(LoginRequiredMixin, BreadcrumbMixin, DetailView):
     model = Producto
