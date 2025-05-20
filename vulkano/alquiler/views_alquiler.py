@@ -143,7 +143,7 @@ def buscar_clientes(request):
     query = request.GET.get('q', '')
     resultados = []
     if len(query) >= 3:
-        clientes = Cliente.objects.filter(nombre__icontains=query, empresa=request.user.empresa)
+        clientes = Cliente.objects.filter(nombre__icontains=query, empresa=request.user.empresa, estado=True)
         resultados = [{'id': c.id, 'nombre': f"{c.nombre} {c.apellidos}"} for c in clientes]
     return JsonResponse(resultados, safe=False)
 

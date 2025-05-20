@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from cliente.models import Cliente
 from cliente.forms import ClienteForm
+from django.db.models import ProtectedError
 
 @login_required
 def cliente_list(request):
@@ -17,8 +18,9 @@ def cliente_list(request):
 def cliente_create(request):
     form = ClienteForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        if Cliente.objects.filter(empresa=request.user.empresa, estado=True).exists():
-            messages.error(request, "Ya existe un cliente activo para esta empresa.")
+        if Cliente.objects.filter(documento=form.cleaned_data.get("documento"), empresa=request.user.empresa).exists():
+            messages.error(request, "Ya existe un cliente con ese documento en esta empresa.")
+
         else:
             cliente = form.save(commit=False)
             cliente.empresa = request.user.empresa
@@ -52,10 +54,15 @@ def cliente_edit(request, pk):
 @login_required
 def cliente_delete(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
-    if request.method == 'POST':
-        cliente.delete()
-        messages.success(request, "Cliente eliminado.")
-        return redirect('cliente_list')
+    
+    try:
+        if request.method == 'POST':
+            cliente.delete()
+            messages.success(request, "Cliente eliminado.")
+            return redirect('cliente_list')
+    except ProtectedError:
+        messages.error(request, "No se puede eliminar este cliente porque está asociado a registros de alquiler.")
+        
     return render(request, 'cliente_confirm_delete.html', {
         'cliente': cliente,
         'breadcrumb_items': [('Clientes', f'Eliminar: {cliente.nombre}')],
@@ -79,3 +86,20 @@ def obtener_o_crear_cliente_generico(empresa):
         }
     )
     return cliente
+
+@login_required
+def cliente_anular(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    
+    try:
+        if request.method == 'POST':
+            cliente.delete()
+            messages.success(request, "Cliente eliminado.")
+            return redirect('cliente_list')
+    except ProtectedError:
+        messages.error(request, "No se puede eliminar este cliente porque está asociado a registros de alquiler.")
+        
+    return render(request, 'cliente_confirm_delete.html', {
+        'cliente': cliente,
+        'breadcrumb_items': [('Clientes', f'Eliminar: {cliente.nombre}')],
+    })
