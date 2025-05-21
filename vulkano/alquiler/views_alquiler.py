@@ -87,7 +87,6 @@ def editar_alquiler(request, pk):
         iva_total += iva
         total_con_descuento += (base-descuento)
     
-    print(total_con_descuento)
     alquiler.total=total_con_descuento
     alquiler.save()
     descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
@@ -158,15 +157,16 @@ def aplicar_descuento_alquiler(request, pk):
     descuento_id = request.POST.get('descuento_id')
     descuento = get_object_or_404(Descuento, pk=descuento_id, empresa=request.user.empresa, activo=True)
 
-    if descuento.tipo in ['general', 'por_producto']:
-        if descuento.tipo == 'general':
-            alquiler.descuento_general = descuento.porcentaje
-            alquiler.save()
+    alquiler.descuento_general = descuento.porcentaje
+    alquiler.save()
 
-        # En ambos casos se aplican a cada ítem
-        for item in alquiler.items.all():
-            item.descuento_porcentaje = descuento.porcentaje
-            item.save()
+    print("aja")
+    # En ambos casos se aplican a cada ítem
+    for item in alquiler.items.all():
+        item.descuento_porcentaje = descuento.porcentaje
+        print("aqui")
+        print(descuento.porcentaje)
+        item.save()
 
     messages.success(request, f"Se aplicó el descuento «{descuento.nombre}» correctamente.")
     return redirect('editar_alquiler', pk=pk)

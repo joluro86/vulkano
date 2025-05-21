@@ -1,65 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
+  {% load humanize %}
   <head>
     <meta charset="UTF-8" />
     <title>Alquiler #{{ alquiler.id }}</title>
     <style>
       body {
         font-family: 'Segoe UI', sans-serif;
-        font-size: 12px;
+        font-size: 10px;
         margin: 20px;
         color: #333;
       }
-
-      .encabezado, .cliente, .detalle {
-        line-height: 1.5;
-        margin-bottom: 12px;
+      
+      .fila {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px; /* reducido */
       }
-
-      .encabezado strong {
-        font-size: 15px;
-        color: #0f4c81;
+      
+      .col-izq,
+      .col-der {
+        width: 48%;
       }
-
+      
+      .col-der {
+        text-align: right;
+      }
+      
       .tabla-productos {
         width: 100%;
         border-collapse: collapse;
         font-size: 11px;
         margin-top: 15px;
       }
-
+      
       .tabla-productos th,
       .tabla-productos td {
         border: 1px solid #bbb;
-        padding: 6px 8px;
-        text-align: left;
+        padding: 2px 2px;
+        text-align: center;
       }
-
+      
       .tabla-productos th {
         background-color: #0f4c81;
         color: white;
       }
-
+      
       .totales {
-        margin-top: 15px;
         font-size: 13px;
         text-align: right;
         border-top: 1px solid #ccc;
         padding-top: 8px;
       }
-
+      
       .totales strong {
         color: #0f4c81;
         font-size: 14px;
       }
-
+      
       .firma {
-        margin-top: 35px;
-        text-align: center;
         font-size: 11px;
         color: #555;
+        text-align: left;
       }
-
+      
       .firma span {
         display: inline-block;
         margin-top: 30px;
@@ -69,30 +74,34 @@
     </style>
   </head>
   <body>
-    <div class="encabezado">
-      <strong>{{ empresa.nombre }}</strong><br />
-      {{ empresa.direccion }}<br />
-      NIT: {{ empresa.nit }}
-    </div>
+    <!-- Encabezado con alineación perfecta usando tabla -->
+    <table style="width: 100%; font-size: 11px; margin-bottom: 10px;">
+      <tr>
+        <!-- Columna izquierda: Empresa -->
+        <td style="width: 50%; vertical-align: top;">
+          <strong style="color: #0f4c81;">{{ empresa.nombre }}</strong><br />
+          {{ empresa.direccion }}<br />
+          NIT: {{ empresa.nit }}
+          <div>
+            <strong style="color: #0f4c81;">Alquiler #{{ alquiler.id }}</strong><br />
+            Fecha de emisión: {{ alquiler.created_at|date:'d/m/Y' }}<br />
+            <strong>Inicio:</strong> {{ alquiler.fecha_inicio|date:'d/m/Y' }}<br />
+            <strong>Fin:</strong> {{ alquiler.fecha_fin|date:'d/m/Y' }}<br />
+            <strong>Observaciones:</strong> {{ alquiler.observaciones }}
+          </div>
+        </td>
 
-    <div class="encabezado">
-      <strong>Alquiler #{{ alquiler.id }}</strong><br />
-      Fecha de emisión: {{ alquiler.created_at|date:'d/m/Y' }}
-    </div>
+        <!-- Columna derecha: Cliente -->
+        <td style="width: 50%; text-align: right; vertical-align: top;">
+          <strong style="color: #0f4c81;">Cliente:</strong> {{ alquiler.cliente.nombre }} {{alquiler.cliente.apellidos}}<br />
+          Documento: {{ alquiler.cliente.documento }}<br />
+          Teléfono: {{ alquiler.cliente.telefono }}<br />
+          Correo: {{ alquiler.cliente.correo }}
+        </td>
+      </tr>
+    </table>
 
-    <div class="cliente">
-      <strong>Cliente:</strong> {{ alquiler.cliente.nombre_completo }}<br />
-      Documento: {{ alquiler.cliente.documento }}<br />
-      Teléfono: {{ alquiler.cliente.telefono }}<br />
-      Correo: {{ alquiler.cliente.correo }}
-    </div>
-
-    <div class="detalle">
-      <strong>Inicio:</strong> {{ alquiler.fecha_inicio|date:'d/m/Y' }}<br />
-      <strong>Fin:</strong> {{ alquiler.fecha_fin|date:'d/m/Y' }}<br />
-      <strong>Observaciones:</strong> {{ alquiler.observaciones }}
-    </div>
-
+    <!-- Tabla de productos -->
     <table class="tabla-productos">
       <thead>
         <tr>
@@ -108,29 +117,34 @@
       </thead>
       <tbody>
         {% for item in alquiler.items.all %}
-        <tr>
-          <td>{{ item.producto }}</td>
-          <td>{{ item.cantidad|default:1 }}</td>
-          <td>{{ item.dias_a_cobrar }}</td>
-          <td>${{ item.precio_dia|floatformat:0 }}</td>
-          <td>{{ item.descuento_porcentaje }}%</td>
-          <td>${{ item.subtotal_sin_iva|floatformat:0 }}</td>
-          <td>${{ item.valor_iva|floatformat:0 }}</td>
-          <td><strong>${{ item.valor_item|floatformat:0 }}</strong></td>
-        </tr>
+          <tr>
+            <td>{{ item.producto }}</td>
+            <td>{{ item.cantidad|default:1 }}</td>
+            <td>{{ item.dias_a_cobrar }}</td>
+            <td>${{ item.precio_dia|floatformat:0|intcomma }}</td>
+            <td>{{ item.descuento_porcentaje }}%</td>
+            <td>${{ item.subtotal_sin_iva|floatformat:0|intcomma }}</td>
+            <td>${{ item.valor_iva|floatformat:0|intcomma }}</td>
+            <td>
+              <strong>${{ item.valor_item|floatformat:0|intcomma }}</strong>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
 
-    <div class="totales">
-      Subtotal sin IVA: ${{ subtotal|floatformat:0 }}<br />
-      IVA total: ${{ iva_total|floatformat:0 }}<br />
-      Descuento aplicado: {{ alquiler.descuento_general }}%<br />
-      <strong>Total con descuento: ${{ alquiler.total|floatformat:0 }}</strong>
-    </div>
-
-    <div class="firma">
-      <span>Firma responsable</span>
+    <!-- Pie con firma a la izquierda y totales a la derecha -->
+    <div class="fila" style="margin-top: 30px;">
+      <div class="col-izq firma">
+        <span>Firma responsable</span>
+      </div>
+      <div class="col-der totales">
+        Subtotal sin IVA: ${{ subtotal|floatformat:0|intcomma }}<br />
+        IVA total: ${{ iva_total|floatformat:0|intcomma }}<br />
+        Total sin descuento: ${{ total|floatformat:0|intcomma }}<br />
+        Descuento aplicado: {{ alquiler.descuento_general|intcomma }}%<br />
+        <strong>Valor a pagar: ${{ alquiler.total|floatformat:0|intcomma }}</strong>
+      </div>
     </div>
   </body>
 </html>

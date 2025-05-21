@@ -13,13 +13,13 @@ def imprimir_alquiler(request, pk):
     # Cálculo manual para desglose
     subtotal = Decimal(0)
     iva_total = Decimal(0)
+    total = Decimal(0)
 
     for item in alquiler.items.select_related('producto'):
-        print(item)
+        total+= item.precio_dia*item.cantidad*item.dias_a_cobrar
         subtotal += item.subtotal_sin_iva
         iva_total += item.valor_iva
 
-    total = alquiler.total_con_descuento  # Ya considera descuento general
 
     template = get_template('alquiler_pdf.html')
 
