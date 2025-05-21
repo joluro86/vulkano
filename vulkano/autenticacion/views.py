@@ -11,7 +11,7 @@ class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = LoginForm
 
-login_required
+@login_required
 def landing_view(request):
     if request.user.is_authenticated:
         return redirect('home')
