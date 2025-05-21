@@ -12,20 +12,15 @@
         color: #333;
       }
       
-      .fila {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 10px; /* reducido */
+      .tabla_encabezado {
+        width: 100%;
+        font-size: 11px;
+        margin-bottom: 10px;
       }
       
-      .col-izq,
-      .col-der {
-        width: 48%;
-      }
-      
-      .col-der {
-        text-align: right;
+      .tabla_encabezado img {
+        height: 60px;
+        margin-right: 10px;
       }
       
       .tabla-productos {
@@ -37,8 +32,7 @@
       }
       
       .tabla-productos th,
-      .tabla-productos td,
-      .tabla-productos td strong {
+      .tabla-productos td {
         border: 1px solid #bbb;
         text-align: center;
         padding: 3px;
@@ -48,12 +42,12 @@
         background-color: #0f4c81;
         color: white;
       }
-
-     
-      tbody .nombre_producto {
+      
+      .nombre_producto {
         width: 150px;
         font-size: 1.2rem;
       }
+      
       .totales {
         font-size: 13px;
         text-align: right;
@@ -64,6 +58,12 @@
       .totales strong {
         color: #0f4c81;
         font-size: 14px;
+      }
+      
+      .tabla-firma {
+        width: 100%;
+        font-size: 11px;
+        margin-top: 30px;
       }
       
       .firma {
@@ -81,25 +81,32 @@
     </style>
   </head>
   <body>
-    <!-- Encabezado con alineación perfecta usando tabla -->
-    <table class="tabla_encabezado" style="width: 100%; font-size: 11px; margin-bottom: 10px;">
+    <!-- Encabezado con logo -->
+    <table class="tabla_encabezado">
       <tr>
-        <!-- Columna izquierda: Empresa -->
+        <!-- Empresa -->
         <td style="width: 50%; vertical-align: top;">
-          <strong class="nombre_empresa" style="color: #0f4c81;font-size: 1.5rem;">{{ empresa.nombre }}</strong><br />
-          {{ empresa.direccion }}<br />
-          NIT: {{ empresa.nit }}
-          <div>
+          <div style="display: flex; align-items: flex-start;">
+            {% if logo_absoluto %}
+              <img src="{{ logo_absoluto }}" alt="Logo empresa" style="height: 60px; margin-right: 10px;" />
+            {% endif %}
+            <div>
+              <strong style="color: #0f4c81; font-size: 1.5rem;">{{ empresa.nombre }}</strong><br />
+              {{ empresa.direccion }}<br />
+              NIT: {{ empresa.nit }}
+            </div>
+          </div>
+        </td>
+
+        <!-- Cliente -->
+        <td style="width: 50%; text-align: right; vertical-align: top;">
+          <div style="margin-top: 10px;">
             <strong style="color: #0f4c81;">Alquiler #{{ alquiler.id }}</strong><br />
             Fecha de emisión: {{ alquiler.created_at|date:'d/m/Y' }}<br />
             <strong>Inicio:</strong> {{ alquiler.fecha_inicio|date:'d/m/Y' }}<br />
             <strong>Fin:</strong> {{ alquiler.fecha_fin|date:'d/m/Y' }}<br />
             <strong>Observaciones:</strong> {{ alquiler.observaciones }}
           </div>
-        </td>
-
-        <!-- Columna derecha: Cliente -->
-        <td style="width: 50%; text-align: right; vertical-align: top;">
           <strong style="color: #0f4c81;">Cliente:</strong> {{ alquiler.cliente.nombre }} {{ alquiler.cliente.apellidos }}<br />
           Documento: {{ alquiler.cliente.documento }}<br />
           Teléfono: {{ alquiler.cliente.telefono }}<br />
@@ -138,15 +145,12 @@
       </tbody>
     </table>
 
-    <!-- Pie con firma y totales -->
-    <table class="tabla-firma" style="width: 100%; font-size: 11px; margin-top: 30px;">
+    <!-- Firma y totales -->
+    <table class="tabla-firma">
       <tr>
-        <!-- Firma a la izquierda -->
-        <td style="width: 50%; border-top: 1px solid #444; vertical-align: top;padding: 5px;">
-          <span style="width: 100%;margin-top: 15px;">Firma responsable</span>
+        <td style="width: 50%; border-top: 1px solid #444; vertical-align: top; padding: 5px;">
+          <span>Firma responsable</span>
         </td>
-
-        <!-- Totales a la derecha -->
         <td style="width: 50%; text-align: right; vertical-align: top;">
           Subtotal sin IVA: ${{ subtotal|floatformat:0|intcomma }}<br />
           IVA total: ${{ iva_total|floatformat:0|intcomma }}<br />

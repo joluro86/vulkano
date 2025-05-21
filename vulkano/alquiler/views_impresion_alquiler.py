@@ -14,6 +14,7 @@ def imprimir_alquiler(request, pk):
     subtotal = Decimal(0)
     iva_total = Decimal(0)
     total = Decimal(0)
+    empresa = request.user.empresa
 
     for item in alquiler.items.select_related('producto'):
         total+= item.precio_dia*item.cantidad*item.dias_a_cobrar
@@ -22,13 +23,15 @@ def imprimir_alquiler(request, pk):
 
 
     template = get_template('alquiler_pdf.html')
+    logo_url_absoluto = request.build_absolute_uri(empresa.logo.url) if empresa.logo else None
 
     context = {
         'alquiler': alquiler,
-        'empresa': request.user.empresa,
+        'empresa': empresa,
         'subtotal': subtotal,
         'iva_total': iva_total,
         'total': total,
+        'logo_absoluto': logo_url_absoluto,
     }
 
     html = template.render(context)
