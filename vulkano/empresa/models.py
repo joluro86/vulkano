@@ -12,6 +12,7 @@ class Empresa(models.Model):
     departamento = models.CharField(max_length=100, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
+    logo = models.ImageField(upload_to='empresas/img/', blank=True, null=True)
 
     def __str__(self):
         return self.nombre
