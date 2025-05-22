@@ -10,6 +10,8 @@ from django.db.models import Sum
 from cliente.views import obtener_o_crear_cliente_generico
 from cliente.models import Cliente
 from descuento.models import Descuento
+from decimal import Decimal
+from django.db.models import F
 
 @login_required
 def crear_alquiler(request):
@@ -22,9 +24,6 @@ def crear_alquiler(request):
         updated_by=request.user
     )
     return redirect('editar_alquiler', pk=alquiler.pk)
-
-from decimal import Decimal
-from django.db.models import F
 
 @login_required
 def editar_alquiler(request, pk):

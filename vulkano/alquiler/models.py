@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from cliente.models import Cliente
 from decimal import Decimal
+from producto.models import PrecioProducto
 
 class Alquiler(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -79,6 +80,14 @@ class AlquilerItem(models.Model):
 
         self.valor_item = total
         self.subtotal_item = self.valor_item - self.valor_iva 
+        
+        try:
+            precio_dia= PrecioProducto.objects.get(producto=self.producto).valor
+        except:
+            precio_dia=0
+        finally:
+            self.precio_dia = precio_dia
+        
         super().save(*args, **kwargs)
 
     def __str__(self):
