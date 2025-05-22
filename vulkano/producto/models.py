@@ -79,10 +79,9 @@ class Producto(models.Model):
     
     objects = ProductoManager()
 
-class DetalleProducto(models.Model):
-    producto = models.ForeignKey(Producto, related_name='detalles', on_delete=models.CASCADE)
-    atributo = models.CharField(max_length=100)
-    valor = models.CharField(max_length=255)
+class PrecioProducto(models.Model):
+    producto = models.ForeignKey(Producto, related_name='precios', on_delete=models.CASCADE)
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.atributo}: {self.valor}"
