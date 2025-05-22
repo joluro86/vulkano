@@ -79,7 +79,7 @@
               {% endif %}
               <td class="p-2">{{ item.dias_a_cobrar }}</td>
               <td class="p-2">${{ item.precio_dia|floatformat:0|intcomma }}</td>
-              <td class="p-2">${{ item.subtotal_sin_iva|floatformat:1|intcomma }}</td>
+              <td class="p-2">${{ item.subtotal_item|floatformat:1|intcomma }}</td>
               <td class="p-2">${{ item.valor_iva|floatformat:1|intcomma }}</td>
               <td class="p-2 text-red-600">-${{ item.valor_descuento|floatformat:0|intcomma }}</td>
               <td class="p-2 font-semibold">${{ item.valor_item|floatformat:0|intcomma }}</td>

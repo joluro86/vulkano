@@ -137,7 +137,7 @@
             <td>{{ item.dias_a_cobrar }}</td>
             <td>${{ item.precio_dia|floatformat:0|intcomma }}</td>
             <td>{{ item.descuento_porcentaje }}%</td>
-            <td>${{ item.subtotal_sin_iva|floatformat:0|intcomma }}</td>
+            <td>${{ item.subtotal_item|floatformat:0|intcomma }}</td>
             <td>${{ item.valor_iva|floatformat:0|intcomma }}</td>
             <td style="font-weight: bold;">${{ item.valor_item|floatformat:0|intcomma }}</td>
           </tr>

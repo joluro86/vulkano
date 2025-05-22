@@ -50,8 +50,9 @@ class AlquilerItem(models.Model):
     dias_a_cobrar = models.PositiveIntegerField(null=True, blank=True)
     precio_dia = models.DecimalField(max_digits=10, decimal_places=2, default=2000)
     valor_iva = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    subtotal_item = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     descuento_porcentaje = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.0,
+        max_digits=10, decimal_places=2, default=0.0,
         help_text="Descuento individual en % (ej. 10 para 10%)"
     )
     valor_item = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -77,6 +78,7 @@ class AlquilerItem(models.Model):
             self.valor_iva = 0
 
         self.valor_item = total
+        self.subtotal_item = self.valor_item - self.valor_iva 
         super().save(*args, **kwargs)
 
     def __str__(self):
