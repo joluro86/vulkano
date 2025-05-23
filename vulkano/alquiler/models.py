@@ -49,7 +49,7 @@ class AlquilerItem(models.Model):
     producto = models.ForeignKey('producto.Producto', on_delete=models.CASCADE)
     cantidad= models.PositiveIntegerField(null=True, blank=True, default=1)
     dias_a_cobrar = models.PositiveIntegerField(null=True, blank=True)
-    precio_dia = models.DecimalField(max_digits=10, decimal_places=2, default=2000)
+    precio_dia = models.DecimalField(max_digits=10, decimal_places=2)
     valor_iva = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     subtotal_item = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     descuento_porcentaje = models.DecimalField(
