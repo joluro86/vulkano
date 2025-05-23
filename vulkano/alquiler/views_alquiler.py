@@ -5,7 +5,7 @@ from alquiler.forms.form_alquiler import AlquilerEditarForm, AlquilerItemForm
 from alquiler.models import Alquiler, AlquilerItem
 from django.contrib import messages
 from django.http import JsonResponse
-from producto.models import Producto
+from producto.models import PrecioProducto, Producto
 from cliente.views import obtener_o_crear_cliente_generico
 from cliente.models import Cliente
 from descuento.models import Descuento
@@ -53,6 +53,8 @@ def editar_alquiler(request, pk):
             messages.error(request, "Producto no registrado.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
+        print(item_form.errors)
+
         if item_form.is_valid():
             dias = item_form.cleaned_data.get('dias_a_cobrar')
             cantidad = item_form.cleaned_data.get('cantidad')
@@ -65,6 +67,7 @@ def editar_alquiler(request, pk):
                 item_existente.save()
             else:
                 item = item_form.save(commit=False)
+                item.precio_dia = PrecioProducto.objects.get(producto=producto).valor
                 item.producto = producto
                 item.alquiler = alquiler
                 item.save()

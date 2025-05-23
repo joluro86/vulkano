@@ -50,18 +50,12 @@ from producto.models import Producto
 class AlquilerItemForm(forms.ModelForm):
     class Meta:
         model = AlquilerItem
-        fields = ['dias_a_cobrar', 'precio_dia','cantidad',]
+        fields = ['dias_a_cobrar', 'cantidad',]
         widgets = {
             'dias_a_cobrar': forms.NumberInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded',
                 'min': 1,
                 'placeholder': 'Opcional, se calcula si no se digita'
-            }),
-            'precio_dia': forms.NumberInput(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded',
-                'min': 0,
-                'step': 1,
-                'placeholder': 'Opcional, se toma del producto'
             }),
             'cantidad': forms.NumberInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded',

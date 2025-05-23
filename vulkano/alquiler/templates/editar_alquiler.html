@@ -22,25 +22,25 @@
         {% csrf_token %}
         {{ item_form.non_field_errors }}
 
-        <div class="col-span-3">
-          <label class="block text-sm font-medium text-gray-700">Buscar producto</label>
-          <input type="text" id="buscar-producto" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." autofocus />
-          <ul id="resultados-productos" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
-          <input type="hidden" name="producto" id="producto-id" />
+        <div class="col-span-3 flex flex-wrap items-end gap-4">
+          <div class="w-[40%]">
+            <label class="block text-sm font-medium text-gray-700">Buscar producto</label>
+            <input type="text" id="buscar-producto" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." autofocus />
+            <ul id="resultados-productos" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
+            <input type="hidden" name="producto" id="producto-id" />
+          </div>
+
+          <div class="w-[25%]">
+            <label class="block text-sm font-medium text-gray-700">Días a cobrar</label>
+            {{ item_form.dias_a_cobrar }}
+          </div>
+
+          <div class="w-[25%]">
+            <label class="block text-sm font-medium text-gray-700">Cantidad</label>
+            {{ item_form.cantidad }}
+          </div>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Días a cobrar</label>
-          {{ item_form.dias_a_cobrar }}
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Precio por día</label>
-          {{ item_form.precio_dia }}
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Cantidad</label>
-          {{ item_form.cantidad }}
-        </div>
         <div class="col-span-3">
           <button type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">Agregar producto</button>
         </div>
