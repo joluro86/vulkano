@@ -108,23 +108,24 @@
           <ul id="resultados-clientes" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
           <input type="hidden" name="cliente" id="cliente-id" value="{{ form.instance.cliente.id|default:'' }}" />
         </div>
+        <div class="col-span-2 flex flex-wrap items-end gap-4 w-full items-baseline">
+          <!-- Observaciones -->
+          <div class="min-w-[250px]">
+            <label for="{{ form.observaciones.id_for_label }}" class="block text-sm font-medium text-gray-700">Observaciones</label>
+            {{ form.observaciones }}
+          </div>
 
-        <div class="col-span-2">
-          <label class="block text-sm font-medium text-gray-700">Observaciones</label>
-          {{ form.observaciones }}
-        </div>
+          <!-- Fecha de inicio -->
+          <div class="w-[25%] min-w-[180px]">
+            <label for="{{ form.fecha_inicio.id_for_label }}" class="block text-sm font-medium text-gray-700">Inicio</label>
+            {{ form.fecha_inicio }}
+          </div>
 
-        <div>
-          <label class="block font-medium text-sm text-gray-700">Inicio</label>
-          {{ form.fecha_inicio }}
-        </div>
-        <div>
-          <label class="block font-medium text-sm text-gray-700">Fin</label>
-          {{ form.fecha_fin }}
-        </div>
-        <div>
-          <label class="block font-medium text-sm text-gray-700">Descuento general (%)</label>
-          {{ form.descuento_general }}
+          <!-- Fecha de fin -->
+          <div class="w-[25%] min-w-[180px]">
+            <label for="{{ form.fecha_fin.id_for_label }}" class="block text-sm font-medium text-gray-700">Fin</label>
+            {{ form.fecha_fin }}
+          </div>
         </div>
       </div>
 

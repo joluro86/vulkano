@@ -64,11 +64,12 @@ def editar_alquiler(request, pk):
                 item_existente.cantidad = cantidad or item_existente.cantidad
                 item_existente.save()
             else:
-                item = item_form.save(commit=False)
-                item.precio_dia = PrecioProducto.objects.get(producto=producto).valor
-                item.producto = producto
-                item.alquiler = alquiler
-                item.save()
+                if PrecioProducto.objects.get(producto=producto):                    
+                    item = item_form.save(commit=False)
+                    item.precio_dia = PrecioProducto.objects.get(producto=producto).valor
+                    item.producto = producto
+                    item.alquiler = alquiler
+                    item.save()
 
             alquiler.refresh_from_db()
 
