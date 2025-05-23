@@ -53,8 +53,6 @@ def editar_alquiler(request, pk):
             messages.error(request, "Producto no registrado.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
-        print(item_form.errors)
-
         if item_form.is_valid():
             dias = item_form.cleaned_data.get('dias_a_cobrar')
             cantidad = item_form.cleaned_data.get('cantidad')
