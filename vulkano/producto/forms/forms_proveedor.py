@@ -1,13 +1,15 @@
 from django import forms
 from producto.models import Proveedor
 
+
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
         fields = [
             'nombre', 'nit', 'direccion', 'telefono',
-            'ciudad', 'departamento', 'estado', 'empresa'
+            'ciudad', 'departamento', 'estado'
         ]
+        exclude = ['empresa']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -35,8 +37,5 @@ class ProveedorForm(forms.ModelForm):
             }),
             'estado': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
-            }),
-            'empresa': forms.Select(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
             }),
         }
