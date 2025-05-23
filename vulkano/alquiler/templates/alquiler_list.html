@@ -31,8 +31,8 @@
         <tr class="border-t">
           <td class="p-2 font-semibold text-gray-700">#{{ a.id }}</td>
           <td class="p-2">{{ a.usuario.username }}</td>
-          <td class="p-2">{{ a.fecha_inicio|default:"—" }}</td>
-          <td class="p-2">{{ a.fecha_fin|default:"—" }}</td>
+          <td class="p-2">{{ a.fecha_inicio|default:"—"|date:"d-m-Y" }}</td>
+          <td class="p-2">{{ a.fecha_fin|default:"—"|date:"d-m-Y" }}</td>
           <td>
             <span class="inline-block text-xs px-2 py-1 rounded-full
                     {% if a.estado == 'borrador' %}          
@@ -49,7 +49,7 @@
             {{ a.get_estado_display }}
           </span>
           </td>
-          <td class="p-2">{{ a.created_at|date:"Y-m-d H:i" }}</td>
+          <td class="p-2">{{ a.created_at|date:"d-m-Y H:i" }}</td>
           <td class="p-2">
             <a href="{% url 'editar_alquiler' a.id %}" class="text-[var(--primary-color)] hover:underline">Editar</a>
           </td>
