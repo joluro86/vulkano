@@ -128,3 +128,23 @@ class AlquilerItem(models.Model):
     def valor_descuento(self):
         base = self.cantidad * self.dias_a_cobrar * self.precio_dia
         return base * (self.descuento_porcentaje / Decimal('100'))
+
+class EventoAlquiler(models.Model):
+    TIPOS = [
+        ('estado', 'Cambio de estado'),
+        ('abono', 'Abono registrado'),
+        ('salida', 'Entrega de productos'),
+        ('devolucion', 'Devolución'),
+        ('nota', 'Nota interna'),
+    ]
+
+    alquiler = models.ForeignKey('Alquiler', on_delete=models.CASCADE, related_name='eventos')
+    tipo = models.CharField(max_length=20, choices=TIPOS)
+    descripcion = models.TextField(blank=True)
+    valor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Solo si aplica (como abono)
+    estado_asociado = models.CharField(max_length=20, blank=True)  # Para registrar estado si tipo = estado
+    creado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-fecha']

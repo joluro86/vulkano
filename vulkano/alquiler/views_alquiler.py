@@ -11,7 +11,7 @@ from cliente.models import Cliente
 from descuento.models import Descuento
 from decimal import Decimal
 from django.db.models import F
-
+from alquiler.utils import registrar_evento_alquiler
 
 @login_required
 def crear_alquiler(request):
@@ -40,7 +40,17 @@ def editar_alquiler(request, pk):
         if form.is_valid():
             alquiler = form.save(commit=False)
             alquiler.updated_by = request.user
+            alquiler.estado = 'en_curso'
             alquiler.save()
+
+            registrar_evento_alquiler(
+                alquiler,
+                tipo='estado',
+                descripcion='Se crea el alquiler y pasa a estado en curso',
+                estado_asociado='en_curso',
+                usuario=request.user
+            )
+
             messages.success(request, "Datos del alquiler actualizados.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
@@ -70,6 +80,18 @@ def editar_alquiler(request, pk):
                     item.producto = producto
                     item.alquiler = alquiler
                     item.save()
+                    
+            # Cambiar estado a 'en_curso' si sigue en 'borrador'
+            if alquiler.estado == 'borrador':
+                alquiler.estado = 'en_curso'
+                alquiler.save(update_fields=['estado'])
+                registrar_evento_alquiler(
+                    alquiler,
+                    tipo='estado',
+                    descripcion='Cambio automático a En curso al agregar producto',
+                    estado_asociado='en_curso',
+                    usuario=request.user
+                )
 
             alquiler.refresh_from_db()
 
@@ -200,3 +222,6 @@ def limpiar_descuento(request, pk):
 
     messages.success(request, f"Se eliminaron correctamentos los descuentos.")
     return redirect('editar_alquiler', pk=pk)
+
+
+    
