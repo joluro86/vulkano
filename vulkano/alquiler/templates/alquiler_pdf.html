@@ -18,11 +18,6 @@
         margin-bottom: 10px;
       }
       
-      .tabla_encabezado img {
-        height: 60px;
-        margin-right: 10px;
-      }
-      
       .tabla-productos {
         width: 100%;
         border-collapse: collapse;
@@ -88,7 +83,7 @@
         <td style="width: 50%; vertical-align: top;">
           <div style="display: flex; align-items: flex-start;">
             {% if logo_absoluto %}
-              <img src="{{ logo_absoluto }}" alt="Logo empresa" style="height: 60px; margin-right: 10px;" />
+              <img src="{{ logo_absoluto }}" alt="Logo empresa" style="height: 70px; width: 70px; margin-right: 10px;" />
             {% endif %}
             <div>
               <strong style="color: #0f4c81; font-size: 1.5rem;">{{ empresa.nombre }}</strong><br />
