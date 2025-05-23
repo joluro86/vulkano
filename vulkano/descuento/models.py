@@ -4,8 +4,8 @@ from empresa.models import Empresa
 
 class Descuento(models.Model):
     TIPO_CHOICES = [
-        ('oferta', 'Descuento por oferta'),
-        ('convenio', 'Descuento aplicado por convenio empresarial'),
+        ('oferta', 'Oferta'),
+        ('convenio', 'Convenio'),
     ]
 
     nombre = models.CharField(max_length=100)
