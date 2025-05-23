@@ -1,59 +1,97 @@
 {% extends 'index.html' %}
+{% load humanize %}
 
 {% block breadcrumb %}
   {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md border border-gray-100">
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Detalle del Producto</h2>
-    <a href="{% url 'producto_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver al listado</a>
-  </div>
-
-  {% if producto.imagen %}
-    <div class="flex justify-center mb-6">
-      <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
-           class="w-32 h-32 object-cover rounded shadow-md border border-gray-200" />
+  <div class="max-w-3xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-semibold text-gray-800">Detalle del Producto</h2>
+      <a href="{% url 'producto_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver al listado</a>
     </div>
-  {% endif %}
 
-  <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
-    <p><span class="font-semibold">Nombre:</span> {{ producto.nombre }}</p>
-    <p><span class="font-semibold">Código interno:</span> {{ producto.codigo_interno }}</p>
+    {% if producto.imagen %}
+      <div class="flex justify-center mb-6">
+        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-32 h-32 object-cover rounded shadow-md border border-gray-200" />
+      </div>
+    {% endif %}
 
-    <p>
-      <span class="font-semibold">Estado:</span>
-      <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium
+    <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
+      <p>
+        <span class="font-semibold">Nombre:</span> {{ producto.nombre }}
+      </p>
+      <p>
+        <span class="font-semibold">Código interno:</span> {{ producto.codigo_interno }}
+      </p>
+
+      <p>
+        <span class="font-semibold">Estado:</span>
+        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium
         {% if producto.estado == 'activo' %}
+            
           bg-green-100 text-green-700
-        {% else %}
+
+          {% else %}
+            
           bg-red-100 text-red-700
-        {% endif %}">
-        {{ producto.get_estado_display }}
-      </span>
-    </p>
 
-    <p><span class="font-semibold">Ubicación:</span> {{ producto.ubicacion_actual }}</p>
-    <p><span class="font-semibold">Sucursal:</span> {{ producto.sucursal.nombre }}</p>
-    <p><span class="font-semibold">Categoría:</span> {{ producto.categoria.nombre }}</p>
-    <p><span class="font-semibold">Proveedor:</span> {{ producto.proveedor.nombre }}</p>
-    <p><span class="font-semibold">Marca:</span> {{ producto.marca }}</p>
-    <p><span class="font-semibold">Modelo:</span> {{ producto.modelo }}</p>
-    <p><span class="font-semibold">Serial:</span> {{ producto.serial }}</p>
+          {% endif %}">
+          {{ producto.get_estado_display }}
+        </span>
+      </p>
 
-    <p><span class="font-semibold">Empresa:</span> {{ producto.empresa.nombre }}</p>
-    <p><span class="font-semibold">Creado por:</span> {{ producto.creado_por }}</p>
-    <p><span class="font-semibold">Fecha de creación:</span> {{ producto.created_at|date:"d M Y H:i" }}</p>
-    <p><span class="font-semibold">Última modificación:</span> {{ producto.updated_at|date:"d M Y H:i" }}</p>
-    <p><span class="font-semibold">Modificado por:</span> {{ producto.modificado_por }}</p>
+      <p>
+        <span class="font-semibold">Ubicación:</span> {{ producto.ubicacion_actual }}
+      </p>
+      <p>
+        <span class="font-semibold">Sucursal:</span> {{ producto.sucursal.nombre }}
+      </p>
+      <p>
+        <span class="font-semibold">Categoría:</span> {{ producto.categoria.nombre }}
+      </p>
+      <p>
+        <span class="font-semibold">Proveedor:</span> {{ producto.proveedor.nombre }}
+      </p>
+      <p>
+        <span class="font-semibold">Marca:</span> {{ producto.marca }}
+      </p>
+      <p>
+        <span class="font-semibold">Modelo:</span> {{ producto.modelo }}
+      </p>
+      <p>
+        <span class="font-semibold">Serial:</span> {{ producto.serial }}
+      </p>
+      {% if producto.precios.first %}
+        <p>
+          <span class="font-semibold">Precio:</span> ${{ producto.precios.first.valor|floatformat:0|intcomma }}
+        </p>
+      {% else %}
+        <p>
+          <span class="font-semibold">Precio:</span> No definido
+        </p>
+      {% endif %}
+
+      <p>
+        <span class="font-semibold">Empresa:</span> {{ producto.empresa.nombre }}
+      </p>
+      <p>
+        <span class="font-semibold">Creado por:</span> {{ producto.creado_por }}
+      </p>
+      <p>
+        <span class="font-semibold">Fecha de creación:</span> {{ producto.created_at|date:'d M Y H:i' }}
+      </p>
+      <p>
+        <span class="font-semibold">Última modificación:</span> {{ producto.updated_at|date:'d M Y H:i' }}
+      </p>
+      <p>
+        <span class="font-semibold">Modificado por:</span> {{ producto.modificado_por }}
+      </p>
+    </div>
+
+    <div class="mt-8 text-right">
+      <a href="{% url 'editar_producto' producto.id %}" class="bg-[var(--primary-color)] text-white px-5 py-2 rounded hover:bg-blue-700 transition duration-200">✏️ Editar producto</a>
+    </div>
   </div>
-
-  <div class="mt-8 text-right">
-    <a href="{% url 'editar_producto' producto.id %}"
-       class="bg-[var(--primary-color)] text-white px-5 py-2 rounded hover:bg-blue-700 transition duration-200">
-      ✏️ Editar producto
-    </a>
-  </div>
-</div>
 {% endblock %}
