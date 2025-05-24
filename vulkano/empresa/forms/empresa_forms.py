@@ -1,12 +1,14 @@
+from producto.models import Empresa
 from django import forms
 from empresa.models import Empresa, Sucursal
+
 
 class EmpresaForm(forms.ModelForm):
     class Meta:
         model = Empresa
         fields = [
             'nombre', 'nit', 'direccion', 'telefono',
-            'ciudad', 'departamento', 'estado'
+            'ciudad', 'departamento', 'estado', 'logo',
         ]
         widgets = {
             'nombre': forms.TextInput(attrs={
@@ -36,16 +38,15 @@ class EmpresaForm(forms.ModelForm):
             'estado': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
             }),
+            'logo': forms.ClearableFileInput(attrs={'class': 'w-full border border-gray-300 p-2 rounded bg-white'}),
         }
 
-
-from django import forms
-from producto.models import Empresa
 
 class EmpresaEditForm(forms.ModelForm):
     class Meta:
         model = Empresa
-        fields = ['nombre', 'nit', 'direccion', 'telefono', 'ciudad', 'departamento', 'estado']
+        fields = ['nombre', 'nit', 'direccion',
+                  'telefono', 'ciudad', 'departamento', 'estado', 'logo']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -74,13 +75,15 @@ class EmpresaEditForm(forms.ModelForm):
             'estado': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-[var(--primary-color)]',
             }),
+            'logo': forms.ClearableFileInput(attrs={'class': 'w-full border border-gray-300 p-2 rounded bg-white'}),
         }
 
 
 class SucursalForm(forms.ModelForm):
     class Meta:
         model = Sucursal
-        fields = ['empresa', 'nombre', 'ciudad', 'direccion', 'departamento', 'telefono', 'estado']
+        fields = ['empresa', 'nombre', 'ciudad', 'direccion',
+                  'departamento', 'telefono', 'estado']
         widgets = {
             'empresa': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -97,7 +100,7 @@ class SucursalForm(forms.ModelForm):
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Dirección'
             }),
-             'departamento': forms.TextInput(attrs={
+            'departamento': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Departamento'
             }),
@@ -110,10 +113,12 @@ class SucursalForm(forms.ModelForm):
             }),
         }
 
+
 class SucursalEditForm(forms.ModelForm):
     class Meta:
         model = Sucursal
-        fields = ['empresa', 'nombre', 'ciudad', 'direccion', 'departamento', 'telefono', 'estado']
+        fields = ['empresa', 'nombre', 'ciudad', 'direccion',
+                  'departamento', 'telefono', 'estado']
         widgets = {
             'empresa': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -130,7 +135,7 @@ class SucursalEditForm(forms.ModelForm):
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Dirección'
             }),
-             'departamento': forms.TextInput(attrs={
+            'departamento': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]',
                 'placeholder': 'Departamento'
             }),

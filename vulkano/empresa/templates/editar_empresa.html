@@ -10,7 +10,7 @@
       <a href="{% url 'empresa_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver al listado</a>
     </div>
 
-    <form method="post" class="grid grid-cols-2 gap-3">
+    <form method="post" enctype="multipart/form-data" class="grid grid-cols-2 gap-3">
       {% csrf_token %}
       {{ form.non_field_errors }}
 
@@ -61,8 +61,15 @@
           <p class="text-sm text-red-600">{{ form.departamento.errors|striptags }}</p>
         {% endif %}
       </div>
-
       <div class="col-span-2">
+        <label class="block text-sm font-medium text-gray-700">Logo</label>
+        {{ form.logo }}
+        {% if form.logo.errors %}
+          <p class="text-sm text-red-600">{{ form.logo.errors|striptags }}</p>
+        {% endif %}
+      </div>
+      <div>
+      <div>
         <label class="block text-sm font-medium text-gray-700">Estado</label>
         {{ form.estado }}
         {% if form.estado.errors %}

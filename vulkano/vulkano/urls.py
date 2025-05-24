@@ -37,6 +37,8 @@ urlpatterns = [
 
     path('reservas/', include('reservas.urls')),
     
+    path('', include('descuento.urls')),
+    
     ]
 
 if settings.DEBUG:

@@ -4,7 +4,7 @@ from .models import Persona
 class PersonaForm(forms.ModelForm):
     class Meta:
         model = Persona
-        fields = ['nombre', 'apellidos', 'tipo_documento', 'documento', 'telefono', 'correo', 'direccion']
+        fields = ['nombre', 'apellidos', 'tipo_documento', 'telefono', 'correo', 'direccion']
         widgets = {
              'nombre': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]',
@@ -16,10 +16,6 @@ class PersonaForm(forms.ModelForm):
             }),
             'tipo_documento': forms.Select(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded bg-white'
-            }),
-            'documento': forms.TextInput(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded',
-                'placeholder': 'Número de documento'
             }),
             'telefono': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded',

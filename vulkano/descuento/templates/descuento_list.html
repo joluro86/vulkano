@@ -1,0 +1,49 @@
+{% extends 'index.html' %}
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+  <div class="max-w-5xl mx-auto bg-white p-4 mt-6 rounded shadow">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Descuentos aplicados</h2>
+      <a href="{% url 'descuento_create' %}" class="bg-[var(--primary-color)] text-white px-4 py-1.5 rounded hover:bg-blue-800">+ Nuevo descuento</a>
+    </div>
+
+    <table class="min-w-full bg-white border border-gray-300 rounded text-sm">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="text-left p-2">Tipo</th>
+          <th class="text-left p-2">Porcentaje</th>
+          <th class="text-left p-2">Observación</th>
+          <th class="text-left p-2">Estado</th>
+          <th class="text-left p-2">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in descuentos %}
+          <tr class="border-t">
+            <td class="p-2">{{ d.get_tipo_display }}</td>
+            <td class="p-2">{{ d.porcentaje }}%</td>
+            <td class="p-2">{{ d.descripcion|default:'—' }}</td>
+
+            {% if d.activo %}
+              <td class="p-2">Activo</td>
+              {% else %}
+              <td class="p-2">Inactivo</td>
+            {% endif %}
+
+            <td class="p-2 flex gap-2">
+              <a href="{% url 'descuento_edit' d.pk %}" class="text-blue-600 hover:text-blue-800 text-sm">Editar</a>
+              <a href="{% url 'descuento_delete' d.pk %}" class="text-red-600 hover:text-red-800 text-sm">Eliminar</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="p-4 text-center text-gray-500">No hay descuentos aplicados.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

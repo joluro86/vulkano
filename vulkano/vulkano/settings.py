@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'persona',
     'cliente',
     'reservas',
+    'descuento',
 ]
 
 LOGIN_REDIRECT_URL = 'home'

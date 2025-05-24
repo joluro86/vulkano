@@ -72,14 +72,6 @@
       </div>
 
       <div class="col-span-2">
-        <label class="block text-sm font-medium text-gray-700">Empresa</label>
-        {{ form.empresa }}
-        {% if form.empresa.errors %}
-          <p class="text-sm text-red-600">{{ form.empresa.errors|striptags }}</p>
-        {% endif %}
-      </div>
-
-      <div class="col-span-2">
         <button type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">
           {{ boton_texto }}
         </button>

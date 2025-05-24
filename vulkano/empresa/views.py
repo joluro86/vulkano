@@ -91,7 +91,6 @@ class SucursalCreateView(LoginRequiredMixin, BreadcrumbMixin, CreateView):
 class SucursalListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     model = Sucursal
     template_name = 'sucursal_list.html'
-    context_object_name = 'sucursales'
     ordering = ['nombre']  # Orden alfabético por nombre de sucursal
     paginate_by = 10
     breadcrumb_items = [("Empresas", reverse_lazy("empresa_list")),
@@ -127,12 +126,14 @@ class SucursalListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
             queryset = queryset.filter(ciudad__icontains=ciudad)
 
         return queryset
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["estados"] = Sucursal.ESTADOS
         context["ciudades"] = Sucursal.objects.values_list("ciudad", flat=True).distinct().order_by("ciudad")
         context["departamentos"] = Sucursal.objects.values_list("departamento", flat=True).distinct().order_by("departamento")
+        context['sucursales'] = Sucursal.objects.filter(empresa=self.request.user.empresa)
         return context
        
 class SucursalUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):

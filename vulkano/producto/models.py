@@ -32,6 +32,13 @@ class Proveedor(models.Model):
     def __str__(self):
         return self.nombre
 
+class ProductoManager(models.Manager):
+    def por_empresa(self, empresa):
+        return self.filter(empresa=empresa)
+    
+    def activos_por_empresa(self, empresa):
+        return self.filter(empresa=empresa, estado='activo')
+    
 class Producto(models.Model):
     ESTADOS = [
         ("activo", "Activo"),
@@ -43,6 +50,7 @@ class Producto(models.Model):
     descripcion = models.TextField()
     codigo_interno = models.CharField(max_length=50)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
+    iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="Porcentaje de IVA aplicado al producto")
     ubicacion_actual = models.CharField(max_length=100)
     marca = models.CharField(max_length=100, blank=True, null=True)
     modelo = models.CharField(max_length=100, blank=True, null=True)
@@ -56,6 +64,7 @@ class Producto(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     creado_por = models.CharField(max_length=100, blank=True, null=True)
     modificado_por = models.CharField(max_length=100, blank=True, null=True)
+    
     class Meta:
         ordering = ['nombre']
         verbose_name = 'Producto'
@@ -67,12 +76,14 @@ class Producto(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.codigo_interno})"
+    
+    objects = ProductoManager()
 
-class DetalleProducto(models.Model):
-    producto = models.ForeignKey(Producto, related_name='detalles', on_delete=models.CASCADE)
-    atributo = models.CharField(max_length=100)
-    valor = models.CharField(max_length=255)
+class PrecioProducto(models.Model):
+    producto = models.ForeignKey(Producto, related_name='precios', on_delete=models.CASCADE)
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.atributo}: {self.valor}"
+
 
