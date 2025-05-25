@@ -19,6 +19,8 @@
           <th class="px-4 py-2">Producto</th>
           <th class="px-4 py-2">Fecha inicio</th>
           <th class="px-4 py-2">Fecha fin</th>
+          <th class="px-4 py-2">Precio Dia</th>
+          <th class="px-4 py-2">Precio Total</th>
           <th class="px-4 py-2">Estado</th>
           <th class="px-4 py-2">Acciones</th>
         </tr>
@@ -31,6 +33,8 @@
           <td class="px-4 py-2">{{ reserva.producto }}</td>
           <td class="px-4 py-2">{{ reserva.fecha_inicio }}</td>
           <td class="px-4 py-2">{{ reserva.fecha_fin }}</td>
+          <td class="px-4 py-2">${{ reserva.precio }}</td>
+          <td class="px-4 py-2">${{ reserva.precio_total }}</td>
           <td class="px-4 py-2">{{ reserva.estado }}</td>
           <td class="px-4 py-2">
             <a href="{% url 'editar_reserva' reserva.id %}" class="text-blue-600 hover:underline">Editar</a>
