@@ -1,5 +1,6 @@
 from django.db import models
 from empresa.models import Empresa, Sucursal
+import datetime
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100, null=False)
@@ -113,10 +114,10 @@ class InventarioProducto(models.Model):
         self.modificado_por = nombre_usuario
 
         if cantidad_cambio > 0:
-            self.fecha_ultima_entrada = models.DateField(auto_now=True)
+            self.fecha_ultima_entrada = datetime.date.today()
             self.cantidad_ultima_entrada = abs(cantidad_cambio)
         elif cantidad_cambio < 0:
-            self.fecha_ultima_salida = models.DateField(auto_now=True)
+            self.fecha_ultima_salida = datetime.date.today()
             self.cantidad_ultima_salida = abs(cantidad_cambio)
 
         # Opcional: podrías concatenar observaciones si no quieres que el comentario sobrescriba

@@ -5,7 +5,7 @@ from alquiler.forms.form_alquiler import AlquilerEditarForm, AlquilerItemForm
 from alquiler.models import Alquiler, AlquilerItem
 from django.contrib import messages
 from django.http import JsonResponse
-from producto.models import PrecioProducto, Producto
+from producto.models import InventarioProducto, PrecioProducto, Producto
 from cliente.views import obtener_o_crear_cliente_generico
 from cliente.models import Cliente
 from descuento.models import Descuento
@@ -73,6 +73,13 @@ def editar_alquiler(request, pk):
                 item_existente.precio_dia = item_existente.precio_dia
                 item_existente.cantidad = cantidad or item_existente.cantidad
                 item_existente.save()
+
+                producto.inventario.actualizar_stock_simple(
+                    -cantidad, # Se resta el cambio_neto_en_alquiler del stock
+                    request.user.username,
+                    f"Ajuste en alquiler #{alquiler.pk} (de {cantidad_anterior_en_alquiler} a {cantidad})"
+                )
+
             else:
                 if PrecioProducto.objects.get(producto=producto):                    
                     item = item_form.save(commit=False)
@@ -80,6 +87,13 @@ def editar_alquiler(request, pk):
                     item.producto = producto
                     item.alquiler = alquiler
                     item.save()
+
+                        # Disminuir el stock del producto usando el método del modelo
+                    producto.inventario.actualizar_stock_simple(
+                        -cantidad, # Se resta la cantidad solicitada del stock
+                        request.user.username,
+                        f"Salida por alquiler #{alquiler.pk}"
+                    )
                     
             # Cambiar estado a 'en_curso' si sigue en 'borrador'
             if alquiler.estado == 'borrador':

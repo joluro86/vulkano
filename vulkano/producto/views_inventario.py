@@ -6,7 +6,7 @@ from core.views import BreadcrumbMixin
 
 from .models import Producto, InventarioProducto # Asegúrate de importar InventarioProducto
 
-class ProductoListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
+class InventarioListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
     model = Producto
     template_name = 'inventario_productos.html'
     context_object_name = 'productos'
