@@ -5,16 +5,57 @@ from cliente.models import Cliente
 from cliente.forms import ClienteForm
 from django.db.models import ProtectedError
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 @login_required
 def cliente_list(request):
-    clientes_qs = Cliente.objects.filter(empresa=request.user.empresa).order_by('nombre')
-    paginator = Paginator(clientes_qs, 10)  # 20 clientes por página
+    query = request.GET.get('q', '').strip()
+    clientes_qs = Cliente.objects.filter(empresa=request.user.empresa)
+    total_clientes= len(Cliente.objects.filter(empresa=request.user.empresa))
+    if query:
+        clientes_qs = clientes_qs.filter(
+            Q(nombre__icontains=query) |
+            Q(apellidos__icontains=query) |
+            Q(documento__icontains=query) |
+            Q(correo__icontains=query)
+        )
+
+    clientes_qs = clientes_qs.order_by('nombre')
+    paginator = Paginator(clientes_qs, 10)
     page_number = request.GET.get('page')
     clientes = paginator.get_page(page_number)
+    
+    total_clientes= "Total clientes: " + str(total_clientes)
 
     return render(request, 'cliente_list.html', {
         'clientes': clientes,
+        'total_clientes': total_clientes,
+        'query': query,
+        'estado_filtro': 'todos',
+        'breadcrumb_items': [('Clientes', 'Listado')],
+    })
+
+@login_required
+def cliente_list_por_estado(request, estado):
+    
+    if estado=="activos":
+        clientes= Cliente.objects.filter(empresa=request.user.empresa, estado=True)
+    else:
+        clientes= Cliente.objects.filter(empresa=request.user.empresa, estado=False)
+            
+    total_clientes= len(clientes)
+
+    clientes = clientes.order_by('nombre')
+    paginator = Paginator(clientes, 10)
+    page_number = request.GET.get('page')
+    clientes = paginator.get_page(page_number)
+    
+    total_clientes= "Total clientes: " + str(total_clientes)
+
+    return render(request, 'cliente_list.html', {
+        'clientes': clientes,
+        'total_clientes': total_clientes,
+        'estado_filtro': estado,
         'breadcrumb_items': [('Clientes', 'Listado')],
     })
 

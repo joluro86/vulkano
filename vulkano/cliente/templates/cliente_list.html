@@ -8,8 +8,26 @@
   <div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold text-gray-800">Listado de clientes</h2>
-      <a href="{% url 'cliente_create' %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition">+ Nuevo cliente</a>
     </div>
+    <form method="get" class="mb-4 flex justify-between items-end gap-2">
+      <!-- Búsqueda a la derecha -->
+      <div class="flex gap-2 w-full max-w-md">
+        <input type="text" name="q" value="{{ query }}" placeholder="Buscar cliente..." class="p-2 border border-gray-300 rounded w-full" />
+        <button type="submit" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded">Buscar</button>
+      </div>
+
+      <!-- Acciones a la izquierda -->
+      <div class="flex items-end gap-2">
+        <select id="filtro-estado" class="p-2 border border-gray-300 rounded text-sm bg-white">
+          <option value="{% url 'cliente_list' %}" {% if estado_filtro == 'todos' %}selected{% endif %}>Todos</option>
+          <option value="{% url 'cliente_list_por_estado' 'activos' %}" {% if estado_filtro == 'activos' %}selected{% endif %}>Activos</option>
+          <option value="{% url 'cliente_list_por_estado' 'inactivos' %}" {% if estado_filtro == 'inactivos' %}selected{% endif %}>Inactivos</option>
+      </select>
+
+
+        <a href="{% url 'cliente_create' %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition">+ Nuevo cliente</a>
+      </div>
+    </form>
 
     <table class="min-w-full bg-white border border-gray-200 rounded text-sm">
       <thead class="bg-gray-100 text-left">
@@ -50,19 +68,67 @@
         {% endfor %}
       </tbody>
       <div class="mt-4 flex justify-between items-center text-sm">
-        <div>Página {{ clientes.number }} de {{ clientes.paginator.num_pages }}</div>
+        <div>
+          Página {{ clientes.number }} de {{ clientes.paginator.num_pages }} - <span>{{ total_clientes }}</span>
+        </div>
         <div class="space-x-2">
           {% if clientes.has_previous %}
-            <a href="?page=1" class="text-[var(--primary-color)] font-medium">Primera</a>
-            <a href="?page={{ clientes.previous_page_number }}" class="text-[var(--primary-color)] font-medium">Anterior</a>
+            <a href="?page=1{% if query %}
+                
+                
+                
+                
+                &q={{ query }}
+              {% endif %}"
+              class="text-[var(--primary-color)] font-medium">
+              Primera
+            </a>
+            <a href="?page={{ clientes.previous_page_number }}{% if query %}
+                
+                
+                
+                
+                &q={{ query }}
+              {% endif %}"
+              class="text-[var(--primary-color)] font-medium">
+              Anterior
+            </a>
           {% endif %}
-
           {% if clientes.has_next %}
-            <a href="?page={{ clientes.next_page_number }}" class="text-[var(--primary-color)] font-medium">Siguiente</a>
-            <a href="?page={{ clientes.paginator.num_pages }}" class="text-[var(--primary-color)] font-medium">Última</a>
+            <a href="?page={{ clientes.next_page_number }}{% if query %}
+                
+                
+                
+                
+                &q={{ query }}
+              {% endif %}"
+              class="text-[var(--primary-color)] font-medium">
+              Siguiente
+            </a>
+            <a href="?page={{ clientes.paginator.num_pages }}{% if query %}
+                
+                
+                
+                
+                &q={{ query }}
+              {% endif %}"
+              class="text-[var(--primary-color)] font-medium">
+              Última
+            </a>
           {% endif %}
         </div>
       </div>
     </table>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const selectEstado = document.getElementById('filtro-estado')
+      selectEstado.addEventListener('change', function () {
+        const url = this.value
+        if (url) {
+          window.location.href = url
+        }
+      })
+    })
+  </script>
 {% endblock %}
