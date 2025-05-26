@@ -79,6 +79,51 @@ class Producto(models.Model):
     
     objects = ProductoManager()
 
+
+class InventarioProducto(models.Model):
+    producto = models.OneToOneField(Producto, on_delete=models.CASCADE, related_name='inventario')  # Uno a uno si es por producto único
+    stock = models.PositiveIntegerField(default=0, help_text="Cantidad actual disponible en inventario")
+    stock_minimo = models.PositiveIntegerField(default=0, help_text="Nivel mínimo antes de generar alerta de reposición")
+    stock_maximo = models.PositiveIntegerField(blank=True, null=True, help_text="Nivel máximo deseado en inventario")
+    punto_reorden = models.PositiveIntegerField(blank=True, null=True, help_text="Nivel en el que se recomienda reordenar")
+
+    fecha_ultima_entrada = models.DateField(blank=True, null=True)
+    cantidad_ultima_entrada = models.PositiveIntegerField(blank=True, null=True)
+    fecha_ultima_salida = models.DateField(blank=True, null=True)
+    cantidad_ultima_salida = models.PositiveIntegerField(blank=True, null=True)
+
+    observaciones = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    creado_por = models.CharField(max_length=100, blank=True, null=True)
+    modificado_por = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Inventario de Producto'
+        verbose_name_plural = 'Inventario de Productos'
+        ordering = ['producto__nombre']
+
+    def __str__(self):
+        return f"Inventario de {self.producto.nombre}: {self.stock} unidades"
+
+    # Puedes seguir usando un método como este para simplificar la lógica en las vistas
+    def actualizar_stock_simple(self, cantidad_cambio, nombre_usuario, tipo_movimiento=""):
+        self.stock += cantidad_cambio
+        self.modificado_por = nombre_usuario
+
+        if cantidad_cambio > 0:
+            self.fecha_ultima_entrada = models.DateField(auto_now=True)
+            self.cantidad_ultima_entrada = abs(cantidad_cambio)
+        elif cantidad_cambio < 0:
+            self.fecha_ultima_salida = models.DateField(auto_now=True)
+            self.cantidad_ultima_salida = abs(cantidad_cambio)
+
+        # Opcional: podrías concatenar observaciones si no quieres que el comentario sobrescriba
+        self.observaciones = f"Movimiento: {tipo_movimiento}. Cantidad: {cantidad_cambio}. Por: {nombre_usuario}."
+        self.save()
+
+
 class PrecioProducto(models.Model):
     producto = models.ForeignKey(Producto, related_name='precios', on_delete=models.CASCADE)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
