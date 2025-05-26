@@ -4,10 +4,15 @@ from django.contrib import messages
 from cliente.models import Cliente
 from cliente.forms import ClienteForm
 from django.db.models import ProtectedError
+from django.core.paginator import Paginator
 
 @login_required
 def cliente_list(request):
-    clientes = Cliente.objects.filter(empresa=request.user.empresa).order_by('nombre')
+    clientes_qs = Cliente.objects.filter(empresa=request.user.empresa).order_by('nombre')
+    paginator = Paginator(clientes_qs, 10)  # 20 clientes por página
+    page_number = request.GET.get('page')
+    clientes = paginator.get_page(page_number)
+
     return render(request, 'cliente_list.html', {
         'clientes': clientes,
         'breadcrumb_items': [('Clientes', 'Listado')],
