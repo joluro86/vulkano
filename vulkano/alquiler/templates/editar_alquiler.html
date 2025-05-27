@@ -15,8 +15,12 @@
             
             
             
+            
+            
                       
                       bg-gray-100 text-gray-800
+
+
 
 
 
@@ -26,7 +30,11 @@
             
             
             
+            
+            
                       bg-blue-100 text-blue-800
+
+
 
 
 
@@ -36,7 +44,11 @@
             
             
             
+            
+            
                       bg-yellow-100 text-yellow-800
+
+
 
 
 
@@ -46,7 +58,11 @@
             
             
             
+            
+            
                       bg-green-100 text-green-800
+
+
 
 
 
@@ -56,7 +72,11 @@
             
             
             
+            
+            
                       bg-red-100 text-red-800
+
+
 
 
 
@@ -65,8 +85,12 @@
           {{ alquiler.get_estado_display }}
         </span>
       </h2>
-      <div class="flex gap-2">
-        <a href="{% url 'imprimir_alquiler' alquiler.id %}" target="_blank" class="text-sm bg-[var(--primary-color)] text-white px-3 py-1 rounded hover:bg-blue-800">🖨️ Imprimir</a>
+      <div class="flex gap-3">
+        <a href="{% url 'imprimir_alquiler' alquiler.id %}" target="_blank" class="text-sm bg-[var(--primary-color)] text-white px-4 py-2 rounded-xl hover:bg-blue-800 transition shadow">🖨️ Imprimir</a>
+
+       {% if alquiler.estado != 'liquidado' and alquiler.estado != 'anulado' %}
+          <a href="#" id="btn-liquidar" data-url="{% url 'liquidar_alquiler' alquiler.id %}" class="bg-green-700 hover:bg-green-800 text-white text-sm px-4 py-2 rounded-xl transition shadow">💰 Liquidar</a>
+        {% endif %}
         <a href="{% url 'alquiler_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver</a>
       </div>
     </div>
@@ -230,7 +254,7 @@
         <p class="text-sm text-gray-500 italic">No hay descuentos activos configurados para tu empresa.</p>
       {% endif %}
     </div>
-    <a href="{% url 'anular_alquiler' alquiler.id %}" class="bg-red-800 hover:bg-red-900 text-white text-md px-3 py-1 rounded">Anular</a>
+    <a href="#" class="bg-red-800 hover:bg-red-900 text-white text-md px-3 py-1 rounded" id="btn-anular" data-url="{% url 'anular_alquiler' alquiler.id %}">Anular</a>
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -391,4 +415,57 @@
       })
     })
   </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const btnAnular = document.getElementById('btn-anular')
+      if (btnAnular) {
+        btnAnular.addEventListener('click', function (e) {
+          e.preventDefault()
+          const url = this.getAttribute('data-url')
+          Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Esta acción anulará el alquiler y no se podrá editar.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, anular',
+            cancelButtonText: 'Cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = url
+            }
+          })
+        })
+      }
+    })
+  </script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const btnLiquidar = document.getElementById('btn-liquidar');
+    if (btnLiquidar) {
+      btnLiquidar.addEventListener('click', function (e) {
+        e.preventDefault();
+        const url = this.getAttribute('data-url');
+        Swal.fire({
+          title: '¿Liquidar alquiler?',
+          text: "Esta acción registrará el alquiler como finalizado y no será editable.",
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#aaa',
+          confirmButtonText: 'Sí, liquidar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = url;
+          }
+        });
+      });
+    }
+  });
+</script>
+
 {% endblock %}
