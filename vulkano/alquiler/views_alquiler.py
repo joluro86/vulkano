@@ -32,13 +32,18 @@ def crear_alquiler(request):
 
 @login_required
 def editar_alquiler(request, pk):
-    alquiler = get_object_or_404(
-        Alquiler, pk=pk, usuario__sucursal=request.user.sucursal)
+    try:
+        alquiler = Alquiler.objects.get(pk=pk, usuario__sucursal=request.user.sucursal)
+    except Alquiler.DoesNotExist:
+        messages.error(request, "El alquiler no existe o no tienes permiso para acceder a él.")
+        return redirect('alquiler_list')
 
-    form = AlquilerEditarForm(
-        request.POST or None, instance=alquiler, sucursal=request.user.sucursal)
-    item_form = AlquilerItemForm(
-        request.POST or None, sucursal=request.user.sucursal)
+    if alquiler.estado in ['anulado', 'liquidado']:
+        messages.info(request, f"El alquiler ya fue {alquiler.get_estado_display().lower()} y no puede editarse.")
+        return redirect('ver_alquiler', pk=alquiler.pk)
+
+    form = AlquilerEditarForm(request.POST or None, instance=alquiler, sucursal=request.user.sucursal)
+    item_form = AlquilerItemForm(request.POST or None, sucursal=request.user.sucursal)
 
     if request.method == 'POST' and not request.POST.get('producto'):
         if form.is_valid():
@@ -61,8 +66,7 @@ def editar_alquiler(request, pk):
     elif request.method == 'POST' and request.POST.get('producto'):
         producto_id = request.POST.get('producto')
         try:
-            producto = Producto.objects.get(
-                id=producto_id, empresa=request.user.empresa)
+            producto = Producto.objects.get(id=producto_id, empresa=request.user.empresa)
         except Producto.DoesNotExist:
             messages.error(request, "Producto no registrado.")
             return redirect('editar_alquiler', pk=alquiler.pk)
@@ -74,16 +78,20 @@ def editar_alquiler(request, pk):
             item_existente = alquiler.items.filter(producto=producto).first()
             if item_existente:
                 item_existente.dias_a_cobrar = dias or item_existente.dias_a_cobrar
-                item_existente.precio_dia = item_existente.precio_dia
                 item_existente.cantidad = cantidad or item_existente.cantidad
                 item_existente.save()
             else:
-                if PrecioProducto.objects.get(producto=producto):
-                    item = item_form.save(commit=False)
-                    item.precio_dia = PrecioProducto.objects.get(producto=producto).valor
-                    item.producto = producto
-                    item.alquiler = alquiler
-                    item.save()
+                try:
+                    precio = PrecioProducto.objects.get(producto=producto).valor
+                except PrecioProducto.DoesNotExist:
+                    messages.error(request, "No se encontró un precio registrado para este producto.")
+                    return redirect('editar_alquiler', pk=alquiler.pk)
+
+                item = item_form.save(commit=False)
+                item.precio_dia = precio
+                item.producto = producto
+                item.alquiler = alquiler
+                item.save()
 
             if alquiler.estado == 'borrador':
                 alquiler.estado = 'en_curso'
@@ -97,9 +105,7 @@ def editar_alquiler(request, pk):
                 )
 
             alquiler.refresh_from_db()
-
-            form = AlquilerEditarForm(
-                instance=alquiler, sucursal=request.user.sucursal)
+            form = AlquilerEditarForm(instance=alquiler, sucursal=request.user.sucursal)
 
     subtotal = Decimal(0)
     descuento_total = Decimal(0)
@@ -117,8 +123,7 @@ def editar_alquiler(request, pk):
 
     alquiler.total = total_con_descuento
     alquiler.save()
-    descuentos = Descuento.objects.filter(
-        activo=True, empresa=request.user.empresa)
+    descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
 
     context = {
         'alquiler': alquiler,
@@ -132,7 +137,6 @@ def editar_alquiler(request, pk):
         'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
     }
     return render(request, 'editar_alquiler.html', context)
-
 
 @login_required
 def buscar_productos(request):
