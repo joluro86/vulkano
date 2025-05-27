@@ -1,0 +1,115 @@
+{% extends 'index.html' %}
+{% load humanize %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+  <div class="max-w-5xl mx-auto mt-6 bg-white p-6 rounded-2xl shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">
+        Detalle del alquiler #{{ alquiler.id }}
+        <span class="ml-2 inline-block text-xs px-2 py-1 rounded-full
+      {% if alquiler.estado == 'borrador' %}
+             bg-gray-100 text-gray-800
+
+          {% elif alquiler.estado == 'en_curso' %}
+             bg-blue-100 text-blue-800
+
+          {% elif alquiler.estado == 'con_abono' %}
+             bg-yellow-100 text-yellow-800
+
+          {% elif alquiler.estado == 'liquidado' %}
+             bg-green-100 text-green-800
+
+          {% elif alquiler.estado == 'anulado' %}
+             bg-red-100 text-red-800
+
+          {% endif %}">
+          {{ alquiler.get_estado_display }}
+        </span>
+      </h2>
+      <div class="flex gap-3">
+        <a href="{% url 'imprimir_alquiler' alquiler.id %}" target="_blank" class="text-sm bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-800 transition shadow">🖨️ Imprimir</a>
+        <a href="{% url 'alquiler_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver</a>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4 text-sm mb-6">
+      <div>
+        <p>
+          <strong>Cliente:</strong> {{ alquiler.cliente }}
+        </p>
+        <p>
+          <strong>Inicio:</strong> {{ alquiler.fecha_inicio|date:'d-m-Y'|default:'—' }}
+        </p>
+        <p>
+          <strong>Fin:</strong> {{ alquiler.fecha_fin|date:'d-m-Y'|default:'—' }}
+        </p>
+      </div>
+      <div>
+        <p>
+          <strong>Registrado por:</strong> {{ alquiler.usuario.username }}
+        </p>
+        <p>
+          <strong>Última modificación:</strong> {{ alquiler.updated_at|date:'d-m-Y H:i' }}
+        </p>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-800 mb-2">Productos incluidos</h3>
+    <table class="min-w-full bg-white border border-gray-300 rounded text-sm mb-6">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="text-left p-2">Producto</th>
+          <th class="text-left p-2">Cantidad</th>
+          <th class="text-left p-2">Días</th>
+          <th class="text-left p-2">Precio/día</th>
+          <th class="text-left p-2">Subtotal</th>
+          <th class="text-left p-2">IVA</th>
+          <th class="text-left p-2">Descuento</th>
+          <th class="text-left p-2">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in alquiler.items.all %}
+          <tr class="border-t">
+            <td class="p-2">{{ item.producto }}</td>
+            <td class="p-2">{{ item.cantidad }}</td>
+            <td class="p-2">{{ item.dias_a_cobrar }}</td>
+            <td class="p-2">${{ item.precio_dia|floatformat:0|intcomma }}</td>
+            <td class="p-2">${{ item.subtotal_item|floatformat:0|intcomma }}</td>
+            <td class="p-2">${{ item.valor_iva|floatformat:0|intcomma }}</td>
+            <td class="p-2 text-red-600">-${{ item.valor_descuento|floatformat:0|intcomma }}</td>
+            <td class="p-2 font-semibold">${{ item.valor_item|floatformat:0|intcomma }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="p-2 text-center text-gray-500">No hay productos registrados.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="bg-gray-50 border-t pt-4 text-sm text-right">
+      <p>
+        <strong>Subtotal:</strong> ${{ subtotal|floatformat:0|intcomma }}
+      </p>
+      <p>
+        <strong>Descuento total:</strong> -${{ descuento_total|floatformat:0|intcomma }}
+      </p>
+      <p>
+        <strong>IVA total:</strong> ${{ iva_total|floatformat:0|intcomma }}
+      </p>
+      <p class="text-lg text-gray-800 mt-2 font-bold">Total a pagar: ${{ total|floatformat:0|intcomma }}</p>
+    </div>
+
+    <div class="mt-4 text-sm">
+      <p>
+        <strong>Observaciones:</strong>
+      </p>
+      <p class="text-gray-700 whitespace-pre-line">{{ alquiler.observaciones|default:'Sin observaciones.' }}</p>
+    </div>
+  </div>
+{% endblock %}

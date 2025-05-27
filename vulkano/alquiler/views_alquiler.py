@@ -12,6 +12,9 @@ from descuento.models import Descuento
 from decimal import Decimal
 from django.db.models import F
 from alquiler.utils import registrar_evento_alquiler
+from django.http import Http404
+from django.utils.timezone import now
+from django.utils.timezone import localtime
 
 @login_required
 def crear_alquiler(request):
@@ -219,3 +222,58 @@ def limpiar_descuento(request, pk):
 
     messages.info(request, f"Se eliminaron correctamente los descuentos.")
     return redirect('editar_alquiler', pk=pk)
+
+@login_required
+def anular_alquiler(request, pk):
+    try:
+        alquiler = get_object_or_404(
+            Alquiler,
+            pk=pk,
+            usuario__empresa=request.user.empresa,
+            usuario__sucursal=request.user.sucursal
+        )
+    except Http404:
+        messages.error(request, "El alquiler no existe o no tienes permiso para acceder.")
+        return redirect('alquiler_list')
+
+    alquiler.estado = 'anulado'
+    alquiler.observaciones = f"Anulado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
+    alquiler.save()
+    
+    print(alquiler.observaciones)
+
+    messages.success(request, "El alquiler fue anulado correctamente.")
+    return redirect('editar_alquiler', pk=pk)
+        
+@login_required
+def ver_alquiler(request, pk):
+    try:
+        alquiler = Alquiler.objects.get(pk=pk, usuario__empresa=request.user.empresa)
+    except Alquiler.DoesNotExist:
+        messages.error(request, f"El alquiler #{pk} no existe o no pertenece a tu empresa.")
+        return redirect('alquiler_list')
+
+    # Cálculos necesarios
+    subtotal = Decimal(0)
+    descuento_total = Decimal(0)
+    iva_total = Decimal(0)
+    total_con_descuento = Decimal(0)
+
+    for item in alquiler.items.select_related('producto'):
+        base = item.dias_a_cobrar * item.precio_dia * item.cantidad
+        descuento = base * (item.descuento_porcentaje / Decimal('100'))
+        subtotal += base
+        descuento_total += descuento
+        iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
+        iva_total += iva
+        total_con_descuento += (base - descuento)
+
+    context = {
+        'alquiler': alquiler,
+        'total': total_con_descuento,
+        'subtotal': subtotal,
+        'descuento_total': descuento_total,
+        'iva_total': iva_total,
+        'breadcrumb_items': [('Alquileres', 'Ver')]
+    }
+    return render(request, 'ver_alquiler.html', context)

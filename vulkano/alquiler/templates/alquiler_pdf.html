@@ -97,9 +97,31 @@
         <td style="width: 50%; text-align: right; vertical-align: top;">
           <div style="margin-top: 10px;">
             <strong style="color: #0f4c81;">Alquiler #{{ alquiler.id }}</strong><br />
+            {% if alquiler.estado %}
+              <p style="
+                font-weight: bold;
+                font-size: 14px;
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 6px;
+                margin-bottom: 10px;
+                color: white;
+                background-color:
+                  {% if alquiler.estado == 'borrador' %} #9ca3af;    /* gris */
+                  {% elif alquiler.estado == 'en_curso' %} #3b82f6;  /* azul */
+                  {% elif alquiler.estado == 'con_abono' %} #eab308; /* amarillo */
+                  {% elif alquiler.estado == 'liquidado' %} #22c55e; /* verde */
+                  {% elif alquiler.estado == 'anulado' %} #ef4444;   /* rojo */
+                  {% else %} #6b7280; /* por defecto gris oscuro */
+                  {% endif %}
+              ">
+                Estado: {{ alquiler.get_estado_display }}
+              </p>
+            {% endif %} <br>
+
             Fecha de emisión: {{ alquiler.created_at|date:'d/m/Y' }}<br />
             <strong>Inicio:</strong> {{ alquiler.fecha_inicio|date:'d/m/Y' }}<br />
-            <strong>Fin:</strong> {{ alquiler.fecha_fin|date:'d/m/Y' }}<br />
+            <strong>Fin:</strong> {{ alquiler.fecha_fin|date:'d/m/Y' }}<br />              
             <strong>Observaciones:</strong> {{ alquiler.observaciones }}
           </div>
           <strong style="color: #0f4c81;">Cliente:</strong> {{ alquiler.cliente.nombre }} {{ alquiler.cliente.apellidos }}<br />
