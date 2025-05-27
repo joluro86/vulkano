@@ -5,6 +5,9 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['nombre', 'apellidos', 'tipo_documento', 'documento', 'telefono', 'correo', 'direccion', 'estado']
+        labels = {
+            'estado': 'Activo'
+        }
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)]',
