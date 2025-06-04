@@ -285,13 +285,17 @@ def liquidar_alquiler(request, pk):
             usuario__empresa=request.user.empresa,
             usuario__sucursal=request.user.sucursal
         )
+        if alquiler.fecha_fin==None or alquiler.fecha_fin=="" or alquiler.fecha_inicio==None or alquiler.fecha_inicio=="":
+            messages.error(request, "Para liquidar el alquiler ingrese fecha de inicio y fecha fin.")
+            return redirect('editar_alquiler', pk=pk)
+            
     except Http404:
         messages.error(request, "El alquiler no existe o no tienes permiso para acceder.")
         return redirect('alquiler_list')
 
     alquiler.estado = 'liquidado'
     alquiler.observaciones = f"Liquidado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
-    alquiler.save()
+    #alquiler.save()
     
     print(alquiler.observaciones)
 
