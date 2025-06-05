@@ -12,6 +12,9 @@ from descuento.models import Descuento
 from decimal import Decimal
 from django.db.models import F
 from alquiler.utils import registrar_evento_alquiler
+from django.http import Http404
+from django.utils.timezone import now
+from django.utils.timezone import localtime
 
 @login_required
 def crear_alquiler(request):
@@ -26,16 +29,20 @@ def crear_alquiler(request):
     messages.info(request, "Nuevo alquiler creado como borrador.")
     return redirect('editar_alquiler', pk=alquiler.pk)
 
-
 @login_required
 def editar_alquiler(request, pk):
-    alquiler = get_object_or_404(
-        Alquiler, pk=pk, usuario__sucursal=request.user.sucursal)
+    try:
+        alquiler = Alquiler.objects.get(pk=pk, usuario__sucursal=request.user.sucursal)
+    except Alquiler.DoesNotExist:
+        messages.error(request, "El alquiler no existe o no tienes permiso para acceder a él.")
+        return redirect('alquiler_list')
 
-    form = AlquilerEditarForm(
-        request.POST or None, instance=alquiler, sucursal=request.user.sucursal)
-    item_form = AlquilerItemForm(
-        request.POST or None, sucursal=request.user.sucursal)
+    if alquiler.estado in ['anulado', 'liquidado']:
+        messages.info(request, f"El alquiler ya fue {alquiler.get_estado_display().lower()} y no puede editarse.")
+        return redirect('ver_alquiler', pk=alquiler.pk)
+
+    form = AlquilerEditarForm(request.POST or None, instance=alquiler, sucursal=request.user.sucursal)
+    item_form = AlquilerItemForm(request.POST or None, sucursal=request.user.sucursal)
 
     if request.method == 'POST' and not request.POST.get('producto'):
         if form.is_valid():
@@ -58,8 +65,7 @@ def editar_alquiler(request, pk):
     elif request.method == 'POST' and request.POST.get('producto'):
         producto_id = request.POST.get('producto')
         try:
-            producto = Producto.objects.get(
-                id=producto_id, empresa=request.user.empresa)
+            producto = Producto.objects.get(id=producto_id, empresa=request.user.empresa)
         except Producto.DoesNotExist:
             messages.error(request, "Producto no registrado.")
             return redirect('editar_alquiler', pk=alquiler.pk)
@@ -71,16 +77,20 @@ def editar_alquiler(request, pk):
             item_existente = alquiler.items.filter(producto=producto).first()
             if item_existente:
                 item_existente.dias_a_cobrar = dias or item_existente.dias_a_cobrar
-                item_existente.precio_dia = item_existente.precio_dia
                 item_existente.cantidad = cantidad or item_existente.cantidad
                 item_existente.save()
             else:
-                if PrecioProducto.objects.get(producto=producto):
-                    item = item_form.save(commit=False)
-                    item.precio_dia = PrecioProducto.objects.get(producto=producto).valor
-                    item.producto = producto
-                    item.alquiler = alquiler
-                    item.save()
+                try:
+                    precio = PrecioProducto.objects.get(producto=producto).valor
+                except PrecioProducto.DoesNotExist:
+                    messages.error(request, "No se encontró un precio registrado para este producto.")
+                    return redirect('editar_alquiler', pk=alquiler.pk)
+
+                item = item_form.save(commit=False)
+                item.precio_dia = precio
+                item.producto = producto
+                item.alquiler = alquiler
+                item.save()
 
             if alquiler.estado == 'borrador':
                 alquiler.estado = 'en_curso'
@@ -94,9 +104,7 @@ def editar_alquiler(request, pk):
                 )
 
             alquiler.refresh_from_db()
-
-            form = AlquilerEditarForm(
-                instance=alquiler, sucursal=request.user.sucursal)
+            form = AlquilerEditarForm(instance=alquiler, sucursal=request.user.sucursal)
 
     subtotal = Decimal(0)
     descuento_total = Decimal(0)
@@ -114,8 +122,7 @@ def editar_alquiler(request, pk):
 
     alquiler.total = total_con_descuento
     alquiler.save()
-    descuentos = Descuento.objects.filter(
-        activo=True, empresa=request.user.empresa)
+    descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
 
     context = {
         'alquiler': alquiler,
@@ -130,7 +137,6 @@ def editar_alquiler(request, pk):
     }
     return render(request, 'editar_alquiler.html', context)
 
-
 @login_required
 def buscar_productos(request):
     query = request.GET.get('q', '')
@@ -140,7 +146,6 @@ def buscar_productos(request):
             empresa=request.user.empresa, nombre__icontains=query)[:10]
         resultados = [{'id': p.id, 'nombre': p.nombre} for p in productos]
     return JsonResponse(resultados, safe=False)
-
 
 @login_required
 def eliminar_item_alquiler(request, pk):
@@ -159,7 +164,6 @@ def eliminar_item_alquiler(request, pk):
     messages.success(request, "Producto eliminado del alquiler.")
     return redirect('editar_alquiler', pk=item.alquiler.id)
 
-
 @login_required
 def alquiler_list(request):
     alquileres = Alquiler.objects.filter(
@@ -171,7 +175,6 @@ def alquiler_list(request):
     }
     return render(request, 'alquiler_list.html', context)
 
-
 @login_required
 def buscar_clientes(request):
     query = request.GET.get('q', '')
@@ -182,7 +185,6 @@ def buscar_clientes(request):
         resultados = [{'id': c.id, 'nombre': f"{c.nombre} {c.apellidos}"}
                       for c in clientes]
     return JsonResponse(resultados, safe=False)
-
 
 @login_required
 @require_POST
@@ -204,7 +206,6 @@ def aplicar_descuento_alquiler(request, pk):
         request, f"Se aplicó el descuento «{descuento.nombre}» correctamente.")
     return redirect('editar_alquiler', pk=pk)
 
-
 @login_required
 def limpiar_descuento(request, pk):
     alquiler = get_object_or_404(
@@ -219,3 +220,80 @@ def limpiar_descuento(request, pk):
 
     messages.info(request, f"Se eliminaron correctamente los descuentos.")
     return redirect('editar_alquiler', pk=pk)
+
+@login_required
+def anular_alquiler(request, pk):
+    try:
+        alquiler = get_object_or_404(
+            Alquiler,
+            pk=pk,
+            usuario__empresa=request.user.empresa,
+            usuario__sucursal=request.user.sucursal
+        )
+    except Http404:
+        messages.error(request, "El alquiler no existe o no tienes permiso para acceder.")
+        return redirect('alquiler_list')
+
+    alquiler.estado = 'anulado'
+    alquiler.observaciones = f"Anulado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
+    alquiler.save()
+    
+    print(alquiler.observaciones)
+
+    messages.success(request, "El alquiler fue anulado correctamente.")
+    return redirect('editar_alquiler', pk=pk)
+        
+@login_required
+def ver_alquiler(request, pk):    
+    try:
+        alquiler = Alquiler.objects.get(pk=pk, usuario__empresa=request.user.empresa)
+    except Alquiler.DoesNotExist:
+        messages.error(request, f"El alquiler #{pk} no existe o no pertenece a tu empresa.")
+        return redirect('alquiler_list')
+
+    # Cálculos necesarios
+    subtotal = Decimal(0)
+    descuento_total = Decimal(0)
+    iva_total = Decimal(0)
+    total_con_descuento = Decimal(0)
+
+    for item in alquiler.items.select_related('producto'):
+        base = item.dias_a_cobrar * item.precio_dia * item.cantidad
+        descuento = base * (item.descuento_porcentaje / Decimal('100'))
+        subtotal += base
+        descuento_total += descuento
+        iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
+        iva_total += iva
+        total_con_descuento += (base - descuento)
+
+    context = {
+        'alquiler': alquiler,
+        'total': total_con_descuento,
+        'subtotal': subtotal,
+        'descuento_total': descuento_total,
+        'iva_total': iva_total,
+        'breadcrumb_items': [('Alquileres', 'Ver')]
+    }
+    return render(request, 'ver_alquiler.html', context)
+
+@login_required
+def liquidar_alquiler(request, pk):
+    try:
+        alquiler = get_object_or_404(
+            Alquiler,
+            pk=pk,
+            usuario__empresa=request.user.empresa,
+            usuario__sucursal=request.user.sucursal
+        )
+    except Http404:
+        messages.error(request, "El alquiler no existe o no tienes permiso para acceder.")
+        return redirect('alquiler_list')
+
+    alquiler.estado = 'liquidado'
+    alquiler.observaciones = f"Liquidado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
+    alquiler.save()
+    
+    print(alquiler.observaciones)
+
+    messages.success(request, "El alquiler fue liquidado correctamente.")
+    return redirect('ver_alquiler', pk=pk)

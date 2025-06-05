@@ -12,8 +12,7 @@ class Alquiler(models.Model):
         ('en_curso', 'En curso'),
         ('con_abono', 'Con abono'),
         ('liquidado', 'Liquidado'),
-        ('cancelado', 'Cancelado'),
-        ('cotizacion', 'Cotización'),
+        ('anulado', 'Anulado'),
     ]
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
