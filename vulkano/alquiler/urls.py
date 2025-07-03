@@ -16,4 +16,5 @@ urlpatterns = [
     path('liquidar/<int:pk>/', liquidar_alquiler, name="liquidar_alquiler"),
     path('ver/<int:pk>/', ver_alquiler, name='ver_alquiler'),
     path('imprimir/<int:pk>/', imprimir_alquiler, name='imprimir_alquiler'),
+
 ]

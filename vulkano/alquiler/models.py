@@ -12,7 +12,6 @@ class Alquiler(models.Model):
         ('borrador', 'Borrador'),
         ('reservado', 'Reservado'),
         ('en_curso', 'En curso'),
-        ('con_abono', 'Con abono'),
         ('liquidado', 'Liquidado'),
         ('anulado', 'Anulado'),
     ]
@@ -157,20 +156,3 @@ class EventoAlquiler(models.Model):
     class Meta:
         ordering = ['-fecha']
 
-from django.db import models
-from producto.models import Producto
-from alquiler.models import Alquiler
-
-class ReservaInventario(models.Model):
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    alquiler = models.ForeignKey(Alquiler, on_delete=models.CASCADE, related_name='reservas')
-    cantidad = models.PositiveIntegerField()
-    fecha_reserva = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('producto', 'alquiler')
-        verbose_name = 'Reserva de Inventario'
-        verbose_name_plural = 'Reservas de Inventario'
-
-    def __str__(self):
-        return f"{self.producto.nombre} reservado para alquiler #{self.alquiler.id} ({self.cantidad})"
