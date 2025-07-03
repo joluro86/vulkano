@@ -1,6 +1,7 @@
 from django.db import models
 from producto.models import Producto
 from empresa.models import Sucursal
+from vulkano import settings
 
 class InventarioSucursal(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='inventarios')
@@ -17,3 +18,57 @@ class InventarioSucursal(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} - {self.sucursal.nombre}: {self.stock_actual} unidades"
+
+class MovimientoInventario(models.Model):
+    TIPOS = [
+        ('entrada', 'Entrada'),
+        ('salida', 'Salida'),
+        ('devolucion', 'Devolución'),
+        ('ajuste', 'Ajuste manual'),
+    ]
+
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=20, choices=TIPOS)
+    fecha = models.DateTimeField(auto_now_add=True)
+    observacion = models.TextField(blank=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='movimientos_creados_por'
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='movimientos_actualizados_por'
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-fecha']
+        verbose_name = 'Movimiento de Inventario'
+        verbose_name_plural = 'Movimientos de Inventario'
+
+    def __str__(self):
+        return f"{self.tipo} - {self.producto.nombre} ({self.cantidad}) - {self.sucursal.nombre}"
+
+
+class MovimientoItem(models.Model):
+    movimiento = models.ForeignKey(
+        'inventario.MovimientoInventario',
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField()
+
+    class Meta:
+        verbose_name = 'Ítem de movimiento'
+        verbose_name_plural = 'Ítems de movimiento'
+
+    def __str__(self):
+        return f"{self.producto.nombre} x {self.cantidad}"

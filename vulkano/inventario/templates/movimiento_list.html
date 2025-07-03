@@ -1,0 +1,50 @@
+{% extends 'index.html' %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-800">Movimientos de Inventario</h2>
+    <a href="{% url 'crear_movimiento' %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">
+      + Nuevo Movimiento
+    </a>
+  </div>
+
+  <table class="min-w-full border border-gray-200">
+    <thead class="bg-gray-100 text-sm text-gray-700">
+      <tr>
+        <th class="px-4 py-2 border text-left">ID</th>
+        <th class="px-4 py-2 border text-left">Sucursal</th>
+        <th class="px-4 py-2 border text-left">Tipo</th>
+        <th class="px-4 py-2 border text-left">Fecha</th>
+        <th class="px-4 py-2 border text-left">Estado</th>
+        <th class="px-4 py-2 border text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody class="text-sm">
+      {% for m in movimientos %}
+      <tr class="border-b hover:bg-gray-50">
+        <td class="px-4 py-2 border">{{ m.id }}</td>
+        <td class="px-4 py-2 border">{{ m.sucursal.nombre }}</td>
+        <td class="px-4 py-2 border">{{ m.get_tipo_display }}</td>
+        <td class="px-4 py-2 border">{{ m.fecha|date:"Y-m-d H:i" }}</td>
+        <td class="px-4 py-2 border">{{ m.estado|title }}</td>
+        <td class="px-4 py-2 border text-center">
+          <a href="{% url 'ver_movimiento' m.id %}" class="text-blue-600 hover:underline text-sm">Ver</a>
+          {% if m.estado != 'confirmado' %}
+          | <a href="{% url 'editar_movimiento' m.id %}" class="text-yellow-600 hover:underline text-sm">Editar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center py-4 text-gray-500">No hay movimientos registrados.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
