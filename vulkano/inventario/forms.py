@@ -2,32 +2,42 @@
 
 from django import forms
 from inventario.models import MovimientoInventario, MovimientoItem
-from empresa.models import Sucursal
-from producto.models import Producto
+
+from django import forms
+from inventario.models import MovimientoInventario
+from cliente.models import Cliente
+from producto.models import Proveedor
 
 class MovimientoInventarioForm(forms.ModelForm):
     class Meta:
         model = MovimientoInventario
-        fields = ['sucursal', 'tipo', 'observacion']
+        fields = ['tipo', 'observacion', 'proveedor', 'cliente']
         widgets = {
-            'sucursal': forms.Select(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded bg-white'
-            }),
-            'tipo': forms.Select(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded bg-white'
-            }),
-            'observacion': forms.Textarea(attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded resize-y',
-                'rows': 2,
-                'placeholder': 'Opcional: motivo o detalles del movimiento'
-            }),
+            'tipo': forms.Select(attrs={'class': 'form-select'}),
+            'observacion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'proveedor': forms.Select(attrs={'class': 'form-select'}),
+            'cliente': forms.Select(attrs={'class': 'form-select'}),
         }
 
-    def __init__(self, *args, empresa=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if empresa:
-            self.fields['sucursal'].queryset = Sucursal.objects.filter(empresa=empresa)
 
+        # Ocultar proveedor y cliente por defecto
+        self.fields['proveedor'].required = False
+        self.fields['cliente'].required = False
+
+        # Ocultar campos visualmente según tipo
+        if self.instance:
+            tipo = getattr(self.instance, 'tipo', None)
+            if tipo == 'entrada':
+                self.fields['proveedor'].widget.attrs['style'] = ''
+                self.fields['cliente'].widget.attrs['style'] = 'display:none;'
+            elif tipo == 'salida':
+                self.fields['cliente'].widget.attrs['style'] = ''
+                self.fields['proveedor'].widget.attrs['style'] = 'display:none;'
+            else:
+                self.fields['cliente'].widget.attrs['style'] = 'display:none;'
+                self.fields['proveedor'].widget.attrs['style'] = 'display:none;'
 
 class DetalleMovimientoInventarioForm(forms.ModelForm):
     class Meta:

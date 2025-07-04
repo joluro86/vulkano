@@ -17,6 +17,14 @@ def crear_movimiento(request):
 
     return redirect('editar_movimiento', pk=movimiento.pk)
 
+
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from inventario.forms import MovimientoInventarioForm, DetalleMovimientoInventarioForm
+from inventario.models import MovimientoInventario, MovimientoItem
+from producto.models import Producto
+
 @login_required
 def editar_movimiento(request, pk):
     movimiento = get_object_or_404(MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
@@ -28,8 +36,18 @@ def editar_movimiento(request, pk):
         if form.is_valid():
             movimiento = form.save(commit=False)
             movimiento.updated_by = request.user
+
+            # Limpiar relaciones según el tipo
+            if movimiento.tipo == 'entrada':
+                movimiento.cliente = None
+            elif movimiento.tipo == 'salida':
+                movimiento.proveedor = None
+            else:
+                movimiento.proveedor = None
+                movimiento.cliente = None
+
             movimiento.save()
-            messages.success(request, "Movimiento actualizado.")
+            messages.success(request, "Movimiento actualizado correctamente.")
             return redirect('editar_movimiento', pk=movimiento.pk)
 
     elif request.method == 'POST' and request.POST.get('producto'):
@@ -42,7 +60,7 @@ def editar_movimiento(request, pk):
 
         if item_form.is_valid():
             cantidad = item_form.cleaned_data.get('cantidad')
-            detalle_existente = movimiento.detalles.filter(producto=producto).first()
+            detalle_existente = movimiento.items.filter(producto=producto).first()
             if detalle_existente:
                 detalle_existente.cantidad += cantidad
                 detalle_existente.save()

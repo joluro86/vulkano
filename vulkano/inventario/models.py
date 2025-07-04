@@ -19,6 +19,9 @@ class InventarioSucursal(models.Model):
     def __str__(self):
         return f"{self.producto.nombre} - {self.sucursal.nombre}: {self.stock_actual} unidades"
 
+from cliente.models import Cliente
+from producto.models import Proveedor
+
 class MovimientoInventario(models.Model):
     TIPOS = [
         ('entrada', 'Entrada'),
@@ -32,20 +35,11 @@ class MovimientoInventario(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     observacion = models.TextField(blank=True)
 
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='movimientos_creados_por'
-    )
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='movimientos_actualizados_por'
-    )
+    cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True)
+
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos_creados_por')
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos_actualizados_por')
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -54,7 +48,7 @@ class MovimientoInventario(models.Model):
         verbose_name_plural = 'Movimientos de Inventario'
 
     def __str__(self):
-        return f"{self.tipo} - {self.producto.nombre} ({self.cantidad}) - {self.sucursal.nombre}"
+        return f"{self.tipo} - {self.sucursal.nombre} - {self.fecha.date()}"
 
 
 class MovimientoItem(models.Model):

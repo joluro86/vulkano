@@ -7,33 +7,47 @@
 {% block content %}
 <div class="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold text-gray-800">Editar Movimiento #{{ movimiento.id }}</h2>
+    <h2 class="text-lg font-bold text-gray-800">Movimiento #{{ movimiento.id }}</h2>
     <a href="{% url 'inventario_list_stock' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver al inventario</a>
   </div>
 
-  <form method="post" class="grid grid-cols-2 gap-4 mb-6">
+  <form method="post" class="grid grid-cols-2 gap-4 mb-4">
     {% csrf_token %}
+
     {% for field in form.visible_fields %}
-      <div class="{% if field.name == 'observacion' %}col-span-2{% endif %}">
-        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}<p class="text-sm text-red-600">{{ field.errors|striptags }}</p>{% endif %}
-      </div>
+      {% if field.name == 'proveedor' and movimiento.tipo == 'entrada' %}
+        <div class="col-span-2">
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">Proveedor</label>
+          {{ field }}
+        </div>
+      {% elif field.name == 'cliente' and movimiento.tipo == 'salida' %}
+        <div class="col-span-2">
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">Cliente</label>
+          {{ field }}
+        </div>
+      {% elif field.name != 'proveedor' and field.name != 'cliente' %}
+        <div class="{% if field.name == 'observacion' %}col-span-2{% endif %}">
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endif %}
     {% endfor %}
+
     <div class="col-span-2">
       <button type="submit" class="w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">
-        Guardar cambios generales
+        Guardar datos generales
       </button>
     </div>
   </form>
 
-  <hr class="my-6">
+  <hr class="my-4">
 
-  <h3 class="text-xl font-semibold text-gray-700 mb-4">Agregar productos al movimiento</h3>
+  <h3 class="text-md font-semibold text-gray-700 mb-2">Agregar productos</h3>
   <form method="post" class="grid grid-cols-2 gap-4 mb-6">
     {% csrf_token %}
     <div class="col-span-2">
       <input type="text" id="buscar-producto" name="producto_nombre" class="w-full p-2 border rounded" placeholder="Buscar producto por nombre o código..." autocomplete="off">
+      <ul id="resultados-productos" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
       <input type="hidden" id="producto-id" name="producto">
     </div>
     <div>{{ item_form.cantidad.label_tag }}{{ item_form.cantidad }}</div>
@@ -65,20 +79,66 @@
 </div>
 
 <script>
-  const buscarProductoInput = document.getElementById("buscar-producto");
-  const productoIdInput = document.getElementById("producto-id");
+  document.addEventListener('DOMContentLoaded', function () {
+    const inputProd = document.getElementById('buscar-producto');
+    const listProd = document.getElementById('resultados-productos');
+    const hiddenProd = document.getElementById('producto-id');
 
-  buscarProductoInput.addEventListener("input", function () {
-    if (this.value.length < 3) return;
-    fetch(`/productos/buscar/?q=${this.value}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.length > 0) {
-          productoIdInput.value = data[0].id;
-        } else {
-          productoIdInput.value = "";
-        }
-      });
+    inputProd.addEventListener('input', function () {
+      const query = this.value.trim();
+      if (query.length >= 3) {
+        fetch(`/alquiler/productos-buscar/?q=${query}`)
+          .then(res => res.json())
+          .then(data => {
+            listProd.innerHTML = '';
+            data.forEach(p => {
+              const li = document.createElement('li');
+              li.textContent = p.nombre;
+              li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+              li.addEventListener('click', () => {
+                inputProd.value = p.nombre;
+                hiddenProd.value = p.id;
+                listProd.classList.add('hidden');
+              });
+              listProd.appendChild(li);
+            });
+            listProd.classList.remove('hidden');
+          })
+          .catch(() => listProd.classList.add('hidden'));
+      } else {
+        listProd.classList.add('hidden');
+      }
+    });
+
+    const inputCliente = document.getElementById('buscar-cliente');
+    const listaClientes = document.getElementById('resultados-clientes');
+    const hiddenCliente = document.getElementById('cliente-id');
+
+    inputCliente.addEventListener('input', function () {
+      const query = this.value.trim();
+      if (query.length >= 3) {
+        fetch(`/alquiler/clientes-buscar/?q=${query}`)
+          .then(res => res.json())
+          .then(data => {
+            listaClientes.innerHTML = '';
+            data.forEach(c => {
+              const li = document.createElement('li');
+              li.textContent = c.nombre;
+              li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+              li.addEventListener('click', () => {
+                inputCliente.value = c.nombre;
+                hiddenCliente.value = c.id;
+                listaClientes.classList.add('hidden');
+              });
+              listaClientes.appendChild(li);
+            });
+            listaClientes.classList.remove('hidden');
+          })
+          .catch(() => listaClientes.classList.add('hidden'));
+      } else {
+        listaClientes.classList.add('hidden');
+      }
+    });
   });
 </script>
 {% endblock %}
