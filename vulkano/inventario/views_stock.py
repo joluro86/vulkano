@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from inventario.models import InventarioSucursal
-from producto.models import Producto
 from empresa.models import Sucursal
 from django.core.paginator import Paginator
 from django.db.models import Q

@@ -1,15 +1,15 @@
-from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
+from cliente.models import Cliente
 from inventario.models import MovimientoInventario, InventarioSucursal, MovimientoItem
 from inventario.forms import MovimientoInventarioForm, DetalleMovimientoInventarioForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from inventario.forms import DetalleMovimientoInventarioForm, MovimientoInventarioForm
-from inventario.models import MovimientoInventario, MovimientoItem
-from producto.models import Producto
+from producto.models import Producto, Proveedor
 from django.core.paginator import Paginator
 from django.db.models import Q
+
 
 @login_required
 def crear_movimiento(request):
@@ -32,48 +32,67 @@ def editar_movimiento(request, pk):
     form = MovimientoInventarioForm(request.POST or None, instance=movimiento)
     item_form = DetalleMovimientoInventarioForm(request.POST or None)
 
-    if request.method == 'POST' and not request.POST.get('producto'):
-        if form.is_valid():
-            movimiento = form.save(commit=False)
-            movimiento.updated_by = request.user
+    if request.method == 'POST':
+        if request.POST.get('producto'):  # AGREGAR PRODUCTO
+            producto_id = request.POST.get('producto')
+            try:
+                producto = Producto.objects.get(id=producto_id, empresa=request.user.empresa)
+            except Producto.DoesNotExist:
+                messages.error(request, "Producto no válido.")
+                return redirect('editar_movimiento', pk=movimiento.pk)
 
-            # Limpiar relaciones según el tipo
-            if movimiento.tipo == 'entrada':
-                movimiento.cliente = None
-            elif movimiento.tipo == 'salida':
-                movimiento.proveedor = None
+            if item_form.is_valid():
+                cantidad = item_form.cleaned_data.get('cantidad')
+                detalle, creado = MovimientoItem.objects.get_or_create(
+                    movimiento=movimiento,
+                    producto=producto,
+                    defaults={'cantidad': cantidad}
+                )
+                if not creado:
+                    detalle.cantidad += cantidad
+                    detalle.save()
+                messages.success(request, "Producto agregado al movimiento.")
             else:
-                movimiento.proveedor = None
-                movimiento.cliente = None
-
-            movimiento.save()
-            messages.success(request, "Movimiento actualizado correctamente.")
+                messages.error(request, "Error al agregar producto.")
             return redirect('editar_movimiento', pk=movimiento.pk)
 
-    elif request.method == 'POST' and request.POST.get('producto'):
-        producto_id = request.POST.get('producto')
-        try:
-            producto = Producto.objects.get(
-                id=producto_id, empresa=request.user.empresa)
-        except Producto.DoesNotExist:
-            messages.error(request, "Producto no encontrado.")
-            return redirect('editar_movimiento', pk=movimiento.pk)
+        else:  # GUARDAR DATOS GENERALES
+            if form.is_valid():
+                movimiento = form.save(commit=False)
+                movimiento.updated_by = request.user
 
-        if item_form.is_valid():
-            cantidad = item_form.cleaned_data.get('cantidad')
-            detalle_existente = movimiento.items.filter(
-                producto=producto).first()
-            if detalle_existente:
-                detalle_existente.cantidad += cantidad
-                detalle_existente.save()
-            else:
-                item = item_form.save(commit=False)
-                item.movimiento = movimiento
-                item.producto = producto
-                item.save()
+                tercero_id = request.POST.get('tercero_id')
 
-            messages.success(request, "Producto agregado al movimiento.")
-            return redirect('editar_movimiento', pk=movimiento.pk)
+                if movimiento.tipo == 'entrada':
+                    movimiento.cliente = None
+                    if tercero_id:
+                        try:
+                            proveedor = Proveedor.objects.get(id=tercero_id, empresa=request.user.empresa)
+                            movimiento.proveedor = proveedor
+                        except Proveedor.DoesNotExist:
+                            messages.warning(request, "Proveedor no válido.")
+                            return redirect('editar_movimiento', pk=movimiento.pk)
+                    else:
+                        movimiento.proveedor = None
+
+                elif movimiento.tipo == 'salida':
+                    movimiento.proveedor = None
+                    if tercero_id:
+                        try:
+                            cliente = Cliente.objects.get(id=tercero_id, empresa=request.user.empresa)
+                            movimiento.cliente = cliente
+                        except Cliente.DoesNotExist:
+                            messages.warning(request, "Cliente no válido.")
+                            return redirect('editar_movimiento', pk=movimiento.pk)
+                    else:
+                        movimiento.cliente = None
+                else:
+                    movimiento.proveedor = None
+                    movimiento.cliente = None
+
+                movimiento.save()
+                messages.success(request, "Movimiento actualizado correctamente.")
+                return redirect('editar_movimiento', pk=movimiento.pk)
 
     context = {
         'movimiento': movimiento,
@@ -86,7 +105,6 @@ def editar_movimiento(request, pk):
         ],
     }
     return render(request, 'editar_movimiento.html', context)
-
 
 @login_required
 def movimiento_list(request):
@@ -142,17 +160,6 @@ def ver_movimiento(request, pk):
 
 
 @login_required
-def confirmar_movimiento(request, pk):
-    movimiento = get_object_or_404(
-        MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
-    movimiento.updated_by = request.user
-    movimiento.save()
-    messages.success(request, "Movimiento confirmado correctamente.")
-
-    return redirect('ver_movimiento', pk=movimiento.pk)
-
-
-@login_required
 def eliminar_item_movimiento(request, pk):
     item = get_object_or_404(MovimientoItem, pk=pk)
     movimiento = item.movimiento
@@ -181,6 +188,11 @@ def confirmar_movimiento(request, pk):
             request, "Este movimiento ya ha sido confirmado o anulado.")
         return redirect('editar_movimiento', pk=pk)
 
+    if not movimiento.items.exists():
+        messages.error(
+            request, "No puedes confirmar un movimiento sin productos.")
+        return redirect('editar_movimiento', pk=pk)
+
     if request.method == 'POST':
         try:
             with transaction.atomic():
@@ -194,7 +206,9 @@ def confirmar_movimiento(request, pk):
                         stock_disponible = inventario.stock_actual if inventario else 0
                         if item.cantidad > stock_disponible:
                             messages.error(
-                                request, f"No hay suficiente stock de {item.producto.nombre}. Disponible: {stock_disponible}, requerido: {item.cantidad}")
+                                request,
+                                f"No hay suficiente stock de {item.producto.nombre}. Disponible: {stock_disponible}, requerido: {item.cantidad}"
+                            )
                             return redirect('editar_movimiento', pk=pk)
 
                 # Aplicar movimiento
@@ -207,10 +221,8 @@ def confirmar_movimiento(request, pk):
 
                     if movimiento.tipo == 'entrada':
                         inventario.stock_actual += item.cantidad
-
                     elif movimiento.tipo == 'salida':
                         inventario.stock_actual -= item.cantidad
-
                     else:
                         messages.warning(
                             request, "Este tipo de movimiento aún no afecta inventario.")

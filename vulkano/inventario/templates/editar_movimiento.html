@@ -75,33 +75,19 @@
     <!-- FORMULARIO DE DATOS GENERALES ABAJO -->
     <form method="post" class="grid grid-cols-2 gap-3 text-xs mb-4">
       {% csrf_token %}
-
-      {% if movimiento.tipo == 'entrada' %}
-        <div>
-          <label for="{{ form.tipo.id_for_label }}" class="block text-xs font-medium text-gray-700">Tipo</label>
-          {{ form.tipo }}
-        </div>
-        <div>
-          <label for="{{ form.proveedor.id_for_label }}" class="block text-xs font-medium text-gray-700">Proveedor</label>
-          {{ form.proveedor }}
-        </div>
-      {% elif movimiento.tipo == 'salida' %}
-        <div>
-          <label for="{{ form.tipo.id_for_label }}" class="block text-xs font-medium text-gray-700">Tipo</label>
-          {{ form.tipo }}
-        </div>
-        <div>
-          <label for="{{ form.cliente.id_for_label }}" class="block text-xs font-medium text-gray-700">Cliente</label>
-          {{ form.cliente }}
-        </div>
-      {% else %}
-        <div class="col-span-2">
-          <label for="{{ form.tipo.id_for_label }}" class="block text-xs font-medium text-gray-700">Tipo</label>
-          {{ form.tipo }}
-        </div>
-      {% endif %}
+      <div>
+        <label for="{{ form.tipo.id_for_label }}" class="block text-xs font-medium text-gray-700">Tipo</label>
+        {{ form.tipo }}
+      </div>
 
       <div>
+        <label class="block text-xs font-medium text-gray-700">Origen/Destino</label>
+        <input type="text" id="buscar-cliente" name="nombre_tercero" class="w-full p-2 border rounded text-sm" placeholder="Buscar persona u organización..." autocomplete="off" />
+        <ul id="resultados-clientes" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
+        <input type="hidden" id="cliente-id" name="tercero_id" />
+      </div>
+
+      <div class="col-span-2">
         <label for="{{ form.observacion.id_for_label }}" class="block text-xs font-medium text-gray-700">Observación</label>
         {{ form.observacion }}
       </div>
@@ -117,8 +103,8 @@
       const inputProd = document.getElementById('buscar-producto')
       const listProd = document.getElementById('resultados-productos')
       const hiddenProd = document.getElementById('producto-id')
-    
-      inputProd.addEventListener('input', function () {
+
+      inputProd?.addEventListener('input', function () {
         const query = this.value.trim()
         if (query.length >= 3) {
           fetch(`/alquiler/productos-buscar/?q=${query}`)
@@ -143,12 +129,12 @@
           listProd.classList.add('hidden')
         }
       })
-    
+
       const inputCliente = document.getElementById('buscar-cliente')
       const listaClientes = document.getElementById('resultados-clientes')
       const hiddenCliente = document.getElementById('cliente-id')
-    
-      inputCliente.addEventListener('input', function () {
+
+      inputCliente?.addEventListener('input', function () {
         const query = this.value.trim()
         if (query.length >= 3) {
           fetch(`/alquiler/clientes-buscar/?q=${query}`)
