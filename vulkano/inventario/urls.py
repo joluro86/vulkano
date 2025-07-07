@@ -1,11 +1,11 @@
 # inventario/urls.py
 
 from django.urls import path
-from .views_stock import inventario_list_view
+from .views_stock import inventario_list_stock
 from .views_movimiento import crear_movimiento, confirmar_movimiento, movimiento_list, editar_movimiento, ver_movimiento, eliminar_item_movimiento
 
 urlpatterns = [
-    path('stock/', inventario_list_view, name='inventario_list_stock'),
+    path('stock/', inventario_list_stock, name='inventario_list_stock'),
     path('movimientos/nuevo/', crear_movimiento, name='crear_movimiento'),
     
     path('movimientos/', movimiento_list, name='movimiento_list'),

@@ -1,9 +1,15 @@
+from django.shortcuts import get_object_or_404, redirect
+from django.db import transaction
+from inventario.models import MovimientoInventario, InventarioSucursal, MovimientoItem
+from inventario.forms import MovimientoInventarioForm, DetalleMovimientoInventarioForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from inventario.forms import DetalleMovimientoInventarioForm, MovimientoInventarioForm
 from inventario.models import MovimientoInventario, MovimientoItem
 from producto.models import Producto
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 @login_required
 def crear_movimiento(request):
@@ -18,16 +24,10 @@ def crear_movimiento(request):
     return redirect('editar_movimiento', pk=movimiento.pk)
 
 
-from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from inventario.forms import MovimientoInventarioForm, DetalleMovimientoInventarioForm
-from inventario.models import MovimientoInventario, MovimientoItem
-from producto.models import Producto
-
 @login_required
 def editar_movimiento(request, pk):
-    movimiento = get_object_or_404(MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
+    movimiento = get_object_or_404(
+        MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
 
     form = MovimientoInventarioForm(request.POST or None, instance=movimiento)
     item_form = DetalleMovimientoInventarioForm(request.POST or None)
@@ -53,14 +53,16 @@ def editar_movimiento(request, pk):
     elif request.method == 'POST' and request.POST.get('producto'):
         producto_id = request.POST.get('producto')
         try:
-            producto = Producto.objects.get(id=producto_id, empresa=request.user.empresa)
+            producto = Producto.objects.get(
+                id=producto_id, empresa=request.user.empresa)
         except Producto.DoesNotExist:
             messages.error(request, "Producto no encontrado.")
             return redirect('editar_movimiento', pk=movimiento.pk)
 
         if item_form.is_valid():
             cantidad = item_form.cleaned_data.get('cantidad')
-            detalle_existente = movimiento.items.filter(producto=producto).first()
+            detalle_existente = movimiento.items.filter(
+                producto=producto).first()
             if detalle_existente:
                 detalle_existente.cantidad += cantidad
                 detalle_existente.save()
@@ -88,9 +90,34 @@ def editar_movimiento(request, pk):
 
 @login_required
 def movimiento_list(request):
-    movimientos = MovimientoInventario.objects.filter(sucursal=request.user.sucursal).order_by('-fecha')
+    query = request.GET.get('q', '').strip()
+    estado_filtro = request.GET.get('estado', '').strip()
+
+    movimientos_qs = MovimientoInventario.objects.filter(
+        sucursal=request.user.sucursal)
+
+    if query:
+        movimientos_qs = movimientos_qs.filter(
+            Q(id__icontains=query) |
+            Q(tipo__icontains=query)
+        )
+
+    if estado_filtro:
+        movimientos_qs = movimientos_qs.filter(estado=estado_filtro)
+
+    movimientos_qs = movimientos_qs.order_by('-fecha')
+
+    paginator = Paginator(movimientos_qs, 10)
+    page_number = request.GET.get('page')
+    movimientos = paginator.get_page(page_number)
+
+    total_movimientos = f"Total movimientos: {movimientos_qs.count()}"
+
     context = {
         'movimientos': movimientos,
+        'query': query,
+        'estado_filtro': estado_filtro,
+        'total_movimientos': total_movimientos,
         'breadcrumb_items': [
             ('Inventario', '/inventario/stock/'),
             ('Movimientos', None)
@@ -101,7 +128,8 @@ def movimiento_list(request):
 
 @login_required
 def ver_movimiento(request, pk):
-    movimiento = get_object_or_404(MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
+    movimiento = get_object_or_404(
+        MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
     context = {
         'movimiento': movimiento,
         'breadcrumb_items': [
@@ -115,7 +143,8 @@ def ver_movimiento(request, pk):
 
 @login_required
 def confirmar_movimiento(request, pk):
-    movimiento = get_object_or_404(MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
+    movimiento = get_object_or_404(
+        MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
     movimiento.updated_by = request.user
     movimiento.save()
     messages.success(request, "Movimiento confirmado correctamente.")
@@ -130,27 +159,26 @@ def eliminar_item_movimiento(request, pk):
 
     # Verificamos que el usuario tenga acceso a la sucursal
     if movimiento.sucursal != request.user.sucursal:
-        messages.error(request, "No tienes permiso para eliminar este producto.")
+        messages.error(
+            request, "No tienes permiso para eliminar este producto.")
         return redirect('editar_movimiento', pk=movimiento.pk)
 
     if request.method == 'POST':
         item.delete()
-        messages.success(request, f"Producto eliminado del movimiento #{movimiento.id}.")
-    
+        messages.success(
+            request, f"Producto eliminado del movimiento #{movimiento.id}.")
+
     return redirect('editar_movimiento', pk=movimiento.pk)
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from inventario.models import MovimientoInventario, InventarioSucursal, MovimientoItem
-from django.db import transaction
 
 @login_required
 def confirmar_movimiento(request, pk):
-    movimiento = get_object_or_404(MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
+    movimiento = get_object_or_404(
+        MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
 
     if movimiento.estado != 'borrador':
-        messages.warning(request, "Este movimiento ya ha sido confirmado o anulado.")
+        messages.warning(
+            request, "Este movimiento ya ha sido confirmado o anulado.")
         return redirect('editar_movimiento', pk=pk)
 
     if request.method == 'POST':
@@ -165,7 +193,8 @@ def confirmar_movimiento(request, pk):
                         ).first()
                         stock_disponible = inventario.stock_actual if inventario else 0
                         if item.cantidad > stock_disponible:
-                            messages.error(request, f"No hay suficiente stock de {item.producto.nombre}. Disponible: {stock_disponible}, requerido: {item.cantidad}")
+                            messages.error(
+                                request, f"No hay suficiente stock de {item.producto.nombre}. Disponible: {stock_disponible}, requerido: {item.cantidad}")
                             return redirect('editar_movimiento', pk=pk)
 
                 # Aplicar movimiento
@@ -183,7 +212,8 @@ def confirmar_movimiento(request, pk):
                         inventario.stock_actual -= item.cantidad
 
                     else:
-                        messages.warning(request, "Este tipo de movimiento aún no afecta inventario.")
+                        messages.warning(
+                            request, "Este tipo de movimiento aún no afecta inventario.")
                         return redirect('editar_movimiento', pk=pk)
 
                     inventario.save()
@@ -191,8 +221,10 @@ def confirmar_movimiento(request, pk):
                 movimiento.estado = 'confirmado'
                 movimiento.save()
 
-                messages.success(request, "Movimiento confirmado y stock actualizado correctamente.")
+                messages.success(
+                    request, "Movimiento confirmado y stock actualizado correctamente.")
         except Exception as e:
-            messages.error(request, f"Ocurrió un error al confirmar el movimiento: {str(e)}")
+            messages.error(
+                request, f"Ocurrió un error al confirmar el movimiento: {str(e)}")
 
     return redirect('editar_movimiento', pk=pk)
