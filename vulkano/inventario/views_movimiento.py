@@ -121,3 +121,20 @@ def confirmar_movimiento(request, pk):
     messages.success(request, "Movimiento confirmado correctamente.")
 
     return redirect('ver_movimiento', pk=movimiento.pk)
+
+
+@login_required
+def eliminar_item_movimiento(request, pk):
+    item = get_object_or_404(MovimientoItem, pk=pk)
+    movimiento = item.movimiento
+
+    # Verificamos que el usuario tenga acceso a la sucursal
+    if movimiento.sucursal != request.user.sucursal:
+        messages.error(request, "No tienes permiso para eliminar este producto.")
+        return redirect('editar_movimiento', pk=movimiento.pk)
+
+    if request.method == 'POST':
+        item.delete()
+        messages.success(request, f"Producto eliminado del movimiento #{movimiento.id}.")
+    
+    return redirect('editar_movimiento', pk=movimiento.pk)
