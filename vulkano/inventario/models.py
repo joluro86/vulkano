@@ -29,6 +29,12 @@ class MovimientoInventario(models.Model):
         ('devolucion', 'Devolución'),
         ('ajuste', 'Ajuste manual'),
     ]
+    
+    ESTADOS = [
+        ('borrador', 'Borrador'),
+        ('confirmado', 'Confirmado'),
+        ('anulado', 'Anulado'),
+    ]
 
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE)
     tipo = models.CharField(max_length=20, choices=TIPOS)
@@ -37,7 +43,8 @@ class MovimientoInventario(models.Model):
 
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True)
-
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='borrador')
+    
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos_creados_por')
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos_actualizados_por')
     updated_at = models.DateTimeField(auto_now=True)

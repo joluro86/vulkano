@@ -138,3 +138,61 @@ def eliminar_item_movimiento(request, pk):
         messages.success(request, f"Producto eliminado del movimiento #{movimiento.id}.")
     
     return redirect('editar_movimiento', pk=movimiento.pk)
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from inventario.models import MovimientoInventario, InventarioSucursal, MovimientoItem
+from django.db import transaction
+
+@login_required
+def confirmar_movimiento(request, pk):
+    movimiento = get_object_or_404(MovimientoInventario, pk=pk, sucursal=request.user.sucursal)
+
+    if movimiento.estado != 'borrador':
+        messages.warning(request, "Este movimiento ya ha sido confirmado o anulado.")
+        return redirect('editar_movimiento', pk=pk)
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Validación previa para salidas
+                if movimiento.tipo == 'salida':
+                    for item in movimiento.items.all():
+                        inventario = InventarioSucursal.objects.filter(
+                            producto=item.producto,
+                            sucursal=movimiento.sucursal
+                        ).first()
+                        stock_disponible = inventario.stock_actual if inventario else 0
+                        if item.cantidad > stock_disponible:
+                            messages.error(request, f"No hay suficiente stock de {item.producto.nombre}. Disponible: {stock_disponible}, requerido: {item.cantidad}")
+                            return redirect('editar_movimiento', pk=pk)
+
+                # Aplicar movimiento
+                for item in movimiento.items.all():
+                    inventario, _ = InventarioSucursal.objects.get_or_create(
+                        producto=item.producto,
+                        sucursal=movimiento.sucursal,
+                        defaults={'stock_actual': 0}
+                    )
+
+                    if movimiento.tipo == 'entrada':
+                        inventario.stock_actual += item.cantidad
+
+                    elif movimiento.tipo == 'salida':
+                        inventario.stock_actual -= item.cantidad
+
+                    else:
+                        messages.warning(request, "Este tipo de movimiento aún no afecta inventario.")
+                        return redirect('editar_movimiento', pk=pk)
+
+                    inventario.save()
+
+                movimiento.estado = 'confirmado'
+                movimiento.save()
+
+                messages.success(request, "Movimiento confirmado y stock actualizado correctamente.")
+        except Exception as e:
+            messages.error(request, f"Ocurrió un error al confirmar el movimiento: {str(e)}")
+
+    return redirect('editar_movimiento', pk=pk)
