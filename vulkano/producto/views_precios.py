@@ -6,14 +6,35 @@ from producto.forms.forms_precio_producto import PrecioProductoForm
 from producto.models import Producto 
 from django.db.models import Count
 
+from django.db.models import Q
+from django.core.paginator import Paginator
+
 @login_required
 def precio_producto_list(request):
-    precios = PrecioProducto.objects.filter(
-        producto__empresa=request.user.empresa).order_by('producto__nombre')
+    query = request.GET.get('q', '').strip()
+
+    precios_qs = PrecioProducto.objects.filter(
+        producto__empresa=request.user.empresa
+    )
+
+    if query:
+        precios_qs = precios_qs.filter(producto__nombre__icontains=query)
+
+    precios_qs = precios_qs.order_by('producto__nombre')
+
+    paginator = Paginator(precios_qs, 10)
+    page_number = request.GET.get('page')
+    precios = paginator.get_page(page_number)
+
+    total_precios = f"Total precios registrados: {precios_qs.count()}"
+
     return render(request, 'precio_producto_list.html', {
         'precios': precios,
+        'query': query,
+        'total_precios': total_precios,
         'breadcrumb_items': [('Gestión de productos', '#'), ('Precios', 'Listado')],
     })
+
 
 
 @login_required
