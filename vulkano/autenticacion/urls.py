@@ -1,5 +1,5 @@
 from django.urls import path
-from autenticacion.views import landing_view, CustomLoginView, crear_usuario, editar_usuario, usuario_list
+from autenticacion.views import landing_view, CustomLoginView, validar_username, crear_usuario, editar_usuario, usuario_list
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
@@ -9,4 +9,5 @@ urlpatterns = [
    path('usuarios/crear/', crear_usuario, name='crear_usuario'),
    path('usuarios/editar/<int:pk>/', editar_usuario, name='editar_usuario'),
    path('usuarios/', usuario_list, name='usuario_list'),
+   path('ajax/validar-username/', validar_username, name='validar_username'),
 ]

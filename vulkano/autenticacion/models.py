@@ -2,11 +2,17 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from empresa.models import Empresa, Sucursal
 
+class Rol(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.nombre
 class Usuario(AbstractUser):
     telefono = models.CharField(max_length=20, blank=True, null=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.SET_NULL, null=True, blank=True)
-
+    rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
     ESTADOS = [
         ("activo", "Activo"),
         ("inactivo", "Inactivo"),
@@ -33,5 +39,6 @@ class Usuario(AbstractUser):
 
     def __str__(self):
         return self.username
+
 
 

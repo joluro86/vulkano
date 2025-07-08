@@ -8,9 +8,10 @@ from producto.models import PrecioProducto
 class Alquiler(models.Model):
 
     ESTADOS_ALQUILER = [
+        ('cotizacion', 'Cotización'),
         ('borrador', 'Borrador'),
+        ('reservado', 'Reservado'),
         ('en_curso', 'En curso'),
-        ('con_abono', 'Con abono'),
         ('liquidado', 'Liquidado'),
         ('anulado', 'Anulado'),
     ]
@@ -129,6 +130,7 @@ class AlquilerItem(models.Model):
         base = self.cantidad * self.dias_a_cobrar * self.precio_dia
         return base * (self.descuento_porcentaje / Decimal('100'))
 
+
 class EventoAlquiler(models.Model):
     TIPOS = [
         ('estado', 'Cambio de estado'),
@@ -138,13 +140,19 @@ class EventoAlquiler(models.Model):
         ('nota', 'Nota interna'),
     ]
 
-    alquiler = models.ForeignKey('Alquiler', on_delete=models.CASCADE, related_name='eventos')
+    alquiler = models.ForeignKey(
+        'Alquiler', on_delete=models.CASCADE, related_name='eventos')
     tipo = models.CharField(max_length=20, choices=TIPOS)
     descripcion = models.TextField(blank=True)
-    valor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Solo si aplica (como abono)
-    estado_asociado = models.CharField(max_length=20, blank=True)  # Para registrar estado si tipo = estado
-    creado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    # Solo si aplica (como abono)
+    valor = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True)
+    # Para registrar estado si tipo = estado
+    estado_asociado = models.CharField(max_length=20, blank=True)
+    creado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     fecha = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-fecha']
+

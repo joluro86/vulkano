@@ -17,8 +17,10 @@
             
             
             
+            
                       
                       bg-gray-100 text-gray-800
+
 
 
 
@@ -32,7 +34,9 @@
             
             
             
+            
                       bg-blue-100 text-blue-800
+
 
 
 
@@ -46,7 +50,9 @@
             
             
             
+            
                       bg-yellow-100 text-yellow-800
+
 
 
 
@@ -60,7 +66,9 @@
             
             
             
+            
                       bg-green-100 text-green-800
+
 
 
 
@@ -74,7 +82,9 @@
             
             
             
+            
                       bg-red-100 text-red-800
+
 
 
 
@@ -86,9 +96,9 @@
         </span>
       </h2>
       <div class="flex gap-3">
+        <a href="#" id="btn-reservar" data-url="{% url 'reservar_alquiler' alquiler.id %}" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-xl inline-block">📦 Reservar productos</a>
         <a href="{% url 'imprimir_alquiler' alquiler.id %}" target="_blank" class="text-sm bg-[var(--primary-color)] text-white px-4 py-2 rounded-xl hover:bg-blue-800 transition shadow">🖨️ Imprimir</a>
-
-       {% if alquiler.estado != 'liquidado' and alquiler.estado != 'anulado' %}
+        {% if alquiler.estado != 'liquidado' and alquiler.estado != 'anulado' %}
           <a href="#" id="btn-liquidar" data-url="{% url 'liquidar_alquiler' alquiler.id %}" class="bg-green-700 hover:bg-green-800 text-white text-sm px-4 py-2 rounded-xl transition shadow">💰 Liquidar</a>
         {% endif %}
         <a href="{% url 'alquiler_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver</a>
@@ -443,29 +453,54 @@
   </script>
 
   <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const btnLiquidar = document.getElementById('btn-liquidar');
-    if (btnLiquidar) {
-      btnLiquidar.addEventListener('click', function (e) {
-        e.preventDefault();
-        const url = this.getAttribute('data-url');
-        Swal.fire({
-          title: '¿Liquidar alquiler?',
-          text: "Esta acción registrará el alquiler como finalizado y no será editable.",
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#aaa',
-          confirmButtonText: 'Sí, liquidar',
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = url;
-          }
-        });
-      });
-    }
-  });
-</script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const btnLiquidar = document.getElementById('btn-liquidar')
+      if (btnLiquidar) {
+        btnLiquidar.addEventListener('click', function (e) {
+          e.preventDefault()
+          const url = this.getAttribute('data-url')
+          Swal.fire({
+            title: '¿Liquidar alquiler?',
+            text: 'Esta acción registrará el alquiler como finalizado y no será editable.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#aaa',
+            confirmButtonText: 'Sí, liquidar',
+            cancelButtonText: 'Cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = url
+            }
+          })
+        })
+      }
+    })
+  </script>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const btnReservar = document.getElementById('btn-reservar')
+      if (btnReservar) {
+        btnReservar.addEventListener('click', function (e) {
+          e.preventDefault()
+          const url = this.getAttribute('data-url')
+          Swal.fire({
+            title: '¿Confirmar reserva?',
+            text: 'Esto registrará los productos como reservados para este cliente.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#aaa',
+            confirmButtonText: 'Sí, reservar',
+            cancelButtonText: 'Cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = url
+            }
+          })
+        })
+      }
+    })
+</script>
 {% endblock %}

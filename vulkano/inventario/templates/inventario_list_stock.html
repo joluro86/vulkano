@@ -1,0 +1,82 @@
+{% extends 'index.html' %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-800">Inventario por Sucursal</h2>
+  </div>
+
+  <form method="get" class="mb-4 flex justify-between items-end gap-2">
+    <!-- Búsqueda a la derecha -->
+    <div class="flex gap-2 w-full max-w-md">
+      <input type="text" name="q" value="{{ query }}" placeholder="Buscar producto..." class="p-2 border border-gray-300 rounded w-full" />
+      <button type="submit" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded">Buscar</button>
+    </div>
+
+    <!-- Filtro por sucursal -->
+    <div class="flex items-end gap-2">
+      <select name="sucursal_id" class="p-2 border border-gray-300 rounded text-sm bg-white">
+        <option value="">Todas las sucursales</option>
+        {% for sucursal in sucursales %}
+          <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"s" == sucursal_filtro %}selected{% endif %}>
+            {{ sucursal.nombre }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  <table class="min-w-full border border-gray-200 text-sm">
+    <thead class="bg-gray-100 text-gray-700">
+      <tr>
+        <th class="px-4 py-2 border text-left">Producto</th>
+        <th class="px-4 py-2 border text-left">Sucursal</th>
+        <th class="px-4 py-2 border text-right">Stock actual</th>
+        <th class="px-4 py-2 border text-right">Stock mínimo</th>
+        <th class="px-4 py-2 border text-center">Bloqueado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in inventarios %}
+        <tr class="border-b hover:bg-gray-50">
+          <td class="px-4 py-2 border">{{ item.producto.nombre }}</td>
+          <td class="px-4 py-2 border">{{ item.sucursal.nombre }}</td>
+          <td class="px-4 py-2 border text-right">{{ item.stock_actual }}</td>
+          <td class="px-4 py-2 border text-right">{{ item.stock_minimo }}</td>
+          <td class="px-4 py-2 border text-center">
+            {% if item.bloqueado %}
+              <span class="text-red-600 font-semibold">Sí</span>
+            {% else %}
+              <span class="text-green-600">No</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5" class="text-center py-4 text-gray-500">No hay datos de inventario para mostrar.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="mt-4 flex justify-between items-center text-sm">
+    <div>
+      Página {{ inventarios.number }} de {{ inventarios.paginator.num_pages }} - {{ total_inventarios }}
+    </div>
+    <div class="space-x-2">
+      {% if inventarios.has_previous %}
+        <a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if sucursal_filtro %}&sucursal_id={{ sucursal_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Primera</a>
+        <a href="?page={{ inventarios.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if sucursal_filtro %}&sucursal_id={{ sucursal_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Anterior</a>
+      {% endif %}
+      {% if inventarios.has_next %}
+        <a href="?page={{ inventarios.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if sucursal_filtro %}&sucursal_id={{ sucursal_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Siguiente</a>
+        <a href="?page={{ inventarios.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if sucursal_filtro %}&sucursal_id={{ sucursal_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Última</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

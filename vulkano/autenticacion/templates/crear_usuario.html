@@ -1,16 +1,20 @@
 {% extends 'index.html' %}
+
 {% block breadcrumb %}
   {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
 {% endblock %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
   <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold text-gray-800">{{ titulo }}</h2>
     <a href="{% url 'usuario_list' %}" class="text-sm text-[var(--primary-color)] hover:underline">← Volver</a>
   </div>
+
   <form method="post" enctype="multipart/form-data" class="grid grid-cols-2 gap-4">
     {% csrf_token %}
     {{ form.non_field_errors }}
+
     {% for field in form.visible_fields %}
       <div class="{% if field.name in 'foto_perfil password1 password2 email' %}col-span-2{% endif %}">
         <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
@@ -20,11 +24,88 @@
         {% endif %}
       </div>
     {% endfor %}
+
     <div class="col-span-2">
-      <button type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">
+      <button id="submitBtn" type="submit" class="mt-2 w-full bg-[var(--primary-color)] text-white py-2 rounded hover:bg-blue-700 transition">
         {{ boton_texto }}
       </button>
     </div>
   </form>
 </div>
+
+{% block scripts %} 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const usernameInput = document.getElementById('id_username');
+    const firstNameInput = document.getElementById('id_first_name');
+    const lastNameInput = document.getElementById('id_last_name');
+    const empresaSelect = document.getElementById('id_empresa');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const mensajeError = document.createElement('p');
+    mensajeError.className = "text-sm text-red-600 mt-1";
+    usernameInput?.parentNode.appendChild(mensajeError);
+
+    let usernameModificadoManualmente = false;
+
+    // SOLO marcar como modificado si el usuario realmente cambia el valor manualmente
+    usernameInput.addEventListener('keydown', function () {
+        // Solo se activa después de escribir una tecla dentro del input
+        usernameModificadoManualmente = true;
+    });
+
+    function generarUsername(nombre, apellidos) {
+        const nombreParts = nombre.trim().split(/\s+/);
+        const apellidoParts = apellidos.trim().split(/\s+/);
+
+        const inicialNombre = nombreParts[0]?.charAt(0).toLowerCase() || '';
+        const primerApellido = apellidoParts[0]?.toLowerCase().slice(0, 6) || '';
+        const inicialSegundoApellido = apellidoParts[1]?.charAt(0).toLowerCase() || '';
+
+        return inicialNombre + primerApellido + inicialSegundoApellido;
+    }
+
+    function actualizarUsername() {
+        if (!usernameModificadoManualmente && usernameInput) {
+            const sugerencia = generarUsername(firstNameInput.value, lastNameInput.value);
+            usernameInput.value = sugerencia;
+            validarUsername();
+        }
+    }
+
+    function validarUsername() {
+        const username = usernameInput.value.trim();
+        const empresa_id = empresaSelect.value;
+
+        if (username.length > 2 && empresa_id) {
+            fetch(`/ajax/validar-username/?username=${encodeURIComponent(username)}&empresa_id=${empresa_id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.existe) {
+                        mensajeError.textContent = "Este nombre de usuario ya está en uso en esta empresa.";
+                        usernameInput.classList.add("border-red-500");
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+                    } else {
+                        mensajeError.textContent = "";
+                        usernameInput.classList.remove("border-red-500");
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                    }
+                });
+        } else {
+            mensajeError.textContent = "";
+            usernameInput.classList.remove("border-red-500");
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+    }
+
+    // Escuchar los cambios en nombre y apellido
+    firstNameInput.addEventListener('input', actualizarUsername);
+    lastNameInput.addEventListener('input', actualizarUsername);
+});
+</script>
+{% endblock scripts %}
+
 {% endblock %}
