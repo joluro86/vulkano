@@ -42,3 +42,23 @@ def inventario_list_stock(request):
         'breadcrumb_items': [('Inventario', 'Stock por sucursal')],
     })
 
+from inventario.models import InventarioSucursal, ReservaInventario
+from django.db.models import Sum
+
+def consultar_stock_disponible(producto, sucursal):
+    """
+    Retorna el stock disponible real de un producto en una sucursal,
+    descontando las reservas no entregadas.
+    """
+    inventario = InventarioSucursal.objects.filter(producto=producto, sucursal=sucursal).first()
+
+    if not inventario:
+        return 0
+
+    reservados = ReservaInventario.objects.filter(
+        producto=producto,
+        sucursal=sucursal,
+        entregado=False
+    ).aggregate(total=Sum('cantidad_reservada'))['total'] or 0
+
+    return inventario.stock_actual - reservados

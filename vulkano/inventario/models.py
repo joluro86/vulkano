@@ -1,8 +1,10 @@
 from django.db import models
-from producto.models import Producto
+from producto.models import Producto, Proveedor
 from empresa.models import Sucursal
 from vulkano import settings
-
+from cliente.models import Cliente
+from django.db import models
+from alquiler.models import Alquiler
 class InventarioSucursal(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='inventarios')
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='inventarios')
@@ -19,8 +21,6 @@ class InventarioSucursal(models.Model):
     def __str__(self):
         return f"{self.producto.nombre} - {self.sucursal.nombre}: {self.stock_actual} unidades"
 
-from cliente.models import Cliente
-from producto.models import Proveedor
 
 class MovimientoInventario(models.Model):
     TIPOS = [
@@ -73,3 +73,22 @@ class MovimientoItem(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} x {self.cantidad}"
+
+
+
+class ReservaInventario(models.Model):
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='reservas')
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='reservas')
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='reservas')
+    alquiler = models.ForeignKey(Alquiler, on_delete=models.CASCADE, related_name='reservas')
+    cantidad_reservada = models.PositiveIntegerField()
+    fecha_reserva = models.DateTimeField(auto_now_add=True)
+    entregado = models.BooleanField(default=False, help_text="Se marca como entregado cuando el producto se entregue")
+
+    class Meta:
+        unique_together = ('producto', 'alquiler')
+        verbose_name = 'Reserva de Inventario'
+        verbose_name_plural = 'Reservas de Inventario'
+
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.cantidad_reservada} reservadas para {self.cliente.nombre}"

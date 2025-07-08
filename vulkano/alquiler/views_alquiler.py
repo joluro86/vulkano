@@ -5,6 +5,7 @@ from alquiler.forms.form_alquiler import AlquilerEditarForm, AlquilerItemForm
 from alquiler.models import Alquiler, AlquilerItem
 from django.contrib import messages
 from django.http import JsonResponse
+from inventario.views_stock import consultar_stock_disponible
 from producto.models import PrecioProducto, Producto
 from cliente.views import obtener_o_crear_cliente_generico
 from cliente.models import Cliente
@@ -15,6 +16,7 @@ from alquiler.utils import registrar_evento_alquiler
 from django.http import Http404
 from django.utils.timezone import now
 from django.utils.timezone import localtime
+from inventario.views_reserva import registrar_reserva
 
 @login_required
 def crear_alquiler(request):
@@ -48,18 +50,28 @@ def editar_alquiler(request, pk):
         if form.is_valid():
             alquiler = form.save(commit=False)
             alquiler.updated_by = request.user
-            alquiler.estado = 'en_curso'
+            alquiler.estado = 'reservado'
             alquiler.save()
 
             registrar_evento_alquiler(
                 alquiler,
                 tipo='estado',
-                descripcion='Se crea el alquiler y pasa a estado en curso',
-                estado_asociado='en_curso',
+                descripcion='Alquiler reservado',
+                estado_asociado='reservado',
                 usuario=request.user
             )
 
-            messages.success(request, "Datos del alquiler actualizados.")
+            # Registrar reservas de productos
+            for item in alquiler.items.all():
+                registrar_reserva(
+                    producto=item.producto,
+                    cantidad=item.cantidad,
+                    cliente=alquiler.cliente,
+                    sucursal=request.user.sucursal,
+                    alquiler=alquiler
+                )
+
+            messages.success(request, "Alquiler actualizado y productos reservados.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
     elif request.method == 'POST' and request.POST.get('producto'):
@@ -136,6 +148,7 @@ def editar_alquiler(request, pk):
         'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
     }
     return render(request, 'editar_alquiler.html', context)
+
 
 @login_required
 def buscar_productos(request):
@@ -301,3 +314,43 @@ def liquidar_alquiler(request, pk):
 
     messages.success(request, "El alquiler fue liquidado correctamente.")
     return redirect('ver_alquiler', pk=pk)
+
+
+@login_required
+def reservar_alquiler(request, pk):
+    alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
+
+    if alquiler.estado != 'en_curso':
+        messages.warning(request, "Solo se pueden reservar productos de alquileres en estado: En curso.")
+        return redirect('editar_alquiler', pk=pk)
+
+    if not alquiler.items.exists():
+        messages.warning(request, "No hay productos para reservar en este alquiler.")
+        return redirect('editar_alquiler', pk=pk)
+
+    for item in alquiler.items.select_related('producto'):
+        cantidad = item.cantidad or 1
+        producto = item.producto
+        stock_disponible = consultar_stock_disponible(producto, request.user.sucursal)
+
+        if cantidad > stock_disponible:
+            messages.error(request, f"Stock insuficiente para {producto.nombre}. "
+                                    f"Disponible: {stock_disponible}, requerido: {cantidad}")
+            return redirect('editar_alquiler', pk=pk)
+
+        try:
+            registrar_reserva(
+                producto=producto,
+                cantidad=cantidad,
+                cliente=alquiler.cliente,
+                sucursal=request.user.sucursal,
+                alquiler=alquiler
+            )
+        except Exception as e:
+            messages.error(request, f"Error al registrar reserva: {str(e)}")
+            return redirect('editar_alquiler', pk=pk)
+
+    alquiler.estado = 'reservado'
+    alquiler.save(update_fields=['estado'])
+    messages.success(request, "Productos reservados exitosamente.")
+    return redirect('editar_alquiler', pk=pk)
