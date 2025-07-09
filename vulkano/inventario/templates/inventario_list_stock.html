@@ -35,6 +35,7 @@
         <th class="px-4 py-2 border text-left">Sucursal</th>
         <th class="px-4 py-2 border text-right">Cantidad total</th>
         <th class="px-4 py-2 border text-right">Reservado</th>
+        <th class="px-4 py-2 border text-right">Entregado</th>
         <th class="px-4 py-2 border text-right">Stock disponible</th>
         <th class="px-4 py-2 border text-right">Stock mínimo</th>
         <th class="px-4 py-2 border text-center">Bloqueado</th>
@@ -47,6 +48,7 @@
           <td class="px-4 py-2 border">{{ obj.item.sucursal.nombre }}</td>
           <td class="px-4 py-2 border text-right">{{ obj.item.stock_actual }}</td>
           <td class="px-4 py-2 border text-right">{{ obj.reservado }}</td>
+          <td class="px-4 py-2 border text-right">{{ obj.entregado }}</td>
           <td class="px-4 py-2 border text-right">{{ obj.stock_disponible }}</td>
           <td class="px-4 py-2 border text-right">{{ obj.item.stock_minimo }}</td>
           <td class="px-4 py-2 border text-center">
@@ -59,7 +61,7 @@
         </tr>
       {% empty %}
         <tr>
-          <td colspan="7" class="text-center py-4 text-gray-500">No hay datos de inventario para mostrar.</td>
+          <td colspan="8" class="text-center py-4 text-gray-500">No hay datos de inventario para mostrar.</td>
         </tr>
       {% endfor %}
     </tbody>

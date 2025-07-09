@@ -1,5 +1,5 @@
 from django.urls import path
-from alquiler.views_alquiler import ver_alquiler, reservar_alquiler, limpiar_descuento, anular_alquiler, liquidar_alquiler, aplicar_descuento_alquiler, buscar_clientes, editar_alquiler, crear_alquiler, eliminar_item_alquiler, buscar_productos, alquiler_list
+from alquiler.views_alquiler import entregar_alquiler, ver_alquiler, reservar_alquiler, limpiar_descuento, anular_alquiler, liquidar_alquiler, aplicar_descuento_alquiler, buscar_clientes, editar_alquiler, crear_alquiler, eliminar_item_alquiler, buscar_productos, alquiler_list
 from alquiler.views_impresion_alquiler import imprimir_alquiler
 urlpatterns = [
     path('crear/', crear_alquiler, name='crear_alquiler'),
@@ -16,4 +16,5 @@ urlpatterns = [
     path('alquiler/<int:pk>/reservar/', reservar_alquiler, name='reservar_alquiler'),
     path('ver/<int:pk>/', ver_alquiler, name='ver_alquiler'),
     path('imprimir/<int:pk>/', imprimir_alquiler, name='imprimir_alquiler'),
+    path('alquiler/<int:pk>/entregar/', entregar_alquiler, name='entregar_alquiler'),
 ]

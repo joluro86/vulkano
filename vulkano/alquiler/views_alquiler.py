@@ -354,3 +354,67 @@ def reservar_alquiler(request, pk):
     alquiler.save(update_fields=['estado'])
     messages.success(request, "Productos reservados exitosamente.")
     return redirect('editar_alquiler', pk=pk)
+
+
+from inventario.models import InventarioSucursal, ReservaInventario
+from alquiler.utils import registrar_evento_alquiler
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.db import transaction
+from alquiler.models import Alquiler, AlquilerItem
+from django.contrib.auth.decorators import login_required
+
+@login_required
+@require_POST
+def entregar_alquiler(request, pk):
+    alquiler = get_object_or_404(
+        Alquiler, pk=pk,
+        usuario__empresa=request.user.empresa,
+        usuario__sucursal=request.user.sucursal
+    )
+
+    if alquiler.estado not in ['reservado', 'borrador', 'cotizacion']:
+        messages.warning(request, "Este alquiler ya fue entregado o no puede entregarse.")
+        return redirect('editar_alquiler', pk=pk)
+
+    try:
+        with transaction.atomic():
+            for item in alquiler.items.select_related('producto'):
+                inventario = InventarioSucursal.objects.filter(
+                    producto=item.producto,
+                    sucursal=request.user.sucursal
+                ).first()
+
+                if not inventario or inventario.stock_actual < item.cantidad:
+                    raise ValueError(
+                        f"Stock insuficiente para {item.producto.nombre}. "
+                        f"Disponible: {inventario.stock_actual if inventario else 0}, Requerido: {item.cantidad}"
+                    )
+
+                inventario.stock_actual -= item.cantidad
+                inventario.save()
+
+            # Eliminar reservas existentes si las hay
+            ReservaInventario.objects.filter(
+                alquiler=alquiler,
+                entregado=False
+            ).delete()
+
+            # Cambiar estado
+            alquiler.estado = 'en_curso'
+            alquiler.save(update_fields=['estado'])
+
+            registrar_evento_alquiler(
+                alquiler,
+                tipo='salida',
+                descripcion='Productos entregados al cliente.',
+                usuario=request.user
+            )
+
+            messages.success(request, "Productos entregados correctamente al cliente.")
+
+    except Exception as e:
+        messages.error(request, f"Error al entregar productos: {str(e)}")
+
+    return redirect('editar_alquiler', pk=pk)

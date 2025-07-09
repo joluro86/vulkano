@@ -10,6 +10,8 @@ from django.db.models import Sum
 from inventario.models import InventarioSucursal, ReservaInventario
 from django.db.models import Sum, F
 
+from alquiler.models import AlquilerItem
+
 @login_required
 def inventario_list_stock(request):
     query = request.GET.get('q', '').strip()
@@ -28,7 +30,6 @@ def inventario_list_stock(request):
 
     inventarios_qs = inventarios_qs.order_by('producto__nombre')
 
-    # Agregamos valores adicionales por cada inventario
     inventarios_list = []
     for inv in inventarios_qs:
         reservado = ReservaInventario.objects.filter(
@@ -37,10 +38,17 @@ def inventario_list_stock(request):
             entregado=False
         ).aggregate(total=Sum('cantidad_reservada'))['total'] or 0
 
+        entregado = AlquilerItem.objects.filter(
+            producto=inv.producto,
+            alquiler__estado='en_curso',
+            alquiler__usuario__sucursal=inv.sucursal
+        ).aggregate(total=Sum('cantidad'))['total'] or 0
+
         inventarios_list.append({
             'item': inv,
             'reservado': reservado,
-            'stock_disponible': inv.stock_actual - reservado,
+            'entregado': entregado,
+            'stock_disponible': inv.stock_actual - reservado,  # entregado ya fue descontado al momento de la entrega
         })
 
     paginator = Paginator(inventarios_list, 10)
