@@ -11,13 +11,11 @@
   </div>
 
   <form method="get" class="mb-4 flex justify-between items-end gap-2">
-    <!-- Búsqueda a la derecha -->
     <div class="flex gap-2 w-full max-w-md">
       <input type="text" name="q" value="{{ query }}" placeholder="Buscar producto..." class="p-2 border border-gray-300 rounded w-full" />
       <button type="submit" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded">Buscar</button>
     </div>
 
-    <!-- Filtro por sucursal -->
     <div class="flex items-end gap-2">
       <select name="sucursal_id" class="p-2 border border-gray-300 rounded text-sm bg-white">
         <option value="">Todas las sucursales</option>
@@ -35,20 +33,24 @@
       <tr>
         <th class="px-4 py-2 border text-left">Producto</th>
         <th class="px-4 py-2 border text-left">Sucursal</th>
-        <th class="px-4 py-2 border text-right">Stock actual</th>
+        <th class="px-4 py-2 border text-right">Cantidad total</th>
+        <th class="px-4 py-2 border text-right">Reservado</th>
+        <th class="px-4 py-2 border text-right">Stock disponible</th>
         <th class="px-4 py-2 border text-right">Stock mínimo</th>
         <th class="px-4 py-2 border text-center">Bloqueado</th>
       </tr>
     </thead>
     <tbody>
-      {% for item in inventarios %}
+      {% for obj in inventarios %}
         <tr class="border-b hover:bg-gray-50">
-          <td class="px-4 py-2 border">{{ item.producto.nombre }}</td>
-          <td class="px-4 py-2 border">{{ item.sucursal.nombre }}</td>
-          <td class="px-4 py-2 border text-right">{{ item.stock_actual }}</td>
-          <td class="px-4 py-2 border text-right">{{ item.stock_minimo }}</td>
+          <td class="px-4 py-2 border">{{ obj.item.producto.nombre }}</td>
+          <td class="px-4 py-2 border">{{ obj.item.sucursal.nombre }}</td>
+          <td class="px-4 py-2 border text-right">{{ obj.item.stock_actual }}</td>
+          <td class="px-4 py-2 border text-right">{{ obj.reservado }}</td>
+          <td class="px-4 py-2 border text-right">{{ obj.stock_disponible }}</td>
+          <td class="px-4 py-2 border text-right">{{ obj.item.stock_minimo }}</td>
           <td class="px-4 py-2 border text-center">
-            {% if item.bloqueado %}
+            {% if obj.item.bloqueado %}
               <span class="text-red-600 font-semibold">Sí</span>
             {% else %}
               <span class="text-green-600">No</span>
@@ -57,7 +59,7 @@
         </tr>
       {% empty %}
         <tr>
-          <td colspan="5" class="text-center py-4 text-gray-500">No hay datos de inventario para mostrar.</td>
+          <td colspan="7" class="text-center py-4 text-gray-500">No hay datos de inventario para mostrar.</td>
         </tr>
       {% endfor %}
     </tbody>

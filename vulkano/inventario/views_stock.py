@@ -4,6 +4,11 @@ from inventario.models import InventarioSucursal
 from empresa.models import Sucursal
 from django.core.paginator import Paginator
 from django.db.models import Q
+from inventario.models import InventarioSucursal, ReservaInventario
+from django.db.models import Sum
+
+from inventario.models import InventarioSucursal, ReservaInventario
+from django.db.models import Sum, F
 
 @login_required
 def inventario_list_stock(request):
@@ -12,21 +17,33 @@ def inventario_list_stock(request):
 
     inventarios_qs = InventarioSucursal.objects.select_related('producto', 'sucursal')
 
-    # Filtrar por empresa del usuario (si corresponde)
     if hasattr(request.user, 'empresa'):
         inventarios_qs = inventarios_qs.filter(producto__empresa=request.user.empresa)
 
-    # Filtro por nombre de producto
     if query:
         inventarios_qs = inventarios_qs.filter(producto__nombre__icontains=query)
 
-    # Filtro por sucursal
     if sucursal_id:
         inventarios_qs = inventarios_qs.filter(sucursal_id=sucursal_id)
 
     inventarios_qs = inventarios_qs.order_by('producto__nombre')
 
-    paginator = Paginator(inventarios_qs, 10)
+    # Agregamos valores adicionales por cada inventario
+    inventarios_list = []
+    for inv in inventarios_qs:
+        reservado = ReservaInventario.objects.filter(
+            producto=inv.producto,
+            sucursal=inv.sucursal,
+            entregado=False
+        ).aggregate(total=Sum('cantidad_reservada'))['total'] or 0
+
+        inventarios_list.append({
+            'item': inv,
+            'reservado': reservado,
+            'stock_disponible': inv.stock_actual - reservado,
+        })
+
+    paginator = Paginator(inventarios_list, 10)
     page_number = request.GET.get('page')
     inventarios = paginator.get_page(page_number)
 
@@ -41,9 +58,6 @@ def inventario_list_stock(request):
         'sucursales': sucursales,
         'breadcrumb_items': [('Inventario', 'Stock por sucursal')],
     })
-
-from inventario.models import InventarioSucursal, ReservaInventario
-from django.db.models import Sum
 
 def consultar_stock_disponible(producto, sucursal):
     """
