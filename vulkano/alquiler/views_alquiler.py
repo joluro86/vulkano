@@ -177,16 +177,27 @@ def eliminar_item_alquiler(request, pk):
     messages.success(request, "Producto eliminado del alquiler.")
     return redirect('editar_alquiler', pk=item.alquiler.id)
 
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def alquiler_list(request):
-    alquileres = Alquiler.objects.filter(
-        usuario__sucursal=request.user.sucursal).order_by('-created_at')
+    estado = request.GET.get('estado', '')
+    qs = Alquiler.objects.filter(usuario__sucursal=request.user.sucursal)
 
-    context = {
+    if estado:
+        qs = qs.filter(estado=estado)
+
+    qs = qs.order_by('-created_at')
+    paginator = Paginator(qs, 10)  # 10 alquileres por página
+    page_number = request.GET.get('page')
+    alquileres = paginator.get_page(page_number)
+
+    return render(request, 'alquiler_list.html', {
         'alquileres': alquileres,
-        'breadcrumb_items': [('Alquileres', 'Listado')]
-    }
-    return render(request, 'alquiler_list.html', context)
+        'estado_filtro': estado,
+        'breadcrumb_items': [('Alquileres', None)]
+    })
 
 @login_required
 def buscar_clientes(request):

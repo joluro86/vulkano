@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from inventario.models import InventarioSucursal
 from empresa.models import Sucursal
 from django.core.paginator import Paginator
@@ -17,8 +18,8 @@ def inventario_list_stock(request):
     query = request.GET.get('q', '').strip()
     sucursal_id = request.GET.get('sucursal_id', '').strip()
 
-    inventarios_qs = InventarioSucursal.objects.select_related('producto', 'sucursal')
-
+    inventarios_qs = InventarioSucursal.objects.select_related('producto', 'sucursal')       
+        
     if hasattr(request.user, 'empresa'):
         inventarios_qs = inventarios_qs.filter(producto__empresa=request.user.empresa)
 
@@ -32,6 +33,13 @@ def inventario_list_stock(request):
 
     inventarios_list = []
     for inv in inventarios_qs:
+        reservado = ReservaInventario.objects.filter(
+            producto=inv.producto,
+            sucursal=inv.sucursal,
+            entregado=False
+        )
+        
+            
         reservado = ReservaInventario.objects.filter(
             producto=inv.producto,
             sucursal=inv.sucursal,
@@ -64,7 +72,10 @@ def inventario_list_stock(request):
         'sucursal_filtro': sucursal_id,
         'total_inventarios': total_inventarios,
         'sucursales': sucursales,
-        'breadcrumb_items': [('Inventario', 'Stock por sucursal')],
+            'breadcrumb_items': [
+            ("Inventario", reverse('inventario_list_stock')),  # o la vista anterior si existe
+            ("Stock", None)
+        ],
     })
 
 def consultar_stock_disponible(producto, sucursal):

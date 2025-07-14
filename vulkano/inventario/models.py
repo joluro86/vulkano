@@ -8,6 +8,7 @@ from alquiler.models import Alquiler
 class InventarioSucursal(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='inventarios')
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='inventarios')
+    total_historico = models.IntegerField(default=0)
     stock_actual = models.IntegerField(default=0)
     stock_minimo = models.IntegerField(default=0, help_text="Nivel mínimo recomendado para alertas")
     ultima_actualizacion = models.DateTimeField(auto_now=True)

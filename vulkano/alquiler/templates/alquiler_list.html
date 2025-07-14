@@ -7,10 +7,30 @@
 
 {% block content %}
   <div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold text-gray-800">Alquileres registrados</h2>
-      <a href="{% url 'crear_alquiler' %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">+ Nuevo alquiler</a>
-    </div>
+    <div class="flex justify-between items-end mb-4 flex-wrap gap-2">
+  <h2 class="text-xl font-bold text-gray-800">Alquileres registrados</h2>
+  
+  <div class="flex gap-2 items-end">
+    <form method="get" class="flex items-end">
+      <div>
+        <select name="estado"
+              class="block w-full border border-gray-300 rounded px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500"
+              onchange="this.form.submit()">
+        <option value="">Todos</option>
+        <option value="borrador" {% if estado_filtro == 'borrador' %}selected{% endif %}>Borrador</option>
+        <option value="en_curso" {% if estado_filtro == 'en_curso' %}selected{% endif %}>En curso</option>
+        <option value="con_abono" {% if estado_filtro == 'con_abono' %}selected{% endif %}>Con abono</option>
+        <option value="liquidado" {% if estado_filtro == 'liquidado' %}selected{% endif %}>Liquidado</option>
+        <option value="anulado" {% if estado_filtro == 'anulado' %}selected{% endif %}>Anulado</option>
+      </select>
+
+      </div>
+    </form>
+
+    <a href="{% url 'crear_alquiler' %}" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">+ Nuevo alquiler</a>
+  </div>
+</div>
+
 
     <table class="min-w-full bg-white border border-gray-200 text-sm rounded">
       <thead class="bg-gray-100 text-left">
@@ -33,26 +53,11 @@
             <td class="p-2">{{ a.fecha_fin|default:'—'|date:'d-m-Y' }}</td>
             <td>
               <span class="inline-block text-xs px-2 py-1 rounded-full
-                    {% if a.estado == 'borrador' %}
-                            
-                      bg-gray-100 text-gray-800
-
-                {% elif a.estado == 'en_curso' %}
-                  
-                      bg-blue-100 text-blue-800
-
-                {% elif a.estado == 'con_abono' %}
-                  
-                      bg-yellow-100 text-yellow-800
-
-                {% elif a.estado == 'liquidado' %}
-                  
-                      bg-green-100 text-green-800
-
-                {% elif a.estado == 'anulado' %}
-                  
-                      bg-red-100 text-red-800
-
+                {% if a.estado == 'borrador' %}bg-gray-100 text-gray-800
+                {% elif a.estado == 'en_curso' %}bg-blue-100 text-blue-800
+                {% elif a.estado == 'con_abono' %}bg-yellow-100 text-yellow-800
+                {% elif a.estado == 'liquidado' %}bg-green-100 text-green-800
+                {% elif a.estado == 'anulado' %}bg-red-100 text-red-800
                 {% endif %}">
                 {{ a.get_estado_display }}
               </span>
@@ -60,7 +65,7 @@
             <td class="p-2">{{ a.created_at|date:'d-m-Y H:i' }}</td>
             <td class="p-2">
               {% if a.estado == 'anulado' or a.estado == 'liquidado' %}
-                <a href="{% url 'ver_alquiler' a.id %}" class="text-green-600 hover:text-green-800 "><i class="ph ph-eye"></i></a>
+                <a href="{% url 'ver_alquiler' a.id %}" class="text-green-600 hover:text-green-800"><i class="ph ph-eye"></i></a>
               {% else %}
                 <a href="{% url 'editar_alquiler' a.id %}" class="text-red-600 hover:text-red-800"><i class="ph ph-pencil"></i></a>
               {% endif %}
@@ -68,10 +73,27 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="p-4 text-center text-gray-500">No hay alquileres registrados.</td>
+            <td colspan="7" class="p-4 text-center text-gray-500">No hay alquileres registrados.</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    <div class="mt-4 flex justify-between items-center text-sm">
+  <div>
+    Página {{ alquileres.number }} de {{ alquileres.paginator.num_pages }} — Total: {{ alquileres.paginator.count }} alquileres
+  </div>
+  <div class="space-x-2">
+    {% if alquileres.has_previous %}
+      <a href="?page=1{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Primera</a>
+      <a href="?page={{ alquileres.previous_page_number }}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Anterior</a>
+    {% endif %}
+    {% if alquileres.has_next %}
+      <a href="?page={{ alquileres.next_page_number }}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Siguiente</a>
+      <a href="?page={{ alquileres.paginator.num_pages }}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}" class="text-[var(--primary-color)] font-medium">Última</a>
+    {% endif %}
+  </div>
+</div>
+
   </div>
 {% endblock %}

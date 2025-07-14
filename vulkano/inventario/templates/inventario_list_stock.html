@@ -33,7 +33,7 @@
       <tr>
         <th class="px-4 py-2 border text-left">Producto</th>
         <th class="px-4 py-2 border text-left">Sucursal</th>
-        <th class="px-4 py-2 border text-right">Cantidad total</th>
+        <th class="px-4 py-2 border text-right">Total historico</th>
         <th class="px-4 py-2 border text-right">Reservado</th>
         <th class="px-4 py-2 border text-right">Entregado</th>
         <th class="px-4 py-2 border text-right">Stock disponible</th>
@@ -46,7 +46,7 @@
         <tr class="border-b hover:bg-gray-50">
           <td class="px-4 py-2 border">{{ obj.item.producto.nombre }}</td>
           <td class="px-4 py-2 border">{{ obj.item.sucursal.nombre }}</td>
-          <td class="px-4 py-2 border text-right">{{ obj.item.stock_actual }}</td>
+          <td class="px-4 py-2 border text-right">{{ obj.item.total_historico }}</td>
           <td class="px-4 py-2 border text-right">{{ obj.reservado }}</td>
           <td class="px-4 py-2 border text-right">{{ obj.entregado }}</td>
           <td class="px-4 py-2 border text-right">{{ obj.stock_disponible }}</td>

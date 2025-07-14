@@ -220,6 +220,7 @@ def confirmar_movimiento(request, pk):
                     )
 
                     if movimiento.tipo == 'entrada':
+                        inventario.total_historico += item.cantidad
                         inventario.stock_actual += item.cantidad
                     elif movimiento.tipo == 'salida':
                         inventario.stock_actual -= item.cantidad

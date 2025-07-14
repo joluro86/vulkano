@@ -1,12 +1,5 @@
-# inventario/forms.py
-
 from django import forms
 from inventario.models import MovimientoInventario, MovimientoItem
-
-from django import forms
-from inventario.models import MovimientoInventario
-from cliente.models import Cliente
-from producto.models import Proveedor
 
 class MovimientoInventarioForm(forms.ModelForm):
     class Meta:
