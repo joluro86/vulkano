@@ -82,3 +82,25 @@ class AlquilerItemForm(forms.ModelForm):
         if precio is not None and precio < 0:
             raise forms.ValidationError("El precio no puede ser negativo.")
         return precio
+
+from alquiler.models import AbonoAlquiler
+class AbonoAlquilerForm(forms.ModelForm):
+    class Meta:
+        model = AbonoAlquiler
+        fields = ['valor', 'metodo_pago', 'observaciones']
+        widgets = {
+            'valor': forms.NumberInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded',
+                'placeholder': 'Valor del abono'
+            }),
+            'metodo_pago': forms.TextInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded',
+                'placeholder': 'Método de pago (ej: Efectivo, Nequi, Transferencia)'
+            }),
+            'observaciones': forms.Textarea(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded',
+                'rows': 3,
+                'placeholder': 'Observaciones adicionales...'
+            }),
+        }
+

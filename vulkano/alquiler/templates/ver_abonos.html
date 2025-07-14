@@ -1,0 +1,50 @@
+{% extends 'index.html' %}
+{% load humanize %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">Abonos del Alquiler #{{ alquiler.id }}</h2>
+
+  <div class="mb-4">
+    <a href="{% url 'editar_alquiler' alquiler.id %}" class="text-blue-600 hover:underline">← Volver al alquiler</a>
+  </div>
+
+  {% if abonos %}
+    <table class="min-w-full bg-white border border-gray-300 rounded text-sm">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="text-left p-2">Fecha</th>
+          <th class="text-left p-2">Valor</th>
+          <th class="text-left p-2">Método de pago</th>
+          <th class="text-left p-2">Observaciones</th>
+          <th class="text-left p-2">Registrado por</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for abono in abonos %}
+          <tr class="border-t">
+            <td class="p-2">{{ abono.fecha|date:"d M Y H:i" }}</td>
+            <td class="p-2 font-semibold text-green-700">${{ abono.valor|floatformat:0|intcomma }}</td>
+            <td class="p-2">{{ abono.metodo_pago }}</td>
+            <td class="p-2">{{ abono.observaciones|default:"-" }}</td>
+            <td class="p-2">{{ abono.registrado_por.get_full_name }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="mt-4 text-right text-sm text-gray-700">
+  <div class="text-lg font-semibold">Total a pagar: ${{ total_pagar|floatformat:0|intcomma }}</div>
+  <div>Total abonado: ${{ total_abonado|floatformat:0|intcomma }}</div>
+  <div class="text-red-600 font-bold">Saldo pendiente: ${{ saldo_pendiente|floatformat:0|intcomma }}</div>
+</div>
+
+  {% else %}
+    <p class="text-gray-500">Aún no se han registrado abonos para este alquiler.</p>
+  {% endif %}
+</div>
+{% endblock %}

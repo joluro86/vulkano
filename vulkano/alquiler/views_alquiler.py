@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from alquiler.forms.form_alquiler import AlquilerEditarForm, AlquilerItemForm
+from alquiler.forms.form_alquiler import AbonoAlquilerForm, AlquilerEditarForm, AlquilerItemForm
 from alquiler.models import Alquiler, AlquilerItem
 from django.contrib import messages
 from django.http import JsonResponse
@@ -136,6 +136,9 @@ def editar_alquiler(request, pk):
     alquiler.save()
     descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
 
+    abonos_total = alquiler.total_abonado 
+    saldo_pendiente = alquiler.saldo_pendiente
+    
     context = {
         'alquiler': alquiler,
         'descuentos': descuentos,
@@ -145,6 +148,8 @@ def editar_alquiler(request, pk):
         'subtotal': subtotal,
         'descuento_total': descuento_total,
         'iva_total': iva_total,
+        'abonos_total': abonos_total,
+        'saldo_pendiente': saldo_pendiente,
         'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
     }
     return render(request, 'editar_alquiler.html', context)
@@ -429,3 +434,58 @@ def entregar_alquiler(request, pk):
         messages.error(request, f"Error al entregar productos: {str(e)}")
 
     return redirect('editar_alquiler', pk=pk)
+
+
+# alquiler/views_abono.py
+
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from alquiler.models import Alquiler
+
+@login_required
+def abonar_alquiler(request, pk):
+    alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
+
+    if alquiler.estado == 'liquidado':
+        messages.warning(request, "Este alquiler ya fue liquidado. No se puede abonar.")
+        return redirect('editar_alquiler', pk=pk)
+
+    form = AbonoAlquilerForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        abono = form.save(commit=False)
+        abono.alquiler = alquiler
+        abono.registrado_por = request.user
+        abono.save()
+        messages.success(request, f"Abono de ${abono.valor} registrado.")
+        return redirect('editar_alquiler', pk=pk)
+
+    return render(request, 'abonar_alquiler.html', {
+        'form': form,
+        'alquiler': alquiler,
+        'breadcrumb_items': [('Alquileres', 'Abonar')]
+    })
+    
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404, render
+from alquiler.models import Alquiler
+
+from django.db.models import Sum
+
+def ver_abonos_alquiler(request, pk):
+    alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
+    abonos = alquiler.abonos.all()
+    total_abonado = abonos.aggregate(total=Sum('valor'))['total'] or 0
+    total_pagar = alquiler.total_con_descuento
+    saldo_pendiente = total_pagar - total_abonado
+
+    return render(request, 'ver_abonos.html', {
+        'alquiler': alquiler,
+        'abonos': abonos,
+        'total_abonado': total_abonado,
+        'total_pagar': total_pagar,
+        'saldo_pendiente': saldo_pendiente,
+        'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
+    })
+

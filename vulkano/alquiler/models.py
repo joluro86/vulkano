@@ -4,7 +4,6 @@ from cliente.models import Cliente
 from decimal import Decimal
 from producto.models import PrecioProducto
 
-
 class Alquiler(models.Model):
 
     ESTADOS_ALQUILER = [
@@ -58,6 +57,18 @@ class Alquiler(models.Model):
         total = self.total_sin_descuento
         descuento = total * (self.descuento_general / Decimal('100'))
         return total - descuento
+
+    @property
+    def total_abonado(self):
+        return sum(a.valor for a in self.abonos.all())
+
+    @property
+    def saldo_pendiente(self):
+        return max(self.total_con_descuento - self.total_abonado, 0)
+
+    @property
+    def puede_liquidarse(self):
+        return self.estado != 'liquidado' and self.saldo_pendiente == 0
 
 
 class AlquilerItem(models.Model):
@@ -129,12 +140,36 @@ class AlquilerItem(models.Model):
     def valor_descuento(self):
         base = self.cantidad * self.dias_a_cobrar * self.precio_dia
         return base * (self.descuento_porcentaje / Decimal('100'))
+    
+    @property
+    def total_abonado(self):
+        return sum(a.valor for a in self.abonos.all())
 
+    @property
+    def saldo_pendiente(self):
+        return max(self.total_con_descuento - self.total_abonado, 0)
+
+    @property
+    def puede_liquidarse(self):
+        return self.estado != 'liquidado' and self.saldo_pendiente == 0
+
+    def liquidar(self, usuario, observaciones=""):
+        if not self.puede_liquidarse:
+            raise ValueError("No se puede liquidar: saldo pendiente o ya está liquidado.")
+
+        self.estado = 'liquidado'
+        self.save(update_fields=['estado'])
+
+        LiquidacionAlquiler.objects.create(
+            alquiler=self,
+            total_liquidado=self.total_abonado,
+            observaciones=observaciones,
+            liquidado_por=usuario
+        )
 
 class EventoAlquiler(models.Model):
     TIPOS = [
         ('estado', 'Cambio de estado'),
-        ('abono', 'Abono registrado'),
         ('salida', 'Entrega de productos'),
         ('devolucion', 'Devolución'),
         ('nota', 'Nota interna'),
@@ -156,3 +191,23 @@ class EventoAlquiler(models.Model):
     class Meta:
         ordering = ['-fecha']
 
+class AbonoAlquiler(models.Model):
+    alquiler = models.ForeignKey('Alquiler', on_delete=models.CASCADE, related_name='abonos')
+    fecha = models.DateTimeField(auto_now_add=True)
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    metodo_pago = models.CharField(max_length=50, blank=True)
+    observaciones = models.TextField(blank=True)
+    registrado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Abono ${self.valor} - Alquiler #{self.alquiler.id}"
+
+class LiquidacionAlquiler(models.Model):
+    alquiler = models.OneToOneField('Alquiler', on_delete=models.CASCADE, related_name='liquidacion')
+    fecha = models.DateTimeField(auto_now_add=True)
+    total_liquidado = models.DecimalField(max_digits=10, decimal_places=2)
+    observaciones = models.TextField(blank=True)
+    liquidado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Liquidación Alquiler #{self.alquiler.id} - ${self.total_liquidado}"
