@@ -1,8 +1,6 @@
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from alquiler.forms.form_alquiler import AbonoAlquilerForm, AlquilerEditarForm, AlquilerItemForm
-from alquiler.models import Alquiler, AlquilerItem
+from alquiler.models import AbonoAlquiler, Alquiler, AlquilerItem, LiquidacionAlquiler
 from django.contrib import messages
 from django.http import JsonResponse
 from inventario.views_stock import consultar_stock_disponible
@@ -11,12 +9,23 @@ from cliente.views import obtener_o_crear_cliente_generico
 from cliente.models import Cliente
 from descuento.models import Descuento
 from decimal import Decimal
-from django.db.models import F
 from alquiler.utils import registrar_evento_alquiler
 from django.http import Http404
-from django.utils.timezone import now
-from django.utils.timezone import localtime
+from django.utils.timezone import now, localtime
 from inventario.views_reserva import registrar_reserva
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404, render
+from alquiler.models import Alquiler
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from inventario.models import InventarioSucursal, ReservaInventario
+from alquiler.utils import registrar_evento_alquiler
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect
+from django.db import transaction
+from alquiler.models import Alquiler, AlquilerItem
+from django.db.models import Sum
+from alquiler.forms.form_alquiler import AbonoAlquilerForm
 
 @login_required
 def crear_alquiler(request):
@@ -154,7 +163,6 @@ def editar_alquiler(request, pk):
     }
     return render(request, 'editar_alquiler.html', context)
 
-
 @login_required
 def buscar_productos(request):
     query = request.GET.get('q', '')
@@ -181,9 +189,6 @@ def eliminar_item_alquiler(request, pk):
     item.delete()
     messages.success(request, "Producto eliminado del alquiler.")
     return redirect('editar_alquiler', pk=item.alquiler.id)
-
-from django.core.paginator import Paginator
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def alquiler_list(request):
@@ -314,19 +319,36 @@ def liquidar_alquiler(request, pk):
             usuario__empresa=request.user.empresa,
             usuario__sucursal=request.user.sucursal
         )
-        if alquiler.fecha_fin==None or alquiler.fecha_fin=="" or alquiler.fecha_inicio==None or alquiler.fecha_inicio=="":
-            messages.error(request, "Para liquidar el alquiler ingrese fecha de inicio y fecha fin.")
-            return redirect('editar_alquiler', pk=pk)
-            
     except Http404:
         messages.error(request, "El alquiler no existe o no tienes permiso para acceder.")
         return redirect('alquiler_list')
 
+    if not alquiler.fecha_inicio or not alquiler.fecha_fin:
+        messages.error(request, "Para liquidar el alquiler, debes ingresar fecha de inicio y fecha fin.")
+        return redirect('editar_alquiler', pk=pk)
+
+    if alquiler.estado == 'liquidado':
+        messages.info(request, "El alquiler ya fue liquidado.")
+        return redirect('editar_alquiler', pk=pk)
+
+    abonos_total = alquiler.abonos.aggregate(total=Sum('valor'))['total'] or 0
+    saldo_pendiente = max(alquiler.total - abonos_total, 0)
+
+    if saldo_pendiente > 0:
+        messages.warning(request, f"No se puede liquidar: hay un saldo pendiente de ${saldo_pendiente:,.0f}")
+        return redirect('editar_alquiler', pk=pk)
+
+    # Guardar liquidación
+    LiquidacionAlquiler.objects.create(
+        alquiler=alquiler,
+        total_liquidado=abonos_total,
+        observaciones=f"Liquidado automáticamente por {request.user.get_full_name()}",
+        liquidado_por=request.user
+    )
+
     alquiler.estado = 'liquidado'
-    alquiler.observaciones = f"Liquidado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
-    #alquiler.save()
-    
-    print(alquiler.observaciones)
+    alquiler.observaciones += f"\nLiquidado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
+    alquiler.save(update_fields=['estado', 'observaciones'])
 
     messages.success(request, "El alquiler fue liquidado correctamente.")
     return redirect('ver_alquiler', pk=pk)
@@ -370,16 +392,6 @@ def reservar_alquiler(request, pk):
     alquiler.save(update_fields=['estado'])
     messages.success(request, "Productos reservados exitosamente.")
     return redirect('editar_alquiler', pk=pk)
-
-
-from inventario.models import InventarioSucursal, ReservaInventario
-from alquiler.utils import registrar_evento_alquiler
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from django.db import transaction
-from alquiler.models import Alquiler, AlquilerItem
-from django.contrib.auth.decorators import login_required
 
 @login_required
 @require_POST
@@ -435,14 +447,6 @@ def entregar_alquiler(request, pk):
 
     return redirect('editar_alquiler', pk=pk)
 
-
-# alquiler/views_abono.py
-
-from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from alquiler.models import Alquiler
-
 @login_required
 def abonar_alquiler(request, pk):
     alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
@@ -453,26 +457,29 @@ def abonar_alquiler(request, pk):
 
     form = AbonoAlquilerForm(request.POST or None)
 
+    # Calcular saldo pendiente
+    total_abonado = alquiler.abonos.aggregate(total=Sum('valor'))['total'] or 0
+    saldo_pendiente = alquiler.total_con_descuento - total_abonado
+
     if request.method == 'POST' and form.is_valid():
         abono = form.save(commit=False)
-        abono.alquiler = alquiler
-        abono.registrado_por = request.user
-        abono.save()
-        messages.success(request, f"Abono de ${abono.valor} registrado.")
-        return redirect('editar_alquiler', pk=pk)
+
+        if abono.valor > saldo_pendiente:
+            messages.error(request, f"El abono no puede ser mayor al saldo pendiente (${saldo_pendiente:,.0f}).")
+        else:
+            abono.alquiler = alquiler
+            abono.registrado_por = request.user
+            abono.save()
+            messages.success(request, f"Abono de ${abono.valor:,.0f} registrado correctamente.")
+            return redirect('editar_alquiler', pk=pk)
 
     return render(request, 'abonar_alquiler.html', {
         'form': form,
         'alquiler': alquiler,
-        'breadcrumb_items': [('Alquileres', 'Abonar')]
+        'saldo_pendiente': saldo_pendiente,
+        'breadcrumb_items': [('Alquileres', 'Abonar')],
     })
     
-from django.db.models import Sum
-from django.shortcuts import get_object_or_404, render
-from alquiler.models import Alquiler
-
-from django.db.models import Sum
-
 def ver_abonos_alquiler(request, pk):
     alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
     abonos = alquiler.abonos.all()
@@ -489,3 +496,15 @@ def ver_abonos_alquiler(request, pk):
         'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
     })
 
+@login_required
+def eliminar_abono(request, pk):
+    abono = get_object_or_404(AbonoAlquiler, pk=pk)
+
+    if request.method == 'POST':
+        alquiler_id = abono.alquiler.id
+        abono.delete()
+        messages.success(request, "Abono eliminado correctamente.")
+        return redirect('ver_abonos_alquiler', pk=alquiler_id)
+
+    messages.error(request, "Método no permitido.")
+    return redirect('ver_abonos_alquiler', pk=abono.alquiler.id)
