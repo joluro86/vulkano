@@ -499,12 +499,31 @@ def ver_abonos_alquiler(request, pk):
 @login_required
 def eliminar_abono(request, pk):
     abono = get_object_or_404(AbonoAlquiler, pk=pk)
+    alquiler = abono.alquiler
+
+    if alquiler.estado == 'liquidado':
+        messages.warning(request, "No se puede eliminar abonos de un alquiler liquidado.")
+        return redirect('ver_abonos_alquiler', pk=alquiler.id)
 
     if request.method == 'POST':
-        alquiler_id = abono.alquiler.id
         abono.delete()
         messages.success(request, "Abono eliminado correctamente.")
-        return redirect('ver_abonos_alquiler', pk=alquiler_id)
+        return redirect('ver_abonos_alquiler', pk=alquiler.id)
 
     messages.error(request, "Método no permitido.")
-    return redirect('ver_abonos_alquiler', pk=abono.alquiler.id)
+    return redirect('ver_abonos_alquiler', pk=alquiler.id)
+
+
+@login_required
+def redirigir_a_abonos(request):
+    alquiler_id = request.GET.get('alquiler_id')
+    
+    if not alquiler_id:
+        messages.error(request, "Debes ingresar un ID de alquiler.")
+        return redirect('buscar_abonos')
+
+    return redirect('ver_abonos_alquiler', pk=alquiler_id)
+
+@login_required
+def buscar_abonos(request):
+    return render(request, 'buscar_abonos.html')

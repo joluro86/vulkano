@@ -6,81 +6,85 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
-  <h2 class="text-2xl font-bold text-gray-800 mb-4">Abonos del Alquiler #{{ alquiler.id }}</h2>
+  <div class="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Abonos del Alquiler #{{ alquiler.id }}</h2>
 
-  <div class="mb-4">
-    <a href="{% url 'editar_alquiler' alquiler.id %}" class="text-blue-600 hover:underline">← Volver al alquiler</a>
+    <div class="mb-4">
+      <a href="{% url 'editar_alquiler' alquiler.id %}" class="text-blue-600 hover:underline">← Volver al alquiler</a>
+    </div>
+
+    {% if abonos %}
+      <table class="min-w-full bg-white border border-gray-300 rounded text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="text-left p-2">Fecha</th>
+            <th class="text-left p-2">Valor</th>
+            <th class="text-left p-2">Método de pago</th>
+            <th class="text-left p-2">Observaciones</th>
+            <th class="text-left p-2">Registrado por</th>
+            <th class="text-left p-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for abono in abonos %}
+            <tr class="border-t">
+              <td class="p-2">{{ abono.fecha|date:'d M Y H:i' }}</td>
+              <td class="p-2 font-semibold text-green-700">${{ abono.valor|floatformat:0|intcomma }}</td>
+              <td class="p-2">{{ abono.metodo_pago }}</td>
+              <td class="p-2">{{ abono.observaciones|default:'-' }}</td>
+              <td class="p-2">{{ abono.registrado_por.get_full_name }}</td>
+              <td class="p-2">
+                {% if alquiler.estado != 'liquidado' %}
+                  <form method="post" action="{% url 'eliminar_abono' abono.id %}" class="form-eliminar-abono">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:underline eliminar-abono-btn"><i class="ph ph-trash"></i></button>
+                  </form>
+                {% else %}
+                  <span class="text-gray-400">-</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="mt-4 text-right text-sm text-gray-700">
+        <div class="text-lg font-semibold">Total a pagar: ${{ total_pagar|floatformat:0|intcomma }}</div>
+        <div>Total abonado: ${{ total_abonado|floatformat:0|intcomma }}</div>
+        <div class="text-red-600 font-bold">Saldo pendiente: ${{ saldo_pendiente|floatformat:0|intcomma }}</div>
+      </div>
+    {% else %}
+      <p class="text-gray-500">Aún no se han registrado abonos para este alquiler.</p>
+    {% endif %}
   </div>
 
-  {% if abonos %}
-    <table class="min-w-full bg-white border border-gray-300 rounded text-sm">
-      <thead class="bg-gray-100">
-        <tr>
-          <th class="text-left p-2">Fecha</th>
-          <th class="text-left p-2">Valor</th>
-          <th class="text-left p-2">Método de pago</th>
-          <th class="text-left p-2">Observaciones</th>
-          <th class="text-left p-2">Registrado por</th>
-          <th class="text-left p-2">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for abono in abonos %}
-          <tr class="border-t">
-            <td class="p-2">{{ abono.fecha|date:"d M Y H:i" }}</td>
-            <td class="p-2 font-semibold text-green-700">${{ abono.valor|floatformat:0|intcomma }}</td>
-            <td class="p-2">{{ abono.metodo_pago }}</td>
-            <td class="p-2">{{ abono.observaciones|default:"-" }}</td>
-            <td class="p-2">{{ abono.registrado_por.get_full_name }}</td>
-            <td class="p-2">
-              <form method="post" action="{% url 'eliminar_abono' abono.id %}" class="form-eliminar-abono">
-                {% csrf_token %}
-                <button type="submit" class="text-red-600 hover:underline eliminar-abono-btn"><i class="ph ph-trash"></i></button>
-              </form>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <div class="mt-4 text-right text-sm text-gray-700">
-      <div class="text-lg font-semibold">Total a pagar: ${{ total_pagar|floatformat:0|intcomma }}</div>
-      <div>Total abonado: ${{ total_abonado|floatformat:0|intcomma }}</div>
-      <div class="text-red-600 font-bold">Saldo pendiente: ${{ saldo_pendiente|floatformat:0|intcomma }}</div>
-    </div>
-  {% else %}
-    <p class="text-gray-500">Aún no se han registrado abonos para este alquiler.</p>
-  {% endif %}
-</div>
-
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const forms = document.querySelectorAll('.form-eliminar-abono');
-
-    forms.forEach(form => {
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        Swal.fire({
-          title: '¿Eliminar abono?',
-          text: "Esta acción no se puede deshacer.",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6',
-          confirmButtonText: 'Sí, eliminar',
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            form.submit();
-          }
-        });
-      });
-    });
-  });
-</script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const forms = document.querySelectorAll('.form-eliminar-abono')
+    
+      forms.forEach((form) => {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault()
+    
+          Swal.fire({
+            title: '¿Eliminar abono?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              form.submit()
+            }
+          })
+        })
+      })
+    })
+  </script>
 {% endblock %}

@@ -1,5 +1,5 @@
 from django.urls import path
-from alquiler.views_alquiler import eliminar_abono, ver_abonos_alquiler, abonar_alquiler, entregar_alquiler, ver_alquiler, reservar_alquiler, limpiar_descuento, anular_alquiler, liquidar_alquiler, aplicar_descuento_alquiler, buscar_clientes, editar_alquiler, crear_alquiler, eliminar_item_alquiler, buscar_productos, alquiler_list
+from alquiler.views_alquiler import buscar_abonos, redirigir_a_abonos, eliminar_abono, ver_abonos_alquiler, abonar_alquiler, entregar_alquiler, ver_alquiler, reservar_alquiler, limpiar_descuento, anular_alquiler, liquidar_alquiler, aplicar_descuento_alquiler, buscar_clientes, editar_alquiler, crear_alquiler, eliminar_item_alquiler, buscar_productos, alquiler_list
 from alquiler.views_impresion_alquiler import imprimir_alquiler
 urlpatterns = [
     path('crear/', crear_alquiler, name='crear_alquiler'),
@@ -20,5 +20,6 @@ urlpatterns = [
     path('alquiler/<int:pk>/abonar/', abonar_alquiler, name='abonar_alquiler'),
     path('alquiler/<int:pk>/abonos/', ver_abonos_alquiler, name='ver_abonos_alquiler'),
     path('abono/eliminar/<int:pk>/', eliminar_abono, name='eliminar_abono'),
-
+    path('abonos/buscar/', buscar_abonos, name='buscar_abonos'),
+    path('abonos/redirigir/', redirigir_a_abonos, name='redirigir_a_abonos'),
 ]
