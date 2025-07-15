@@ -69,3 +69,36 @@ def resumen_alquileres(request):
         'estados': Alquiler.ESTADOS_ALQUILER,
     }
     return render(request, 'resumen_alquileres.html', context)
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from alquiler.models import Alquiler
+from django.db.models import Q
+from django.urls import reverse
+
+@login_required
+def informe_economico(request):
+    alquileres = Alquiler.objects.select_related('cliente').filter(usuario__empresa=request.user.empresa)
+
+    cliente = request.GET.get('cliente', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    fecha_inicio = request.GET.get('fecha_inicio', '').strip()
+    fecha_fin = request.GET.get('fecha_fin', '').strip()
+
+    if cliente:
+        alquileres = alquileres.filter(cliente__nombre__icontains=cliente)
+
+    if estado:
+        alquileres = alquileres.filter(estado=estado)
+
+    if fecha_inicio:
+        alquileres = alquileres.filter(fecha_inicio__gte=fecha_inicio)
+
+    if fecha_fin:
+        alquileres = alquileres.filter(fecha_fin__lte=fecha_fin)
+
+    return render(request, 'resumen_alquileres.html', {
+        'alquileres': alquileres.order_by('-fecha_inicio'),
+        'breadcrumb_items': [("Reportes", reverse('informe_economico_alquileres'))],
+        'estados': Alquiler.ESTADOS_ALQUILER,
+    })

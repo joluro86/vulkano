@@ -25,8 +25,12 @@
             
             
             
+            
+            
                       
                       bg-gray-100 text-gray-800
+
+
 
 
 
@@ -56,7 +60,11 @@
             
             
             
+            
+            
                       bg-blue-100 text-blue-800
+
+
 
 
 
@@ -86,7 +94,11 @@
             
             
             
+            
+            
                       bg-yellow-100 text-yellow-800
+
+
 
 
 
@@ -116,7 +128,11 @@
             
             
             
+            
+            
                       bg-green-100 text-green-800
+
+
 
 
 
@@ -146,7 +162,11 @@
             
             
             
+            
+            
                       bg-red-100 text-red-800
+
+
 
 
 
@@ -286,12 +306,13 @@
       <h3 class="text-base font-semibold text-gray-800 mb-2">Datos generales del alquiler</h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="col-span-2">
+        <div class="col-span-2 relative">
           <label class="block text-sm font-medium text-gray-700">Buscar cliente</label>
-          <input type="text" id="buscar-cliente" value="{{ form.instance.cliente.nombre }} {{ form.instance.cliente.apellidos }}" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." />
-          <ul id="resultados-clientes" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto"></ul>
-          <input type="hidden" name="cliente" id="cliente-id" value="{{ form.instance.cliente.id|default:'' }}" />
+          <input type="text" id="buscar-cliente" value="{{ form.instance.cliente.nombre }} {{ form.instance.cliente.apellidos }}" class="w-full p-2 border border-gray-300 rounded" placeholder="Escribe al menos 3 letras..." autocomplete="off" />
+          <ul id="resultados-clientes" class="border mt-1 rounded shadow bg-white hidden absolute z-10 max-h-48 overflow-y-auto w-full"></ul>
+          <div class="hidden">{{ form.cliente }}</div>
         </div>
+
         <div class="col-span-2 flex flex-wrap items-end gap-4 w-full items-baseline">
           <!-- Observaciones -->
           <div class="min-w-[250px]">
@@ -451,24 +472,16 @@
   </script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // Buscar clientes
       const inputCliente = document.getElementById('buscar-cliente')
       const listaClientes = document.getElementById('resultados-clientes')
-      const hiddenCliente = document.getElementById('cliente-id')
+      const selectCliente = document.querySelector('select[name="cliente"]')
       let selectedClienteIndex = -1
     
       inputCliente.addEventListener('input', function () {
         const query = inputCliente.value.trim()
         if (query.length >= 3) {
           fetch(`/alquiler/clientes-buscar/?q=${query}`)
-            .then((res) => {
-              if (!res.ok) {
-                return res.json().then((error) => {
-                  throw new Error(error.error || 'No se encontraron resultados.')
-                })
-              }
-              return res.json()
-            })
+            .then((res) => res.json())
             .then((data) => {
               listaClientes.innerHTML = ''
               selectedClienteIndex = -1
@@ -479,7 +492,7 @@
                 li.classList = 'px-4 py-2 hover:bg-gray-100 cursor-pointer'
                 li.addEventListener('click', () => {
                   inputCliente.value = cliente.nombre
-                  hiddenCliente.value = cliente.id
+                  selectCliente.value = cliente.id
                   listaClientes.classList.add('hidden')
                 })
                 listaClientes.appendChild(li)
@@ -487,13 +500,11 @@
     
               listaClientes.classList.remove('hidden')
             })
-            .catch((error) => {
+            .catch(() => {
               Swal.fire({
                 icon: 'warning',
                 title: 'Cliente no encontrado',
-                text: error.message,
                 timer: 3000,
-                timerProgressBar: true,
                 showConfirmButton: false
               })
               listaClientes.classList.add('hidden')
