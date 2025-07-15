@@ -228,26 +228,65 @@ def limpiar_descuento(request, pk):
 
 @login_required
 def anular_alquiler(request, pk):
+    alquiler = get_object_or_404(
+        Alquiler,
+        pk=pk,
+        usuario__empresa=request.user.empresa,
+        usuario__sucursal=request.user.sucursal
+    )
+
+    if alquiler.estado in ['anulado', 'liquidado']:
+        messages.warning(request, f"No se puede anular un alquiler en estado: {alquiler.get_estado_display()}.")
+        return redirect('editar_alquiler', pk=pk)
+
     try:
-        alquiler = get_object_or_404(
-            Alquiler,
-            pk=pk,
-            usuario__empresa=request.user.empresa,
-            usuario__sucursal=request.user.sucursal
-        )
-    except Http404:
-        messages.error(request, "El alquiler no existe o no tienes permiso para acceder.")
-        return redirect('alquiler_list')
+        with transaction.atomic():
+            for item in alquiler.items.select_related('producto'):
+                inventario = InventarioSucursal.objects.filter(
+                    producto=item.producto,
+                    sucursal=alquiler.usuario.sucursal
+                ).first()
 
-    alquiler.estado = 'anulado'
-    alquiler.observaciones = f"Anulado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
-    alquiler.save()
-    
-    print(alquiler.observaciones)
+                if not inventario:
+                    continue
 
-    messages.success(request, "El alquiler fue anulado correctamente.")
+                if alquiler.estado == 'reservado':
+                    # Eliminar reserva si existe
+                    reserva = ReservaInventario.objects.filter(
+                        producto=item.producto,
+                        alquiler=alquiler,
+                        sucursal=alquiler.usuario.sucursal,
+                        entregado=False
+                    ).first()
+
+                    if reserva:
+                        if item.cantidad > reserva.cantidad_reservada:
+                            raise ValueError(
+                                f"La cantidad reservada es insuficiente para '{item.producto.nombre}'."
+                            )
+                        reserva.delete()
+
+                elif alquiler.estado == 'despachado':
+                    inventario.stock_actual += item.cantidad
+                    inventario.save(update_fields=['stock_actual'])
+
+                # Estados 'borrador' y 'cotizacion' no afectan stock
+
+            alquiler.estado = 'anulado'
+            alquiler.observaciones = (
+                f"Anulado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+            alquiler.save(update_fields=['estado', 'observaciones'])
+
+            messages.success(request, "Alquiler anulado correctamente y stock actualizado.")
+
+    except ValueError as ve:
+        messages.error(request, str(ve))
+    except Exception as e:
+        messages.error(request, f"Error al anular el alquiler: {str(e)}")
+
     return redirect('editar_alquiler', pk=pk)
-        
+   
 @login_required
 def ver_alquiler(request, pk):    
     try:
