@@ -33,14 +33,11 @@
 
   <details id="menu-alquileres" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
-      <i class="ph ph-file-text"></i> Contratos y alquileres
+      <i class="ph ph-file-text"></i>Alquileres
     </summary>
     <ul class="mt-2 ml-5 space-y-1">
       <li>
-        <a href="{% url 'alquiler_list' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Alquileres activos</a>
-      </li>
-      <li>
-        <a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Historial</a>
+        <a href="{% url 'alquiler_list' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Listado</a>
       </li>
       <li>
         <a href="{% url 'crear_alquiler' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">+ Nuevo alquiler</a>
@@ -53,7 +50,7 @@
       </li>
     </ul>
   </details>
-
+  <!--
   <details id="menu-cotizaciones" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-calendar"></i> Reservas y cotizaciones
@@ -70,14 +67,14 @@
       </li>
     </ul>
   </details>
-
+  -->
   <details id="menu-inventario" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-warehouse"></i> Inventario
     </summary>
     <ul class="mt-2 ml-5 space-y-1">
       <li>
-        <a href="{% url 'inventario_list_stock' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Stock por sucursal</a>
+        <a href="{% url 'inventario_list_stock' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Stock</a>
       </li>
       <li>
         <a href="{% url 'movimiento_list' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Movimientos</a>
@@ -93,24 +90,26 @@
 
   <details id="menu-clientes" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
-      <i class="ph ph-users"></i> Clientes y usuarios
+      <i class="ph ph-users"></i> Clientes
     </summary>
     <ul class="mt-2 ml-5 space-y-1">
       <li>
-        <a href="{% url 'cliente_list' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Clientes</a>
+        <a href="{% url 'cliente_list' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Listado</a>
       </li>
+      <!--
       <li>
         <a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Empleados</a>
       </li>
       <li>
         <a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Roles y permisos</a>
       </li>
+      -->
       <li>
         <a href="{% url 'persona_list' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Personas</a>
       </li>
     </ul>
   </details>
-
+  <!--
   <details id="menu-devoluciones" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-arrow-u-down-left"></i> Devoluciones
@@ -127,7 +126,7 @@
       </li>
     </ul>
   </details>
-
+  
   <details id="menu-mantenimiento" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-toolbox"></i> Mantenimiento
@@ -144,7 +143,7 @@
       </li>
     </ul>
   </details>
-
+-->
   <details id="menu-reportes" class="menu-toggle group">
     <summary class="cursor-pointer text-[var(--text-aside-color)] uppercase text-xs font-bold flex items-center gap-2">
       <i class="ph ph-chart-bar"></i> Reportes
@@ -179,10 +178,12 @@
       <li>
         <a href="{% url 'descuento_list' %}" class="block text-gray-700 hover:text-[var(--primary-color)]">Convenios y promociones</a>
       </li>
+      <!--
       <li>
         <a href="#" class="block text-gray-700 hover:text-[var(--primary-color)]">Parámetros del sistema</a>
       </li>
       <li>
+        -->
         <a href="{% url 'usuario_list' %}" class="flex items-center gap-3 text-gray-700 hover:text-[var(--primary-color)] transition">Usuarios</a>
       </li>
     </ul>
