@@ -70,7 +70,6 @@ class Alquiler(models.Model):
     def puede_liquidarse(self):
         return self.estado != 'liquidado' and self.saldo_pendiente == 0
 
-
 class AlquilerItem(models.Model):
     alquiler = models.ForeignKey(
         'Alquiler', on_delete=models.CASCADE, related_name='items')
@@ -166,7 +165,6 @@ class AlquilerItem(models.Model):
             observaciones=observaciones,
             liquidado_por=usuario
         )
-
 class EventoAlquiler(models.Model):
     TIPOS = [
         ('estado', 'Cambio de estado'),

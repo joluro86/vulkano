@@ -39,6 +39,8 @@ urlpatterns = [
     
     path('inventario/', include('inventario.urls')),
     
+    path('reportes/', include('reporte.urls')),
+    
     ]
 
 if settings.DEBUG:

@@ -1,0 +1,84 @@
+{% extends 'index.html' %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">Informe de Ingresos</h2>
+
+  <form method="get" class="flex flex-wrap items-end gap-4 mb-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Desde:</label>
+      <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}" class="border border-gray-300 rounded p-2 w-full" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Hasta:</label>
+      <input type="date" name="fecha_fin" value="{{ fecha_fin }}" class="border border-gray-300 rounded p-2 w-full" />
+    </div>
+    <button type="submit" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded">Filtrar</button>
+  </form>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-gray-100 p-4 rounded shadow">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Total Abonos</h3>
+      <p class="text-2xl font-bold text-green-700">${{ total_abonos }}</p>
+    </div>
+    <div class="bg-gray-100 p-4 rounded shadow">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Total Liquidado</h3>
+      <p class="text-2xl font-bold text-blue-700">${{ total_liquidado }}</p>
+    </div>
+  </div>
+
+  <h3 class="text-lg font-semibold mt-8 mb-2 text-gray-800">Detalle de Abonos</h3>
+  <table class="min-w-full text-sm border">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-4 py-2 border">Fecha</th>
+        <th class="px-4 py-2 border">Valor</th>
+        <th class="px-4 py-2 border">Método</th>
+        <th class="px-4 py-2 border">Observaciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for abono in abonos %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border">{{ abono.fecha|date:"Y-m-d H:i" }}</td>
+        <td class="px-4 py-2 border">${{ abono.valor }}</td>
+        <td class="px-4 py-2 border">{{ abono.metodo_pago }}</td>
+        <td class="px-4 py-2 border">{{ abono.observaciones }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="text-center py-4 text-gray-500">Sin registros.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 class="text-lg font-semibold mt-8 mb-2 text-gray-800">Detalle de Liquidaciones</h3>
+  <table class="min-w-full text-sm border">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-4 py-2 border">Fecha</th>
+        <th class="px-4 py-2 border">Valor</th>
+        <th class="px-4 py-2 border">Observaciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for liq in liquidaciones %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border">{{ liq.fecha|date:"Y-m-d H:i" }}</td>
+        <td class="px-4 py-2 border">${{ liq.total_liquidado }}</td>
+        <td class="px-4 py-2 border">{{ liq.observaciones }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3" class="text-center py-4 text-gray-500">Sin registros.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
