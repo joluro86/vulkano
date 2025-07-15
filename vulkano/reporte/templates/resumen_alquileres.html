@@ -44,8 +44,13 @@
         <tr class="hover:bg-gray-50">
           <td class="px-4 py-2 border">{{ a.id }}</td>
           <td class="px-4 py-2 border">{{ a.cliente }}</td>
-          <td class="px-4 py-2 border">{{ a.fecha_inicio }}</td>
-          <td class="px-4 py-2 border">{{ a.fecha_fin }}</td>
+          <td class="px-4 py-2 border">
+          {% if a.fecha_inicio %}{{ a.fecha_inicio|date:"Y-m-d" }}{% endif %}
+        </td>
+        <td class="px-4 py-2 border">
+          {% if a.fecha_fin %}{{ a.fecha_fin|date:"Y-m-d" }}{% endif %}
+        </td>
+
           <td class="px-4 py-2 border text-right">${{ a.total_con_descuento|floatformat:0 }}</td>
           <td class="px-4 py-2 border text-right">${{ a.total_abonado|floatformat:0 }}</td>
           <td class="px-4 py-2 border text-right">${{ a.saldo_pendiente|floatformat:0 }}</td>

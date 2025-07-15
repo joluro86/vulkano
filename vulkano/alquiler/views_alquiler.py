@@ -305,7 +305,7 @@ def liquidar_alquiler(request, pk):
         messages.warning(request, f"No se puede liquidar: hay un saldo pendiente de ${saldo_pendiente:,.0f}")
         return redirect('editar_alquiler', pk=pk)
     
-    if alquiler.estado == 'reservado':
+    if alquiler.estado == 'reservado' or alquiler.estado == 'borrador':
         messages.warning(request, "Debes entregar los productos antes de poder liquidar este alquiler.")
         return redirect('editar_alquiler', pk=pk)
 
