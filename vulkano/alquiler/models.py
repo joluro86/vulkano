@@ -10,7 +10,7 @@ class Alquiler(models.Model):
         ('cotizacion', 'Cotización'),
         ('borrador', 'Borrador'),
         ('reservado', 'Reservado'),
-        ('en_curso', 'En curso'),
+        ('despachado', 'Despachado'),
         ('liquidado', 'Liquidado'),
         ('anulado', 'Anulado'),
     ]

@@ -1,25 +1,54 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from inventario.models import InventarioSucursal
-from empresa.models import Sucursal
+from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
-from inventario.models import InventarioSucursal, ReservaInventario
 from django.db.models import Sum
+from inventario.models import InventarioSucursal, MovimientoInventario, MovimientoItem, ReservaInventario
+from empresa.models import Sucursal
+from alquiler.models import Alquiler, AlquilerItem
 
-from inventario.models import InventarioSucursal, ReservaInventario
-from django.db.models import Sum, F
 
-from alquiler.models import AlquilerItem
+# Función reutilizable para calcular stock disponible
+def calcular_stock_disponible(producto, sucursal):
+    reservado = ReservaInventario.objects.filter(
+        producto=producto,
+        sucursal=sucursal,
+        entregado=False
+    ).aggregate(total=Sum('cantidad_reservada'))['total'] or 0
 
+    entregado = AlquilerItem.objects.filter(
+        producto=producto,
+        alquiler__usuario__sucursal=sucursal,
+        alquiler__estado='despachado'
+    ).aggregate(total=Sum('cantidad'))['total'] or 0
+
+    return reservado, entregado
+
+
+# Vista para actualizar el stock_actual de cada producto
+@login_required
+def actualizar_stock_disponible(request):
+    sucursal = request.user.sucursal
+    inventarios = InventarioSucursal.objects.filter(sucursal=sucursal)
+
+    for inv in inventarios:
+        reservado, entregado = calcular_stock_disponible(inv.producto, sucursal)
+        inv.stock_actual = max(inv.total_historico - reservado - entregado, 0)
+        inv.save(update_fields=['stock_actual'])
+
+    messages.success(request, "Stock actualizado correctamente.")
+    return redirect('inventario_list_stock')
+
+
+# Vista principal del listado de inventario con paginación y filtros
 @login_required
 def inventario_list_stock(request):
     query = request.GET.get('q', '').strip()
     sucursal_id = request.GET.get('sucursal_id', '').strip()
 
-    inventarios_qs = InventarioSucursal.objects.select_related('producto', 'sucursal')       
-        
+    inventarios_qs = InventarioSucursal.objects.select_related('producto', 'sucursal')
+
     if hasattr(request.user, 'empresa'):
         inventarios_qs = inventarios_qs.filter(producto__empresa=request.user.empresa)
 
@@ -33,30 +62,12 @@ def inventario_list_stock(request):
 
     inventarios_list = []
     for inv in inventarios_qs:
-        reservado = ReservaInventario.objects.filter(
-            producto=inv.producto,
-            sucursal=inv.sucursal,
-            entregado=False
-        )
-        
-            
-        reservado = ReservaInventario.objects.filter(
-            producto=inv.producto,
-            sucursal=inv.sucursal,
-            entregado=False
-        ).aggregate(total=Sum('cantidad_reservada'))['total'] or 0
-
-        entregado = AlquilerItem.objects.filter(
-            producto=inv.producto,
-            alquiler__estado='en_curso',
-            alquiler__usuario__sucursal=inv.sucursal
-        ).aggregate(total=Sum('cantidad'))['total'] or 0
-
+        reservado, entregado = calcular_stock_disponible(inv.producto, inv.sucursal)
         inventarios_list.append({
             'item': inv,
             'reservado': reservado,
             'entregado': entregado,
-            'stock_disponible': inv.stock_actual - reservado,  # entregado ya fue descontado al momento de la entrega
+            'stock_disponible': inv.stock_actual - reservado,
         })
 
     paginator = Paginator(inventarios_list, 10)
@@ -72,26 +83,29 @@ def inventario_list_stock(request):
         'sucursal_filtro': sucursal_id,
         'total_inventarios': total_inventarios,
         'sucursales': sucursales,
-            'breadcrumb_items': [
-            ("Inventario", reverse('inventario_list_stock')),  # o la vista anterior si existe
+        'breadcrumb_items': [
+            ("Inventario", reverse('inventario_list_stock')),
             ("Stock", None)
         ],
     })
 
-def consultar_stock_disponible(producto, sucursal):
-    """
-    Retorna el stock disponible real de un producto en una sucursal,
-    descontando las reservas no entregadas.
-    """
-    inventario = InventarioSucursal.objects.filter(producto=producto, sucursal=sucursal).first()
 
+# Consulta rápida para usar desde otras vistas (sin entregado)
+def consultar_stock_disponible(producto, sucursal):
+    inventario = InventarioSucursal.objects.filter(producto=producto, sucursal=sucursal).first()
     if not inventario:
         return 0
+    reservado, _ = calcular_stock_disponible(producto, sucursal)
+    return inventario.stock_actual - reservado
 
-    reservados = ReservaInventario.objects.filter(
-        producto=producto,
-        sucursal=sucursal,
-        entregado=False
-    ).aggregate(total=Sum('cantidad_reservada'))['total'] or 0
+def limpiar_inventario(request):
+    InventarioSucursal.objects.all().delete()
+    MovimientoInventario.objects.all().delete()
+    MovimientoItem.objects.all().delete()
+    ReservaInventario.objects.all().delete()
+    AlquilerItem.objects.all().delete()
+    Alquiler.objects.all().delete()
+    return redirect('inventario_list_stock')
 
-    return inventario.stock_actual - reservados
+    
+    

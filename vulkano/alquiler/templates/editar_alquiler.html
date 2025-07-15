@@ -24,8 +24,10 @@
             
             
             
+            
                       
                       bg-gray-100 text-gray-800
+
 
 
 
@@ -53,7 +55,9 @@
             
             
             
+            
                       bg-blue-100 text-blue-800
+
 
 
 
@@ -81,7 +85,9 @@
             
             
             
+            
                       bg-yellow-100 text-yellow-800
+
 
 
 
@@ -109,7 +115,9 @@
             
             
             
+            
                       bg-green-100 text-green-800
+
 
 
 
@@ -137,7 +145,9 @@
             
             
             
+            
                       bg-red-100 text-red-800
+
 
 
 
@@ -168,12 +178,12 @@
               <a href="{% url 'abonar_alquiler' alquiler.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Abonar</a>
               <a href="{% url 'ver_abonos_alquiler' alquiler.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ver abonos</a>
               <a href="{% url 'imprimir_alquiler' alquiler.id %}" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Imprimir</a>
-              {% if alquiler.estado == 'reservado' %}
-                <form method="post" action="{% url 'entregar_alquiler' alquiler.id %}" id="form-entregar">
-                  {% csrf_token %}
-                  <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Despachar</button>
-                </form>
-              {% endif %}
+
+              <form method="post" action="{% url 'entregar_alquiler' alquiler.id %}" id="form-entregar">
+                {% csrf_token %}
+                <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Despachar</button>
+              </form>
+
               {% if alquiler.estado != 'liquidado' and alquiler.estado != 'anulado' %}
                 <a href="#" data-url="{% url 'liquidar_alquiler' alquiler.id %}" id="btn-liquidar" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Liquidar</a>
               {% endif %}

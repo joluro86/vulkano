@@ -22,7 +22,6 @@ class InventarioSucursal(models.Model):
     def __str__(self):
         return f"{self.producto.nombre} - {self.sucursal.nombre}: {self.stock_actual} unidades"
 
-
 class MovimientoInventario(models.Model):
     TIPOS = [
         ('entrada', 'Entrada'),
@@ -58,7 +57,6 @@ class MovimientoInventario(models.Model):
     def __str__(self):
         return f"{self.tipo} - {self.sucursal.nombre} - {self.fecha.date()}"
 
-
 class MovimientoItem(models.Model):
     movimiento = models.ForeignKey(
         'inventario.MovimientoInventario',
@@ -74,8 +72,6 @@ class MovimientoItem(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} x {self.cantidad}"
-
-
 
 class ReservaInventario(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='reservas')

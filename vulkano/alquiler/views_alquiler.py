@@ -61,25 +61,7 @@ def editar_alquiler(request, pk):
             alquiler.updated_by = request.user
             alquiler.save()
 
-            registrar_evento_alquiler(
-                alquiler,
-                tipo='estado',
-                descripcion='Alquiler reservado',
-                estado_asociado='en curso',
-                usuario=request.user
-            )
-
-            # Registrar reservas de productos
-            for item in alquiler.items.all():
-                registrar_reserva(
-                    producto=item.producto,
-                    cantidad=item.cantidad,
-                    cliente=alquiler.cliente,
-                    sucursal=request.user.sucursal,
-                    alquiler=alquiler
-                )
-
-            messages.success(request, "Alquiler actualizado y productos reservados.")
+            messages.success(request, "Alquiler actualizado.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
     elif request.method == 'POST' and request.POST.get('producto'):
@@ -112,17 +94,7 @@ def editar_alquiler(request, pk):
                 item.alquiler = alquiler
                 item.save()
 
-            if alquiler.estado == 'borrador':
-                alquiler.estado = 'en_curso'
-                alquiler.save(update_fields=['estado'])
-                registrar_evento_alquiler(
-                    alquiler,
-                    tipo='estado',
-                    descripcion='Cambio automático a En curso al agregar producto',
-                    estado_asociado='en_curso',
-                    usuario=request.user
-                )
-
+            # Ya no se cambia el estado automáticamente aquí
             alquiler.refresh_from_db()
             form = AlquilerEditarForm(instance=alquiler, sucursal=request.user.sucursal)
 
@@ -142,8 +114,8 @@ def editar_alquiler(request, pk):
 
     alquiler.total = total_con_descuento
     alquiler.save()
-    descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
 
+    descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
     abonos_total = alquiler.total_abonado 
     saldo_pendiente = alquiler.saldo_pendiente
     
@@ -311,16 +283,12 @@ def ver_alquiler(request, pk):
 
 @login_required
 def liquidar_alquiler(request, pk):
-    try:
-        alquiler = get_object_or_404(
-            Alquiler,
-            pk=pk,
-            usuario__empresa=request.user.empresa,
-            usuario__sucursal=request.user.sucursal
-        )
-    except Http404:
-        messages.error(request, "El alquiler no existe o no tienes permiso para acceder.")
-        return redirect('alquiler_list')
+    alquiler = get_object_or_404(
+        Alquiler,
+        pk=pk,
+        usuario__empresa=request.user.empresa,
+        usuario__sucursal=request.user.sucursal
+    )
 
     if not alquiler.fecha_inicio or not alquiler.fecha_fin:
         messages.error(request, "Para liquidar el alquiler, debes ingresar fecha de inicio y fecha fin.")
@@ -337,36 +305,57 @@ def liquidar_alquiler(request, pk):
         messages.warning(request, f"No se puede liquidar: hay un saldo pendiente de ${saldo_pendiente:,.0f}")
         return redirect('editar_alquiler', pk=pk)
 
-    # Guardar liquidación
-    LiquidacionAlquiler.objects.create(
-        alquiler=alquiler,
-        total_liquidado=abonos_total,
-        observaciones=f"Liquidado automáticamente por {request.user.get_full_name()}",
-        liquidado_por=request.user
-    )
+    try:
+        with transaction.atomic():
+            # Devolver stock entregado
+            for item in alquiler.items.select_related('producto'):
+                inventario = InventarioSucursal.objects.filter(
+                    producto=item.producto,
+                    sucursal=request.user.sucursal
+                ).first()
 
-    alquiler.estado = 'liquidado'
-    alquiler.observaciones += f"\nLiquidado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
-    alquiler.save(update_fields=['estado', 'observaciones'])
+                if inventario:
+                    inventario.stock_actual += item.cantidad
+                    inventario.save(update_fields=['stock_actual'])
 
-    print()
+            # Guardar liquidación
+            LiquidacionAlquiler.objects.create(
+                alquiler=alquiler,
+                total_liquidado=abonos_total,
+                observaciones=f"Liquidado automáticamente por {request.user.get_full_name()}",
+                liquidado_por=request.user
+            )
 
-    messages.success(request, "El alquiler fue liquidado correctamente.")
+            alquiler.estado = 'liquidado'
+            alquiler.observaciones += f"\nLiquidado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
+            alquiler.save(update_fields=['estado', 'observaciones'])
+
+            messages.success(request, "El alquiler fue liquidado y el stock fue restituido.")
+
+    except Exception as e:
+        messages.error(request, f"Error al liquidar el alquiler: {str(e)}")
+
     return redirect('ver_alquiler', pk=pk)
-
 
 @login_required
 def reservar_alquiler(request, pk):
     alquiler = get_object_or_404(Alquiler, pk=pk, usuario__empresa=request.user.empresa)
 
-    if alquiler.estado != 'en_curso':
-        messages.warning(request, "Solo se pueden reservar productos de alquileres en estado: En curso.")
+    if alquiler.estado == 'despachado':
+        messages.warning(request, "No se puede reservar un alquiler que ya fue despachado.")
         return redirect('editar_alquiler', pk=pk)
 
     if not alquiler.items.exists():
         messages.warning(request, "No hay productos para reservar en este alquiler.")
         return redirect('editar_alquiler', pk=pk)
 
+    # Verificar si ya se entregó algo
+    entregados = ReservaInventario.objects.filter(alquiler=alquiler, entregado=True).exists()
+    if entregados:
+        messages.warning(request, "No se puede reservar porque este alquiler ya tiene productos entregados.")
+        return redirect('editar_alquiler', pk=pk)
+
+    # Verificar stock disponible
     for item in alquiler.items.select_related('producto'):
         cantidad = item.cantidad or 1
         producto = item.producto
@@ -377,10 +366,33 @@ def reservar_alquiler(request, pk):
                                     f"Disponible: {stock_disponible}, requerido: {cantidad}")
             return redirect('editar_alquiler', pk=pk)
 
+    # Cambiar estado a en_curso si es necesario
+    if alquiler.estado in ['borrador', 'cotizacion']:
+        alquiler.estado = 'en_curso'
+        alquiler.save(update_fields=['estado'])
+        registrar_evento_alquiler(
+            alquiler,
+            tipo='estado',
+            descripcion='Cambio automático a En curso antes de reservar',
+            estado_asociado='en_curso',
+            usuario=request.user
+        )
+
+    # Registrar reservas (evita duplicadas)
+    for item in alquiler.items.select_related('producto'):
+        reserva_existente = ReservaInventario.objects.filter(
+            producto=item.producto,
+            alquiler=alquiler,
+            entregado=False
+        ).exists()
+
+        if reserva_existente:
+            continue  # ya está reservado, no volver a hacerlo
+
         try:
             registrar_reserva(
-                producto=producto,
-                cantidad=cantidad,
+                producto=item.producto,
+                cantidad=item.cantidad or 1,
                 cliente=alquiler.cliente,
                 sucursal=request.user.sucursal,
                 alquiler=alquiler
@@ -389,10 +401,22 @@ def reservar_alquiler(request, pk):
             messages.error(request, f"Error al registrar reserva: {str(e)}")
             return redirect('editar_alquiler', pk=pk)
 
+
     alquiler.estado = 'reservado'
     alquiler.save(update_fields=['estado'])
+    registrar_evento_alquiler(
+        alquiler,
+        tipo='estado',
+        descripcion='Productos reservados para el cliente',
+        estado_asociado='reservado',
+        usuario=request.user
+    )
+
     messages.success(request, "Productos reservados exitosamente.")
     return redirect('editar_alquiler', pk=pk)
+
+
+from django.db import transaction
 
 @login_required
 @require_POST
@@ -415,23 +439,29 @@ def entregar_alquiler(request, pk):
                     sucursal=request.user.sucursal
                 ).first()
 
-                if not inventario or inventario.stock_actual < item.cantidad:
+                if not inventario:
+                    raise ValueError(f"El producto {item.producto.nombre} no tiene inventario asignado.")
+
+                # Verificar stock suficiente
+                if inventario.stock_actual < item.cantidad:
                     raise ValueError(
                         f"Stock insuficiente para {item.producto.nombre}. "
-                        f"Disponible: {inventario.stock_actual if inventario else 0}, Requerido: {item.cantidad}"
+                        f"Disponible: {inventario.stock_actual}, Requerido: {item.cantidad}"
                     )
 
+                # Descontar del inventario
                 inventario.stock_actual -= item.cantidad
-                inventario.save()
+                inventario.save(update_fields=['stock_actual'])
 
-            # Eliminar reservas existentes si las hay
-            ReservaInventario.objects.filter(
-                alquiler=alquiler,
-                entregado=False
-            ).delete()
+                # Si tiene reserva, marcar como entregada
+                ReservaInventario.objects.filter(
+                    producto=item.producto,
+                    alquiler=alquiler,
+                    entregado=False
+                ).update(entregado=True)
 
-            # Cambiar estado
-            alquiler.estado = 'en_curso'
+            # Cambiar estado a en_curso
+            alquiler.estado = 'despachado'
             alquiler.save(update_fields=['estado'])
 
             registrar_evento_alquiler(
@@ -447,6 +477,7 @@ def entregar_alquiler(request, pk):
         messages.error(request, f"Error al entregar productos: {str(e)}")
 
     return redirect('editar_alquiler', pk=pk)
+
 
 @login_required
 def abonar_alquiler(request, pk):

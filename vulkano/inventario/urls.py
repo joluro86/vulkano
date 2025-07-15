@@ -1,6 +1,6 @@
 from django.urls import path
 from inventario.views_reserva import listar_reservas
-from .views_stock import inventario_list_stock
+from .views_stock import inventario_list_stock, limpiar_inventario
 from .views_movimiento import crear_movimiento, confirmar_movimiento, movimiento_list, editar_movimiento, ver_movimiento, eliminar_item_movimiento
 
 urlpatterns = [
@@ -13,6 +13,8 @@ urlpatterns = [
     path('movimientos/item/eliminar/<int:pk>/', eliminar_item_movimiento, name='eliminar_item_movimiento'),
     path('movimiento/<int:pk>/confirmar/', confirmar_movimiento, name='confirmar_movimiento'),
     path('reservas/', listar_reservas, name='listado_reservas'),
+    
+    path('limpiar_inventario/', limpiar_inventario, name='limpiar_inventario'),
 ]
 
 
