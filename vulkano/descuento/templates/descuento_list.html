@@ -34,8 +34,8 @@
             {% endif %}
 
             <td class="p-2 flex gap-2">
-              <a href="{% url 'descuento_edit' d.pk %}" class="text-blue-600 hover:text-blue-800 text-sm">Editar</a>
-              <a href="{% url 'descuento_delete' d.pk %}" class="text-red-600 hover:text-red-800 text-sm">Eliminar</a>
+              <a href="{% url 'descuento_edit' d.pk %}" class="text-blue-600 hover:text-blue-800 text-sm"><i class="ph ph-pencil-simple text-lg"></i></a>
+              <a href="{% url 'descuento_delete' d.pk %}" class="text-red-600 hover:text-red-800 text-sm"><i class="ph ph-trash-simple text-lg"></i></a>
             </td>
           </tr>
         {% empty %}
