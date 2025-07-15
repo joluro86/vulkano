@@ -59,14 +59,13 @@ def editar_alquiler(request, pk):
         if form.is_valid():
             alquiler = form.save(commit=False)
             alquiler.updated_by = request.user
-            alquiler.estado = 'reservado'
             alquiler.save()
 
             registrar_evento_alquiler(
                 alquiler,
                 tipo='estado',
                 descripcion='Alquiler reservado',
-                estado_asociado='reservado',
+                estado_asociado='en curso',
                 usuario=request.user
             )
 
@@ -349,6 +348,8 @@ def liquidar_alquiler(request, pk):
     alquiler.estado = 'liquidado'
     alquiler.observaciones += f"\nLiquidado por {request.user.username} - {localtime(now()).strftime('%Y-%m-%d %H:%M:%S')}"
     alquiler.save(update_fields=['estado', 'observaciones'])
+
+    print()
 
     messages.success(request, "El alquiler fue liquidado correctamente.")
     return redirect('ver_alquiler', pk=pk)

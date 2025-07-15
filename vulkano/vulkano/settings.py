@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'descuento',
     'import_export',
     'inventario',
+    'reporte',
 ]
 
 LOGIN_REDIRECT_URL = 'home'
