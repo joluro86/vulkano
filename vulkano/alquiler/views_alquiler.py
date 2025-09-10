@@ -1,4 +1,3 @@
-from django.contrib.auth.decorators import login_required
 from alquiler.forms.form_alquiler import AbonoAlquilerForm, AlquilerEditarForm, AlquilerItemForm
 from alquiler.models import AbonoAlquiler, Alquiler, AlquilerItem, LiquidacionAlquiler
 from django.contrib import messages
@@ -10,18 +9,16 @@ from cliente.models import Cliente
 from descuento.models import Descuento
 from decimal import Decimal
 from alquiler.utils import registrar_evento_alquiler
-from django.http import Http404
 from django.utils.timezone import now, localtime
 from inventario.views_reserva import registrar_reserva
 from django.db.models import Sum
-from django.shortcuts import get_object_or_404, render
 from alquiler.models import Alquiler
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from inventario.models import InventarioSucursal, ReservaInventario
 from alquiler.utils import registrar_evento_alquiler
 from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.db import transaction
 from alquiler.models import Alquiler, AlquilerItem
 from django.db.models import Sum
@@ -37,7 +34,6 @@ def crear_alquiler(request):
         created_by=request.user,
         updated_by=request.user
     )
-    messages.info(request, "Nuevo alquiler creado como borrador.")
     return redirect('editar_alquiler', pk=alquiler.pk)
 
 @login_required
@@ -158,7 +154,6 @@ def eliminar_item_alquiler(request, pk):
         return redirect('editar_alquiler', pk=item.alquiler.id)
 
     item.delete()
-    messages.success(request, "Producto eliminado del alquiler.")
     return redirect('editar_alquiler', pk=item.alquiler.id)
 
 @login_required
