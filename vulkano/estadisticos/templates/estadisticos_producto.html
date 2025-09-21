@@ -1,0 +1,43 @@
+{% extends 'index.html' %}
+{% load humanize %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">Estadisticos Productos</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Productos mas alquilados</h3>
+      <ul>
+        {% for producto in top5_alquilados %}
+            <li>{{ producto.producto__nombre }} - {{ producto.total_vendido }} unidades</li>
+        {% endfor %}
+        </ul>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Productos con menor Stok</h3>
+
+      <ul>{% for inv in menos_inventario %}
+            <li>
+                {{ inv.producto__nombre }} (Sucursal: {{ inv.sucursal__nombre }}) - 
+                Stock: {{ inv.stock_actual }}
+            </li>
+        {% endfor %}
+        </ul>
+        
+    </div>
+
+  </div>
+
+  <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Gráfico de Abonos vs Liquidado por Mes</h3>
+      <img src="data:image/png;base64,{{ grafico }}">
+  </div>
+
+</div>
+{% endblock %}
