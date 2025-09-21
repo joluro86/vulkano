@@ -93,7 +93,7 @@ def informeGeneral(request):
         'total_liquidado': total_liquidado,
         'mas_alquilado': mas_alquilado,
         'total_personas': total_personas,
-        'grafico': grafico_base64,  # 👈 lo pasamos al template
+        'grafico': grafico_base64,  # lo pasamos al template
     })
 
 @login_required
@@ -115,7 +115,7 @@ def informeProducto(request):
 
     alquilados_mes = (
     AlquilerItem.objects
-    .annotate(mes=TruncMonth("alquiler__created_at"))   # asegúrate de que el campo fecha esté en Alquiler
+    .annotate(mes=TruncMonth("alquiler__created_at"))   
     .values("mes", "producto__nombre")
     .annotate(total=Sum("cantidad"))
     .order_by("mes")
@@ -124,11 +124,11 @@ def informeProducto(request):
     # Convertir a DataFrame
     df = pd.DataFrame(list(alquilados_mes))
 
-    # Si está vacío, evita error
+    
     if not df.empty:
         df["mes"] = pd.to_datetime(df["mes"]).dt.strftime("%Y-%m")
 
-        # Pivotear: filas = meses, columnas = productos, valores = cantidad
+    
         pivot_df = df.pivot_table(
             index="mes",
             columns="producto__nombre",
@@ -137,7 +137,7 @@ def informeProducto(request):
             fill_value=0
         )
 
-        # --- Gráfico apilado ---
+        # grafico apilado
         fig, ax = plt.subplots(figsize=(12, 6))
 
         pivot_df.plot(
@@ -145,7 +145,7 @@ def informeProducto(request):
             stacked=True,
             ax=ax,
             alpha=0.8,
-            colormap="tab20"  # paleta de colores variada
+            colormap="tab20"  
         )
 
         ax.set_ylabel("Cantidad Alquilada")
@@ -173,6 +173,6 @@ def informeProducto(request):
     return render(request, 'estadisticos_producto.html', {
         'top5_alquilados': top5_alquilados,
         'menos_inventario': menos_inventario,
-        'grafico': grafico_base64,  # 👈 lo pasamos al template
+        'grafico': grafico_base64,  
     })
 
