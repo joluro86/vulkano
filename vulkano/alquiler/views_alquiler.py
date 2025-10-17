@@ -36,7 +36,39 @@ def crear_alquiler(request):
     )
     return redirect('editar_alquiler', pk=alquiler.pk)
 
-@login_required
+def enviar_notificacion_alquiler(alquiler, old_cliente_id, new_cliente_id):
+    """
+    Envía una notificación por correo cuando cambia el cliente del alquiler.
+    Usa Gmail configurado en settings.py.
+    """
+    print(f"Alquiler: {alquiler} - cliente anterior: {old_cliente_id} - nuevo cliente: {new_cliente_id}")
+
+    from django.core.mail import send_mail
+    from django.conf import settings
+
+    asunto = f"Notificación de cambio en el alquiler #{alquiler.id}"
+    mensaje = (
+        f"Hola,\n\n"
+        f"Se ha actualizado la información del alquiler #{alquiler.id}.\n"
+        f"Cliente anterior: {old_cliente_id}\n"
+        f"Nuevo cliente: {new_cliente_id}\n\n"
+        f"Gracias,\n"
+        f"Equipo de Alquiler de Equipos Los Fierros."
+    )
+
+    send_mail(
+        subject=asunto,
+        message=mensaje,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=["joluro86@hotmail.com"],  # correo real del destinatario
+        fail_silently=False,
+    )
+
+    print("✅ Correo enviado correctamente a Gmail")
+
+
+
+
 def editar_alquiler(request, pk):
     try:
         alquiler = Alquiler.objects.get(pk=pk, usuario__sucursal=request.user.sucursal)
@@ -51,15 +83,28 @@ def editar_alquiler(request, pk):
     form = AlquilerEditarForm(request.POST or None, instance=alquiler, sucursal=request.user.sucursal)
     item_form = AlquilerItemForm(request.POST or None, sucursal=request.user.sucursal)
 
+    # Guardar cambios del alquiler (incluye posible cambio de cliente)
     if request.method == 'POST' and not request.POST.get('producto'):
         if form.is_valid():
+            old_cliente_id = Alquiler.objects.only('cliente_id').get(pk=alquiler.pk).cliente_id
+            new_cliente = form.cleaned_data.get('cliente')  # debe ser instancia Cliente
+            new_cliente_id = getattr(new_cliente, 'id', None)
+
+            cambio_cliente = ('cliente' in form.changed_data) and (old_cliente_id != new_cliente_id)
+
             alquiler = form.save(commit=False)
             alquiler.updated_by = request.user
             alquiler.save()
 
+            if cambio_cliente:
+                transaction.on_commit(lambda: enviar_notificacion_alquiler(
+                    alquiler, old_cliente_id, new_cliente_id
+                ))
+
             messages.success(request, "Alquiler actualizado.")
             return redirect('editar_alquiler', pk=alquiler.pk)
 
+    # Agregar/actualizar ítem
     elif request.method == 'POST' and request.POST.get('producto'):
         producto_id = request.POST.get('producto')
         try:
@@ -90,45 +135,43 @@ def editar_alquiler(request, pk):
                 item.alquiler = alquiler
                 item.save()
 
-            # Ya no se cambia el estado automáticamente aquí
             alquiler.refresh_from_db()
             form = AlquilerEditarForm(instance=alquiler, sucursal=request.user.sucursal)
 
+    # Recalcular totales
     subtotal = Decimal(0)
     descuento_total = Decimal(0)
     iva_total = Decimal(0)
-    total_con_descuento = 0
+    total_con_descuento = Decimal(0)
 
     for item in alquiler.items.select_related('producto'):
-        base = item.dias_a_cobrar * item.precio_dia * item.cantidad
-        descuento = base * (item.descuento_porcentaje / Decimal('100'))
+        base = (item.dias_a_cobrar or 0) * (item.precio_dia or 0) * (item.cantidad or 0)
+        desc = base * ((item.descuento_porcentaje or Decimal('0')) / Decimal('100'))
+        iva = (base - desc) * ((item.producto.iva_porcentaje or Decimal('0')) / Decimal('100'))
+
         subtotal += base
-        descuento_total += descuento
-        iva = (base - descuento) * (item.producto.iva_porcentaje / Decimal('100'))
+        descuento_total += desc
         iva_total += iva
-        total_con_descuento += (base - descuento)
+        total_con_descuento += (base - desc)
 
     alquiler.total = total_con_descuento
-    alquiler.save()
+    alquiler.save(update_fields=['total'])
 
-    descuentos = Descuento.objects.filter(activo=True, empresa=request.user.empresa)
-    abonos_total = alquiler.total_abonado 
-    saldo_pendiente = alquiler.saldo_pendiente
-    
     context = {
         'alquiler': alquiler,
-        'descuentos': descuentos,
+        'descuentos': Descuento.objects.filter(activo=True, empresa=request.user.empresa),
         'form': form,
         'item_form': item_form,
         'total': total_con_descuento,
         'subtotal': subtotal,
         'descuento_total': descuento_total,
         'iva_total': iva_total,
-        'abonos_total': abonos_total,
-        'saldo_pendiente': saldo_pendiente,
+        'abonos_total': alquiler.total_abonado,
+        'saldo_pendiente': alquiler.saldo_pendiente,
         'breadcrumb_items': [('Alquileres', f'Alquiler #{alquiler.id}')],
     }
     return render(request, 'editar_alquiler.html', context)
+
 
 @login_required
 def buscar_productos(request):
