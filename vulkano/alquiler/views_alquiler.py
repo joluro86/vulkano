@@ -64,7 +64,7 @@ def enviar_notificacion_alquiler(alquiler, old_cliente_id, new_cliente_id):
         fail_silently=False,
     )
 
-    print("✅ Correo enviado correctamente a Gmail")
+    print("✅ Correo enviado correctamente Gmail")
 
 
 
