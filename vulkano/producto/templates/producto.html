@@ -1,0 +1,72 @@
+{% extends 'base_landing.html' %}
+{% load static %}
+{% block content %}
+
+<div class="w-full mt-24 px-4">  {# margen superior grande #}
+  <div class="flex flex-col md:flex-row gap-6">
+
+    <!-- Filtros -->
+    <aside class="w-full md:w-1/5 md:sticky md:top-24 h-fit bg-gray-50 rounded-xl p-4 shadow">
+      <h1 class="text-xl font-semibold mb-4">Buscar Productos</h1>
+
+      <form id="busqueda-productos-form" method="get" class="space-y-4">
+        {% csrf_token %}
+
+        <div>
+          <label for="{{ form.marca.id_for_label }}" class="block text-sm font-medium text-gray-700">Marca</label>
+          {{ form.marca }}
+        </div>
+
+        <div>
+          <label for="{{ form.estado.id_for_label }}" class="block text-sm font-medium text-gray-700">Estado</label>
+          {{ form.estado }}
+        </div>
+
+        <div>
+          <label for="{{ form.ubicacion_actual.id_for_label }}" class="block text-sm font-medium text-gray-700">Ubicación</label>
+          {{ form.ubicacion_actual }}
+        </div>
+      </form>
+    </aside>
+
+    <!-- Productos -->
+    <main class="w-full md:w-4/5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for producto in productos %}
+          <div class="bg-white rounded-xl shadow hover:shadow-lg transition h-full">
+            {% if producto.imagen %}
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-full h-52 object-cover rounded-t-xl">
+            {% else %}
+              <img src="{% static 'vulkano/img/placeholder.png' %}" alt="Sin imagen" class="w-full h-52 object-cover rounded-t-xl">
+            {% endif %}
+            <div class="p-4">
+              <h5 class="text-lg font-semibold text-gray-900">{{ producto.nombre }}</h5>
+              {% if producto.marca %}
+                <p class="text-gray-700 mt-1">Marca: <span class="font-medium">{{ producto.marca }}</span></p>
+              {% endif %}
+              <p class="text-gray-700 mt-1">Ubicación: <span class="font-medium">{{ producto.ubicacion_actual }}</span></p>
+              <p class="text-gray-700 mt-1">Estado: <span class="font-medium">{{ producto.get_estado_display }}</span></p>
+            </div>
+          </div>
+        {% empty %}
+          <div class="col-span-full text-center bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-md p-4">
+            No se encontraron productos que coincidan con los criterios.
+          </div>
+        {% endfor %}
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<script>
+  (function () {
+    const f = document.getElementById('busqueda-productos-form');
+    if (!f) return;
+    f.querySelectorAll('select,input').forEach(el => {
+      el.addEventListener('change', () => f.submit());
+    });
+  })();
+</script>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.urls import path
 from producto.views_category import CategoriaListView, CategoriaCreateView, CategoriaUpdateView
 from producto.views_proveedor import ProveedorListView, ProveedorCreateView, ProveedorUpdateView
-from producto.views_producto import eliminar_producto, ProductoCreateView, ProductoListView, ProductoUpdateView, ProductoDetailView
+from producto.views_producto import eliminar_producto,producto, ProductoCreateView, ProductoListView, ProductoUpdateView, ProductoDetailView
 from producto.views_precios import precio_producto_create, precio_producto_delete, precio_producto_list, precio_producto_edit
 urlpatterns = [
     path('categorias/', CategoriaListView.as_view(), name='categoria_list'),
@@ -11,6 +11,7 @@ urlpatterns = [
     path('proveedores/crear/', ProveedorCreateView.as_view(), name='crear_proveedor'),
     path('proveedores/editar/<int:pk>/', ProveedorUpdateView.as_view(), name='editar_proveedor'),
     
+    path('productos/',producto, name="producto"),
     path('catalogo/', ProductoListView.as_view(), name='producto_list'),
     path('crear/', ProductoCreateView.as_view(), name='crear_producto'),
     path('productos/editar/<int:pk>/', ProductoUpdateView.as_view(), name='editar_producto'),

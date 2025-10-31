@@ -7,8 +7,29 @@ from .models import Producto
 from producto.forms.forms_producto import ProductoForm
 from core.views import BreadcrumbMixin
 from django.db.models import Q
+from producto.forms.forms_productos import BusquedaProductoForm
+from django.shortcuts import get_object_or_404, redirect, render
 
-@login_required
+def producto(request):
+    form = BusquedaProductoForm(request.GET or None)
+    productos = Producto.objects.all()
+
+    if form.is_valid():
+        marca = form.cleaned_data.get("marca")
+        estado = form.cleaned_data.get("estado")
+        ubicacion = form.cleaned_data.get("ubicacion_actual")
+
+        if marca:
+            productos = productos.filter(marca=marca)
+        if estado:
+            productos = productos.filter(estado=estado)
+        if ubicacion:
+            productos = productos.filter(ubicacion_actual=ubicacion)
+
+    return render(request, "producto.html", {"form": form, "productos": productos})
+
+
+
 def eliminar_producto(request, id):
     Producto.objects.get(id=id).delete()
     return redirect('producto_list')
@@ -64,6 +85,7 @@ class ProductoListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
                 Q(ubicacion_actual__icontains=q)
             )
         return queryset
+
 
 
 class ProductoUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):

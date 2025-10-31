@@ -7,16 +7,16 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from autenticacion.models import Usuario
 from django.http import JsonResponse
+from producto.models import Producto
+
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = LoginForm
 
-@login_required
 def landing_view(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-    return render(request, 'landing.html')
+    productos = Producto.objects.all()
+    return render(request, "landing.html", {"productos": productos})
 
 
 @login_required

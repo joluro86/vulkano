@@ -1,6 +1,9 @@
 from django.urls import path
 from autenticacion.views import landing_view, CustomLoginView, validar_username, crear_usuario, editar_usuario, usuario_list
 from django.contrib.auth.views import LogoutView
+from django.conf.urls.static import static 
+from django.conf import settings
+
 
 urlpatterns = [
    path('', landing_view, name='landing'),
@@ -11,3 +14,5 @@ urlpatterns = [
    path('usuarios/', usuario_list, name='usuario_list'),
    path('ajax/validar-username/', validar_username, name='validar_username'),
 ]
+
+urlpatterns+=static(settings.MEDIA_URL,  document_root=settings.MEDIA_ROOT)
