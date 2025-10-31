@@ -51,6 +51,15 @@ INSTALLED_APPS = [
     'reporte',
 ]
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "jolurosoft25@gmail.com"
+EMAIL_HOST_PASSWORD = "cwln gqgb ilda vxsz"  # la de 16 caracteres
+DEFAULT_FROM_EMAIL = "Alquiler de Equipos <joluro86@hotmail.com>"
+
+
 LOGIN_REDIRECT_URL = 'home'
 LOGIN_URL = '/login/'
 AUTH_USER_MODEL = 'autenticacion.Usuario' 
