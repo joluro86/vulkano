@@ -13,6 +13,7 @@ class Persona(models.Model):
     telefono = models.CharField(max_length=20, blank=True, null=True)
     correo = models.EmailField(blank=True, null=True)
     direccion = models.CharField(max_length=255, blank=True, null=True)
+    departamento = models.CharField(max_length=100, blank=True, null=True) 
 
     class Meta:
         verbose_name = 'Persona'

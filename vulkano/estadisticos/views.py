@@ -2,9 +2,13 @@ from django.shortcuts import render
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
 from django.contrib.auth.decorators import login_required
-from alquiler.models import AbonoAlquiler, LiquidacionAlquiler, AlquilerItem
+from alquiler.models import AbonoAlquiler, LiquidacionAlquiler, AlquilerItem, Alquiler
 from persona.models import Persona
 from inventario.models import InventarioSucursal
+from django.db.models import Avg, F, ExpressionWrapper, DurationField
+from datetime import timedelta
+from django.db.models import Count, Avg
+from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 
 
 import seaborn as sns
@@ -174,5 +178,168 @@ def informeProducto(request):
         'top5_alquilados': top5_alquilados,
         'menos_inventario': menos_inventario,
         'grafico': grafico_base64,  
+    })
+
+
+@login_required
+def informeClientes(request):
+    total_personas = Persona.objects.count()
+    total_alquileres = Alquiler.objects.count()
+    total_productos = AlquilerItem.objects.aggregate(total=Sum('cantidad'))['total'] or 0
+  
+    # Unir LiquidacionAlquiler con Alquiler
+    liquidaciones = LiquidacionAlquiler.objects.select_related('alquiler').annotate(
+        duracion=ExpressionWrapper(
+            F('fecha') - F('alquiler__created_at'),
+            output_field=DurationField()
+        )
+    )
+
+    # Calcular promedio
+    promedio_duracion = liquidaciones.aggregate(promedio=Avg('duracion'))['promedio']
+
+    # Convertir a días (opcional)
+    promedio_dias = None
+    if promedio_duracion:
+        promedio_dias = promedio_duracion.total_seconds() / 86400  # segundos → días
+
+     
+    alquileres_con_conteo = (
+        Alquiler.objects.annotate(num_productos=Count('items__producto', distinct=True))
+    )
+
+    
+    promedio_productos_por_alquiler = (
+        alquileres_con_conteo.aggregate(promedio=Avg('num_productos'))['promedio'] or 0
+    )
+
+    # Agrupar por ubicación (ajusta el campo según tu modelo)
+    personas_por_ubicacion = (
+        Persona.objects
+        .values('departamento')  # o 'ubicacion' si no usas FK
+        .annotate(total=Count('id'))
+        .order_by('-total')
+    )
+
+    # Convertir a DataFrame para graficar
+    df = pd.DataFrame(list(personas_por_ubicacion))
+
+    if not df.empty and 'departamento' in df.columns:
+        df = df.rename(columns={'departamento': 'Departamento', 'total': 'Cantidad'})
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        df.plot(
+            kind='bar',
+            x='Departamento',
+            y='Cantidad',
+            ax=ax,
+            color='skyblue',
+            legend=False
+        )
+
+        
+        ax.set_xlabel("Departamento")
+        ax.set_ylabel("Cantidad de personas")
+        ax.yaxis.set_major_formatter(
+            ticker.FuncFormatter(lambda x, _: f"{int(x):,}".replace(",", "."))
+        )
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+
+       
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        imagen_png = buffer.getvalue()
+        buffer.close()
+        grafico_base64 = base64.b64encode(imagen_png).decode('utf-8')
+        plt.close()
+    else:
+        grafico_base64 = None
+
+    return render(request, 'estadisticos_clientes.html', {
+        'total_personas': total_personas,
+        'promedio_duracion': promedio_dias,
+        'promedio_productos_por_alquiler': promedio_productos_por_alquiler,
+        'grafico': grafico_base64,
+    })
+
+@login_required
+def informeAlquiler(request):
+    total_alquileres = Alquiler.objects.count()
+    alquiler = Alquiler.objects.order_by('-total').first()
+    if alquiler:
+        datos = {
+            'id': alquiler.id,
+            'usuario': alquiler.usuario.username if alquiler.usuario else 'Sin usuario',
+            'fecha_inicio': alquiler.fecha_inicio,
+            'fecha_fin': alquiler.fecha_fin,
+            'estado': alquiler.estado,
+            'total': alquiler.total,
+        }
+    else:
+        datos = None
+
+    # Obtener filtro desde GET (?filtro=mes)
+    filtro = request.GET.get("filtro", "mes")  # valor por defecto: mes
+
+    # Seleccionar truncado según filtro
+    if filtro == "dia":
+        trunc_func = TruncDay("fecha_inicio")
+        formato_fecha = "%Y-%m-%d"
+    elif filtro == "año":
+        trunc_func = TruncYear("fecha_inicio")
+        formato_fecha = "%Y"
+    else:
+        trunc_func = TruncMonth("fecha_inicio")
+        formato_fecha = "%Y-%m"
+
+    # Agrupar alquileres según el filtro
+    alquileres_por_fecha = (
+        Alquiler.objects
+        .annotate(periodo=trunc_func)
+        .values("periodo")
+        .annotate(cantidad=Count("id"))
+        .order_by("periodo")
+    )
+
+    # Convertir a DataFrame
+    df = pd.DataFrame(list(alquileres_por_fecha))
+    if not df.empty:
+        df["periodo"] = pd.to_datetime(df["periodo"], errors="coerce")
+        df = df.dropna(subset=["periodo"])  # elimina fechas no válidas
+        df["periodo"] = df["periodo"].dt.strftime(formato_fecha)
+        df["periodo"] = df["periodo"].astype(str)
+        df["cantidad"] = df["cantidad"].astype(int)
+
+        # Gráfico de línea
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.bar(df["periodo"], df["cantidad"])
+
+        ax.set_xlabel("Fecha")
+        ax.set_ylabel("Cantidad de alquileres")
+        ax.set_title(f"Alquileres por {filtro.capitalize()}")
+        plt.xticks(rotation=45, ha="right")
+        ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}".replace(",", ".")))
+        plt.tight_layout()
+
+        # Guardar gráfico en memoria
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        imagen_png = buffer.getvalue()
+        buffer.close()
+        grafico_base64 = base64.b64encode(imagen_png).decode("utf-8")
+        plt.close()
+    else:
+        grafico_base64 = None    
+    
+    
+
+    return render(request, 'estadisticos_alquiler.html', {
+        'total_alquileres': total_alquileres,
+        'alquiler': datos,
+        'grafico': grafico_base64,
+        'filtro': filtro,
     })
 

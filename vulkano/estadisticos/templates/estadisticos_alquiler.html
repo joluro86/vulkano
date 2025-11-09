@@ -1,0 +1,67 @@
+{% extends 'index.html' %}
+{% load humanize %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">Estadísticos Alquiler</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+    <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Número total de alquileres</h3>
+      <p class="text-2xl font-bold text-amber-800">
+        {{ total_alquileres }}
+      </p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+        <h3 class="text-lg font-semibold mb-3 text-gray-700">Alquiler de mayor valor</h3>
+
+        {% if alquiler %}
+            <div class="space-y-1 text-gray-800">
+                <p><strong>ID:</strong> {{ alquiler.id }}</p>
+                <p><strong>Usuario:</strong> {{ alquiler.usuario }}</p>
+                <p><strong>Fecha inicio:</strong> {{ alquiler.fecha_inicio|date:"Y-m-d" }}</p>
+                <p><strong>Fecha fin:</strong> {{ alquiler.fecha_fin|date:"Y-m-d" }}</p>
+                <p><strong>Estado:</strong> {{ alquiler.estado }}</p>
+                <p class="text-2xl font-bold text-amber-800 mt-2">
+                    ${{ alquiler.total|floatformat:0|intcomma }}</td>
+                </p>
+            </div>
+        {% else %}
+            <p class="text-gray-600">No hay registros de alquileres.</p>
+        {% endif %}
+    </div>
+      
+  </div>
+
+  <!-- Filtro de periodo -->
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-gray-800">Alquileres por periodo</h3>
+
+    <form method="get" class="flex items-center space-x-2">
+      <label for="filtro" class="text-gray-600">Filtrar por:</label>
+      <select name="filtro" id="filtro" class="border border-gray-300 rounded p-1 text-gray-700"
+              onchange="this.form.submit()">
+        <option value="dia" {% if filtro == 'dia' %}selected{% endif %}>Día</option>
+        <option value="mes" {% if filtro == 'mes' %}selected{% endif %}>Mes</option>
+        <option value="año" {% if filtro == 'año' %}selected{% endif %}>Año</option>
+      </select>
+    </form>
+  </div>
+
+  <!-- Gráfico -->
+  <div class="bg-gray-50 p-4 rounded shadow text-center">
+    {% if grafico %}
+      <img src="data:image/png;base64,{{ grafico }}" alt="Gráfico de alquileres" class="mx-auto">
+    {% else %}
+      <p class="text-gray-600">No hay datos suficientes para generar el gráfico.</p>
+    {% endif %}
+  </div>
+ 
+</div>
+{% endblock %}

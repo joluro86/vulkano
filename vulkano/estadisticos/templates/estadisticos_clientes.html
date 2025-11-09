@@ -1,0 +1,47 @@
+{% extends 'index.html' %}
+{% load humanize %}
+
+{% block breadcrumb %}
+  {% include 'breadcrumb.html' with home='/' breadcrumbs=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">Estadísticos Clientes</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+    <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Total de clientes registrados</h3>
+      <p class="text-2xl font-bold text-amber-800">
+        {{ total_personas }}
+      </p>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Tiempo promedio de alquiler</h3>
+      <p class="text-2xl font-bold text-amber-800">
+        {{ promedio_duracion|floatformat:2 }} días
+      </p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+        <h3 class="text-lg font-semibold mb-2 text-gray-700">Promedio de productos por alquiler</h3>
+        {% if promedio_productos_por_alquiler %}
+            <p class="text-2xl font-bold text-amber-800">
+            {{ promedio_productos_por_alquiler|floatformat:2 }}
+            </p>
+        {% else %}
+            <p class="text-gray-500">No hay datos suficientes</p>
+        {% endif %}
+    </div>
+    
+  </div>
+
+  <div class="bg-gray-100 p-4 rounded shadow flex flex-col items-center justify-center text-center">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">Gráfico cantidad de clientes por departamento</h3>
+      <img src="data:image/png;base64,{{ grafico }}">
+  </div>
+
+</div>
+{% endblock %}
