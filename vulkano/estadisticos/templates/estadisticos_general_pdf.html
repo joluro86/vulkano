@@ -1,0 +1,17 @@
+<h2>Reporte General</h2>
+
+<p><strong>Total Abonos:</strong> ${{ total_abonos }}</p>
+<p><strong>Total Liquidado:</strong> ${{ total_liquidado }}</p>
+<p><strong>Total clientes Registrados:</strong> {{ total_personas }}</p>
+
+<h3>Producto Más Alquilado</h3>
+{% if mas_alquilado %}
+<p><strong>Producto:</strong> {{ mas_alquilado.nombre }}</p>
+<p><strong>Cantidad:</strong> {{ mas_alquilado.total_vendido }} unidades</p>
+{% else %} 
+<p>No hay datos de productos alquilados.</p>
+{% endif %}
+
+{% if grafico %}
+<img src="data:image/png;base64,{{ grafico }}" style="width: 100%; max-width: 700px;">
+{% endif %}

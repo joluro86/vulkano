@@ -1,0 +1,20 @@
+<h2>Reporte de Productos</h2>
+
+<h3>Top 5 Productos Más Alquilados</h3>
+<ul>
+    {% for item in top5_alquilados %}
+        <li>{{ item.producto__nombre }} — {{ item.total_vendido }} veces</li>
+    {% endfor %}
+</ul>
+
+<h3>Productos con Menor Inventario</h3>
+<ul>
+    {% for item in menos_inventario %}
+        <li>{{ item.producto__nombre }} ({{ item.sucursal__nombre }}) — Stock: {{ item.stock_actual }}</li>
+    {% endfor %}
+</ul>
+
+{% if grafico %}
+<h3>Histórico por Mes</h3>
+<img src="data:image/png;base64,{{ grafico }}" style="width: 100%; max-width: 700px;">
+{% endif %}

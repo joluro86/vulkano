@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333; }
+    h2 { color: #0f4c81; text-align: center; }
+    .grafico { text-align: center; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<h2>Reporte de Alquileres por {{ filtro|capfirst }}</h2>
+
+<p><strong>Total alquileres:</strong> {{ total_alquileres }}</p>
+
+<h3>Alquiler de mayor valor</h3>
+
+{% if alquiler_mayor %}
+<p><strong>ID:</strong> {{ alquiler_mayor.id }}</p>
+<p><strong>Usuario:</strong> {{ alquiler_mayor.usuario }}</p>
+<p><strong>Fecha Inicio:</strong> {{ alquiler_mayor.fecha_inicio }}</p>
+<p><strong>Fecha Fin:</strong> {{ alquiler_mayor.fecha_fin }}</p>
+<p><strong>Estado:</strong> {{ alquiler_mayor.estado }}</p>
+<p><strong>Total:</strong> ${{ alquiler_mayor.total }}</p>
+{% else %}
+<p>No hay datos de alquiler de mayor valor.</p>
+{% endif %}
+
+{% if grafico %}
+<div class="grafico">
+  <img src="data:image/png;base64,{{ grafico }}" style="width: 90%; height: auto;">
+</div>
+{% endif %}
+
+</body>
+</html>

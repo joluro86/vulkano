@@ -9,6 +9,7 @@ from django.db.models import Avg, F, ExpressionWrapper, DurationField
 from datetime import timedelta
 from django.db.models import Count, Avg
 from django.db.models.functions import TruncDay, TruncMonth, TruncYear
+from matplotlib.ticker import MaxNLocator
 
 
 import seaborn as sns
@@ -29,7 +30,15 @@ def informeGeneral(request):
     total_liquidado = liquidaciones.aggregate(total=Sum('total_liquidado'))['total'] or 0
 
     
-    mas_alquilado = productos.values('producto__nombre').annotate(total_vendido=Sum('cantidad')).order_by('-total_vendido').first()or {}
+    mas_alquilado = productos.values('producto__nombre').annotate(total_vendido=Sum('cantidad')).order_by('-total_vendido').first()
+
+    if mas_alquilado:
+        mas_alquilado = {
+            'nombre': mas_alquilado['producto__nombre'],
+            'total_vendido': int(mas_alquilado['total_vendido'])
+        }
+    else:
+        mas_alquilado = None
 
     abonos_mes = (
         AbonoAlquiler.objects
@@ -91,6 +100,15 @@ def informeGeneral(request):
     buffer.close()
     grafico_base64 = base64.b64encode(imagen_png).decode("utf-8")
     plt.close()  # liberar memoria
+
+
+    request.session['grafico_general'] = grafico_base64
+    request.session['total_abonos_general'] = float(total_abonos)
+    request.session['total_liquidado_general'] = float(total_liquidado)
+    request.session['total_personas_general'] = total_personas
+    request.session['mas_alquilado_general'] = mas_alquilado
+
+    request.session.modified = True
 
     return render(request, 'estadisticos_general.html', {
         'total_abonos': total_abonos,
@@ -173,6 +191,12 @@ def informeProducto(request):
         plt.close()
     else:
         grafico_base64 = None
+
+    request.session['top5_alquilados'] = list(top5_alquilados)
+    request.session['menos_inventario'] = list(menos_inventario)
+    request.session['grafico_producto'] = grafico_base64  
+
+    request.session.modified = True  
 
     return render(request, 'estadisticos_producto.html', {
         'top5_alquilados': top5_alquilados,
@@ -257,6 +281,11 @@ def informeClientes(request):
     else:
         grafico_base64 = None
 
+    request.session['total_personas_clientes'] = total_personas
+    request.session['promedio_duracion_clientes'] = promedio_dias
+    request.session['promedio_productos_por_alquiler_clientes'] = promedio_productos_por_alquiler
+    request.session['grafico_clientes'] = grafico_base64    
+
     return render(request, 'estadisticos_clientes.html', {
         'total_personas': total_personas,
         'promedio_duracion': promedio_dias,
@@ -272,10 +301,10 @@ def informeAlquiler(request):
         datos = {
             'id': alquiler.id,
             'usuario': alquiler.usuario.username if alquiler.usuario else 'Sin usuario',
-            'fecha_inicio': alquiler.fecha_inicio,
-            'fecha_fin': alquiler.fecha_fin,
+            'fecha_inicio': alquiler.fecha_inicio.strftime("%Y-%m-%d") if alquiler.fecha_inicio else '',
+            'fecha_fin': alquiler.fecha_fin.strftime("%Y-%m-%d") if alquiler.fecha_fin else '',
             'estado': alquiler.estado,
-            'total': alquiler.total,
+            'total': float(alquiler.total) if alquiler.total is not None else 0,
         }
     else:
         datos = None
@@ -316,11 +345,15 @@ def informeAlquiler(request):
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.bar(df["periodo"], df["cantidad"])
 
+        ax.minorticks_off()
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+        ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}".replace(",", ".")))
+
         ax.set_xlabel("Fecha")
         ax.set_ylabel("Cantidad de alquileres")
         ax.set_title(f"Alquileres por {filtro.capitalize()}")
         plt.xticks(rotation=45, ha="right")
-        ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}".replace(",", ".")))
         plt.tight_layout()
 
         # Guardar gráfico en memoria
@@ -334,6 +367,11 @@ def informeAlquiler(request):
     else:
         grafico_base64 = None    
     
+    request.session['grafico_estadistico'] = grafico_base64
+    request.session['total_estadistico'] = total_alquileres
+    request.session['filtro_estadistico'] = filtro
+    request.session['alquiler_mayor'] = datos
+    request.session.modified = True
     
 
     return render(request, 'estadisticos_alquiler.html', {
