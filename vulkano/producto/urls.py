@@ -1,8 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from producto.views_category import CategoriaListView, CategoriaCreateView, CategoriaUpdateView
 from producto.views_proveedor import ProveedorListView, ProveedorCreateView, ProveedorUpdateView
 from producto.views_producto import eliminar_producto,producto, ProductoCreateView, ProductoListView, ProductoUpdateView, ProductoDetailView
 from producto.views_precios import precio_producto_create, precio_producto_delete, precio_producto_list, precio_producto_edit
+
+
 urlpatterns = [
     path('categorias/', CategoriaListView.as_view(), name='categoria_list'),
     path('categorias/crear/', CategoriaCreateView.as_view(), name='crear_categoria'),

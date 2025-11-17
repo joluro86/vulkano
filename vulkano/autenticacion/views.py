@@ -1,5 +1,5 @@
 from django.contrib.auth.views import LoginView
-from .forms import LoginForm, UsuarioCreateForm, UsuarioUpdateForm, generar_username_auto
+from .forms import LoginForm, UsuarioCreateForm, UsuarioUpdateForm, generar_username_auto, ClienteRegistroForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -8,6 +8,10 @@ from django.db.models import Q
 from autenticacion.models import Usuario
 from django.http import JsonResponse
 from producto.models import Producto
+from django.contrib import messages
+from .decorators import group_required
+from django.contrib.auth import get_user_model, login 
+
 
 
 class CustomLoginView(LoginView):
@@ -39,6 +43,19 @@ def crear_usuario(request):
         'boton_texto': 'Guardar Usuario',
         'breadcrumb_items': [('Usuarios', '/usuarios/'), ('Crear', '')],
     })
+
+def registro_cliente(request):
+    if request.method == 'POST':
+        form = ClienteRegistroForm(request.POST)
+        if form.is_valid():
+            user= form.save()
+            messages.success(request, "Tu cuenta ha sido creada. Ya puedes iniciar sesión.")
+            login(request, user)
+            return redirect('producto')  
+    else:
+        form = ClienteRegistroForm()
+
+    return render(request, 'registro_cliente.html', {'form': form})
 
 
 @login_required

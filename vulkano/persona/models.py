@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class Persona(models.Model):
     TIPO_DOCUMENTO_CHOICES = [
@@ -6,6 +7,13 @@ class Persona(models.Model):
         ('NIT', 'NIT'),
         ('CE', 'Cédula de extranjería'),
     ]
+
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='persona',
+        blank=True,
+        null=True,
+    )
 
     nombre = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
