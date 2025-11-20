@@ -25,13 +25,18 @@
       class="flex-1 rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
     />
 
-    <button
-      id="sendMessage"
-      type="button"
-      class="shrink-0 px-5 py-3 rounded-xl text-white bg-teal-600 hover:bg-teal-700"
-    >
+    <button id="sendMessage" type="button" class="shrink-0 px-5 py-3 rounded-xl text-white bg-teal-600 hover:bg-teal-700">
       Submit
     </button>
+     
+    {% if puede_cerrar %}
+    <a href="{% url 'cerrar_sala' room.slug %}"
+      id="closeChat"
+      class="shrink-0 px-5 py-3 rounded-xl text-white bg-teal-600 hover:bg-teal-700 inline-flex items-center justify-center">
+      Cerrar sala
+    </a>
+    {% endif %}
+    
   </div>
 </div>
 

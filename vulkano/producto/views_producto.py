@@ -1,14 +1,14 @@
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from .models import Producto
 from producto.forms.forms_producto import ProductoForm
 from core.views import BreadcrumbMixin
 from django.db.models import Q
 from producto.forms.forms_productos import BusquedaProductoForm
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
+
 
 def producto(request):
     form = BusquedaProductoForm(request.GET or None)
@@ -113,6 +113,7 @@ class ProductoUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
 
 class ProductoDetailView(LoginRequiredMixin, BreadcrumbMixin, DetailView):
     model = Producto

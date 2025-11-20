@@ -10,18 +10,35 @@ from django.http import JsonResponse
 from producto.models import Producto
 from django.contrib import messages
 from .decorators import group_required
-from django.contrib.auth import get_user_model, login 
-
-
+from django.contrib.auth import get_user_model, login
+from django.urls import reverse_lazy 
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = LoginForm
 
+    def get_success_url(self):
+
+        redirect_to = self.get_redirect_url()
+        if redirect_to:
+            return redirect_to
+        
+        user = self.request.user
+
+        if user.groups.filter(name='cliente').exists():
+            return reverse_lazy('producto')
+        
+        if not user.groups.exists():
+            return reverse_lazy('landing')
+        
+        return reverse_lazy('usuario_list')
+
 def landing_view(request):
     productos = Producto.objects.all()
-    return render(request, "landing.html", {"productos": productos})
 
+    return render(request, "landing.html", {
+        "productos": productos,
+    })
 
 @login_required
 def crear_usuario(request):
