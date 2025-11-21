@@ -1,8 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import Usuario
+from .models import Usuario, Rol
+from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from persona.models import Persona
+from cliente.models import Cliente
 
 
 def generar_username_auto(nombre, apellidos):
@@ -131,3 +134,131 @@ class UsuarioUpdateForm(forms.ModelForm):
 
     def clean_username(self):
         return self.instance.username
+
+class ClienteRegistroForm(UserCreationForm):
+    first_name = forms.CharField(
+        label="Nombre",
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Nombre'
+        })
+    )
+    last_name = forms.CharField(
+        label="Apellidos",
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Apellidos'
+        })
+    )
+    username = forms.CharField(
+        label="Nombre de usuario",
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Nombre de usuario'
+        })
+    )
+    email = forms.EmailField(
+        label="Correo electrónico",
+        required=False,
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Correo electrónico'
+        })
+    )
+
+    tipo_documento = forms.ChoiceField(
+        label="Tipo de documento",
+        choices=Persona.TIPO_DOCUMENTO_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded bg-white',
+        })
+    )
+    documento = forms.CharField(
+        label="Número de documento",
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Número de documento'
+        })
+    )
+    telefono = forms.CharField(
+        label="Teléfono",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Teléfono de contacto'
+        })
+    )
+
+    password1 = forms.CharField(
+        label="Contraseña",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Contraseña'
+        })
+    )
+    password2 = forms.CharField(
+        label="Confirmar contraseña",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded',
+            'placeholder': 'Repite la contraseña'
+        })
+    )
+
+    class Meta:
+        model = Usuario
+        fields = [
+            'first_name',
+            'last_name',
+            'username',
+            'email',
+        ]
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        # Configuración de usuario cliente
+        user.is_staff = False
+        user.is_superuser = False
+        user.estado = "activo"
+
+        telefono = self.cleaned_data.get('telefono')
+        if telefono:
+            user.telefono = telefono
+
+        # Rol por defecto: cliente
+        rol_cliente, _ = Rol.objects.get_or_create(
+            nombre="cliente",
+            defaults={'descripcion': 'This is a current client'}
+        )
+        user.rol = rol_cliente
+
+        if commit:
+            user.save()
+
+            # Grupo por defecto: cliente
+            group, _ = Group.objects.get_or_create(name="cliente")
+            user.groups.add(group)
+
+            # Datos del formulario
+            numero_doc = self.cleaned_data.get('documento')
+            tipo_doc = self.cleaned_data.get('tipo_documento')
+            empresa = getattr(user, 'empresa', None)  # puede ser None
+
+            # 👇 Aquí se crea un Cliente (NO Persona)
+            Cliente.objects.create(
+                # Campos heredados de Persona:
+                usuario=user,
+                nombre=user.first_name or user.username,
+                apellidos=user.last_name or "",
+                tipo_documento=tipo_doc,
+                telefono=telefono,
+                correo=user.email,
+                direccion=None,
+
+                # Campos propios de Cliente:
+                documento=numero_doc,
+                empresa=empresa,
+                estado=True,
+            )
+
+        return user

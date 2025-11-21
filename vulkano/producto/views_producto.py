@@ -1,14 +1,35 @@
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from .models import Producto
 from producto.forms.forms_producto import ProductoForm
 from core.views import BreadcrumbMixin
 from django.db.models import Q
+from producto.forms.forms_productos import BusquedaProductoForm
+from django.shortcuts import redirect, render
 
-@login_required
+
+def producto(request):
+    form = BusquedaProductoForm(request.GET or None)
+    productos = Producto.objects.all()
+
+    if form.is_valid():
+        marca = form.cleaned_data.get("marca")
+        estado = form.cleaned_data.get("estado")
+        ubicacion = form.cleaned_data.get("ubicacion_actual")
+
+        if marca:
+            productos = productos.filter(marca=marca)
+        if estado:
+            productos = productos.filter(estado=estado)
+        if ubicacion:
+            productos = productos.filter(ubicacion_actual=ubicacion)
+
+    return render(request, "producto.html", {"form": form, "productos": productos})
+
+
+
 def eliminar_producto(request, id):
     Producto.objects.get(id=id).delete()
     return redirect('producto_list')
@@ -66,6 +87,7 @@ class ProductoListView(LoginRequiredMixin, BreadcrumbMixin, ListView):
         return queryset
 
 
+
 class ProductoUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
     model = Producto
     form_class = ProductoForm
@@ -91,6 +113,7 @@ class ProductoUpdateView(LoginRequiredMixin, BreadcrumbMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
 
 class ProductoDetailView(LoginRequiredMixin, BreadcrumbMixin, DetailView):
     model = Producto

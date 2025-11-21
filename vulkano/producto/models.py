@@ -41,7 +41,7 @@ class ProductoManager(models.Manager):
     
 class Producto(models.Model):
     ESTADOS = [
-        ("activo", "Activo"),
+        ("activo", "Activo"), 
         ("inactivo", "Inactivo"),
         ("disponible", "Disponible"),
         ("no_disponible", "No disponible"),

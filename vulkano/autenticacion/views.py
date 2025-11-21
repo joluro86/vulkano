@@ -1,5 +1,5 @@
 from django.contrib.auth.views import LoginView
-from .forms import LoginForm, UsuarioCreateForm, UsuarioUpdateForm, generar_username_auto
+from .forms import LoginForm, UsuarioCreateForm, UsuarioUpdateForm, generar_username_auto, ClienteRegistroForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -7,17 +7,38 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from autenticacion.models import Usuario
 from django.http import JsonResponse
+from producto.models import Producto
+from django.contrib import messages
+from .decorators import group_required
+from django.contrib.auth import get_user_model, login
+from django.urls import reverse_lazy 
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = LoginForm
 
-@login_required
-def landing_view(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-    return render(request, 'landing.html')
+    def get_success_url(self):
 
+        redirect_to = self.get_redirect_url()
+        if redirect_to:
+            return redirect_to
+        
+        user = self.request.user
+
+        if user.groups.filter(name='cliente').exists():
+            return reverse_lazy('producto')
+        
+        if not user.groups.exists():
+            return reverse_lazy('landing')
+        
+        return reverse_lazy('usuario_list')
+
+def landing_view(request):
+    productos = Producto.objects.all()
+
+    return render(request, "landing.html", {
+        "productos": productos,
+    })
 
 @login_required
 def crear_usuario(request):
@@ -39,6 +60,19 @@ def crear_usuario(request):
         'boton_texto': 'Guardar Usuario',
         'breadcrumb_items': [('Usuarios', '/usuarios/'), ('Crear', '')],
     })
+
+def registro_cliente(request):
+    if request.method == 'POST':
+        form = ClienteRegistroForm(request.POST)
+        if form.is_valid():
+            user= form.save()
+            messages.success(request, "Tu cuenta ha sido creada. Ya puedes iniciar sesión.")
+            login(request, user)
+            return redirect('producto')  
+    else:
+        form = ClienteRegistroForm()
+
+    return render(request, 'registro_cliente.html', {'form': form})
 
 
 @login_required

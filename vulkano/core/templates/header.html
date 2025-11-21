@@ -20,8 +20,15 @@
 
   </h1>
 
+  
+
   {% if request.user.is_authenticated %}
   <div x-data="{ open: false }" class="relative flex items-center space-x-3 cursor-pointer" @click.away="open = false">
+    <div>
+          <a href="{% url 'landing' %}" class="bg-[var(--primary-color)] text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+            Inicio
+          </a>
+    </div>
     <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
       {% if request.user.foto_perfil %}
         <img src="{{ request.user.foto_perfil.url }}" alt="Perfil" class="w-9 h-9 rounded-full object-cover border-2 border-white" />
@@ -42,6 +49,26 @@
         <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">🚪 Cerrar sesión</button>
       </form>
     </div>
+  </div>
+  {% else %}
+  <div x-data="{ open: false }" class="relative flex items-center space-x-3 cursor-pointer" @click.away="open = false">
+        <div>
+          <a href="{% url 'landing' %}" class="bg-[var(--primary-color)] text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+            Inicio
+          </a>
+        </div>
+
+        <div>
+          <a href="{% url 'login' %}" class="bg-[var(--primary-color)] text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+            Iniciar sesión
+          </a>
+        </div>
+
+         <div>
+          <a href="{% url 'producto' %}" class="bg-[var(--primary-color)] text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+            Ver productos 
+          </a>
+        </div>
   </div>
   {% endif %}
 </header>
